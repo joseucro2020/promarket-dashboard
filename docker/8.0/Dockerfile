@@ -3,8 +3,9 @@ FROM ubuntu:20.04
 LABEL maintainer="Taylor Otwell"
 
 ARG WWWGROUP
+ARG NODE_VERSION=16
 
-WORKDIR /var/www/html
+WORKDIR /var/www
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ=UTC
@@ -16,8 +17,7 @@ RUN apt-get update \
     && mkdir -p ~/.gnupg \
     && chmod 600 ~/.gnupg \
     && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf \
-    && apt-key adv --homedir ~/.gnupg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E5267A6C \
-    && apt-key adv --homedir ~/.gnupg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C300EE8C \
+    && apt-key adv --homedir ~/.gnupg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 14AA40EC0831756756D7F66C4F4EA0AAE5267A6C \
     && echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu focal main" > /etc/apt/sources.list.d/ppa_ondrej_php.list \
     && apt-get update \
     && apt-get install -y php8.0-cli php8.0-dev \
@@ -29,12 +29,8 @@ RUN apt-get update \
        php8.0-msgpack php8.0-igbinary php8.0-ldap \
        php8.0-redis \
     && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
-    && curl -sL https://deb.nodesource.com/setup_15.x | bash - \
+    && curl -sL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - \
     && apt-get install -y nodejs \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
-    && apt-get update \
-    && apt-get install -y yarn \
     && apt-get install -y mysql-client \
     && apt-get -y autoremove \
     && apt-get clean \
