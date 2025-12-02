@@ -27,6 +27,11 @@ use App\Http\Controllers\ChartsController;
 |
 */
 
+// PRUEBA DE CONCEPTO: Ruta simple para verificar Nginx + Laravel
+Route::get('/panel/test', function () {
+    return 'Hola Mundo desde el Dashboard en Docker!';
+});
+
 // Main Page Route
 // Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce')->middleware('verified');
 Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-home');
