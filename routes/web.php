@@ -29,7 +29,7 @@ use App\Http\Controllers\ChartsController;
 
 // Main Page Route
 // Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce')->middleware('verified');
-Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce');
+Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-home');
 
 Auth::routes(['verify' => true]);
 
@@ -178,8 +178,8 @@ Route::group(['prefix' => 'page'], function () {
   Route::get('profile', [PagesController::class,'profile'])->name('page-profile');
   Route::get('faq', [PagesController::class,'faq'])->name('page-faq');
   Route::get('knowledge-base', [PagesController::class,'knowledge_base'])->name('page-knowledge-base');
-  Route::get('knowledge-base/category', [PagesController::class,'kb_category'])->name('page-knowledge-base');
-  Route::get('knowledge-base/category/question', [PagesController::class,'kb_question'])->name('page-knowledge-base');
+  Route::get('knowledge-base/category', [PagesController::class,'kb_category'])->name('page-knowledge-base-category');
+  Route::get('knowledge-base/category/question', [PagesController::class,'kb_question'])->name('page-knowledge-base-question');
   Route::get('pricing', [PagesController::class,'pricing'])->name('page-pricing');
   Route::get('blog/list', [PagesController::class,'blog_list'])->name('page-blog-list');
   Route::get('blog/detail', [PagesController::class,'blog_detail'])->name('page-blog-detail');
