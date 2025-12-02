@@ -34,7 +34,7 @@ Route::get('/panel/test', function () {
 
 // Main Page Route
 // Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce')->middleware('verified');
-Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-home');
+Route::get('/panel', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-home');
 
 Auth::routes(['verify' => true]);
 
