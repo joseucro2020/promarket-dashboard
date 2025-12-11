@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AppsController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\PagesController;
 use App\Http\Controllers\MiscellaneousController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChartsController;
+use App\Http\Controllers\ExchangeRateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +37,16 @@ Route::get('/panel/test', function () {
 // Main Page Route
 // Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce')->middleware('verified');
 Route::get('/panel', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-home');
+
+// Routes para el módulo de Tasa de cambio
+Route::group(['prefix' => 'panel'], function () {
+  Route::get('tasa-de-cambios', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
+  Route::get('tasa-de-cambios/nuevo', [ExchangeRateController::class, 'create'])->name('exchange-rates.create');
+  Route::post('tasa-de-cambios', [ExchangeRateController::class, 'store'])->name('exchange-rates.store');
+  Route::get('tasa-de-cambios/{id}/editar', [ExchangeRateController::class, 'edit'])->name('exchange-rates.edit');
+  Route::put('tasa-de-cambios/{id}', [ExchangeRateController::class, 'update'])->name('exchange-rates.update');
+  Route::delete('tasa-de-cambios/{id}', [ExchangeRateController::class, 'destroy'])->name('exchange-rates.destroy');
+});
 
 Auth::routes(['verify' => true]);
 
@@ -225,3 +237,5 @@ Route::get('/maps/leaflet', [ChartsController::class,'maps_leaflet'])->name('map
 
 // locale Route
 Route::get('lang/{locale}', [LanguageController::class, 'swap']);
+
+

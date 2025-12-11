@@ -27,6 +27,36 @@
       "slug": ""
     },
     {
+      "url": "panel/kromi-market",
+      "name": "Kromi Market",
+      "icon": "mail",
+      "slug": "kromi-market"
+    },
+    {
+      "url": "panel/verificar-pedidos",
+      "name": "Verify Orders",
+      "icon": "mail",
+      "slug": "verificar-pedidos"
+    },    
+    {
+      "url": "panel/tasa-de-cambios",
+      "name": "Exchange Rate",
+      "icon": "mail",
+      "slug": "tasa-de-cambios"
+    },
+    {
+      "url": "panel/envio-sms",
+      "name": "SMS Sending",
+      "icon": "mail",
+      "slug": "envio-sms"
+    },
+    {
+      "url": "panel/tasa-envio",
+      "name": "Shipping Rate",
+      "icon": "mail",
+      "slug": "tasa-envio"
+    },
+    {
       "url": "app/email",
       "name": "Email",
       "icon": "mail",
