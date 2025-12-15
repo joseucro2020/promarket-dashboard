@@ -198,4 +198,5 @@ return [
   "No exchange rates recorded yet." => "No exchange rates recorded yet.",
   "SMS Sending" => "SMS Sending",
   "Shipping Rate" => "Shipping Rate",
+  "Products" => "Products",
 ];

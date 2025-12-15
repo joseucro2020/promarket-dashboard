@@ -17,6 +17,7 @@ use App\Http\Controllers\MiscellaneousController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChartsController;
 use App\Http\Controllers\ExchangeRateController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,14 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('tasa-de-cambios/{id}/editar', [ExchangeRateController::class, 'edit'])->name('exchange-rates.edit');
   Route::put('tasa-de-cambios/{id}', [ExchangeRateController::class, 'update'])->name('exchange-rates.update');
   Route::delete('tasa-de-cambios/{id}', [ExchangeRateController::class, 'destroy'])->name('exchange-rates.destroy');
+
+  // Routes para el módulo de Productos
+  Route::get('productos', [ProductController::class, 'index'])->name('products.index');
+  Route::get('productos/nuevo', [ProductController::class, 'create'])->name('products.create');
+  Route::post('productos', [ProductController::class, 'store'])->name('products.store');
+  Route::get('productos/{id}/editar', [ProductController::class, 'edit'])->name('products.edit');
+  Route::put('productos/{id}', [ProductController::class, 'update'])->name('products.update');
+  Route::delete('productos/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
 
 Auth::routes(['verify' => true]);

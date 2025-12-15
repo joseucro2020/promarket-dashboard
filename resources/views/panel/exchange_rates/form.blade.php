@@ -18,7 +18,7 @@
 
           <div class="mb-3">
             <label class="form-label">Fecha</label>
-            <input type="datetime-local" name="date" class="form-control" value="{{ old('date', isset($rate) ? $rate->date->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}" required>
+            <input type="datetime-local" name="date" class="form-control" value="{{ old('date', isset($rate) ? $rate->created_at->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}" required>
           </div>
 
           <div class="mb-3">
@@ -33,7 +33,7 @@
 
           <div class="mb-3">
             <label class="form-label">Tasa</label>
-            <input type="number" step="0.0001" name="rate" class="form-control" value="{{ old('rate', $rate->rate ?? '') }}" required>
+            <input type="number" step="0.0001" name="rate" class="form-control" value="{{ old('rate', $rate->change ?? '') }}" required>
           </div>
 
           <div class="mb-3">

@@ -57,34 +57,40 @@
       "slug": "tasa-envio"
     },
     {
-      "url": "app/email",
-      "name": "Email",
+      "url": "panel/ofertas",
+      "name": "Offers",
       "icon": "mail",
-      "slug": "app-email"
+      "slug": "panel-ofertas"
     },
     {
-      "url": "app/chat",
-      "name": "Chat",
+      "url": "panel/descuentos",
+      "name": "Discounts",
       "icon": "message-square",
-      "slug": "app-chat"
+      "slug": "panel-descuentos"
     },
     {
-      "url": "app/todo",
-      "name": "Todo",
+      "url": "panel/promociones",
+      "name": "Promotions",
       "icon": "check-square",
-      "slug": "app-todo"
+      "slug": "panel-promociones"
     },
     {
-      "url": "app/calendar",
-      "name": "Calendar",
+      "url": "panel/cupones",
+      "name": "Coupons",
       "icon": "calendar",
-      "slug": "app-calendar"
+      "slug": "panel-cupones"
     },
     {
-      "url": "app/kanban",
-      "name": "Kanban",
+      "url": "panel/descuentos",
+      "name": "Discounts",
       "icon": "grid",
-      "slug": "app-kanban"
+      "slug": "panel-descuentos"
+    },
+    {
+      "url": "panel/productos",
+      "name": "Products",
+      "icon": "grid",
+      "slug": "panel-productos"
     },
     {
       "name": "Invoice",

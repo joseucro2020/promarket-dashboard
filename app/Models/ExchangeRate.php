@@ -11,13 +11,13 @@ class ExchangeRate extends Model
     protected $fillable = [
         'currency_from',
         'currency_to',
-        'rate',
-        'date',
+        'change',
+        'created_at',
         'notes'
     ];
 
     protected $casts = [
-        'date' => 'datetime',
-        'rate' => 'decimal:4'
+        'created_at' => 'datetime',
+        'change' => 'decimal:4'
     ];
 }
