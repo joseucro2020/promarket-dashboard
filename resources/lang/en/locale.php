@@ -233,4 +233,7 @@ return [
   "Coupon deleted successfully." => "Coupon deleted successfully.",
   "Coupon status updated." => "Coupon status updated.",
   "Delete this coupon?" => "Delete this coupon?",
+  "Promotions" => "Promotions",
+  "Discounts" => "Discounts",
+  "Offers" => "Offers",
 ];
