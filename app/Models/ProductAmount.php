@@ -12,6 +12,20 @@ class ProductAmount extends Model {
 
     protected $table = "product_amount";
 
+    protected $fillable = [
+        'product_color_id',
+        'category_size_id',
+        'unit',
+        'presentation',
+        'amount',
+        'price',
+        'cost',
+        'min',
+        'max',
+        'umbral',
+        'sku'
+    ];
+
     public function product_color() {
         return $this->belongsTo(ProductColor::class,'product_color_id');
     }

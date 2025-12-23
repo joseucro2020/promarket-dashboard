@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Exchange Rate'))
+@section('title', __('Taxes'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,11 +15,11 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Exchange Rate Registry') }}</h4>
+            <h4 class="mb-0">{{ __('Impuestos') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary">
+              <a href="{{ route('taxes.create') }}" class="dt-button create-new btn btn-primary">
                 <i data-feather="plus"></i> {{ __('Add New') }}
               </a>
             </div>
@@ -30,31 +30,33 @@
             <div class="alert alert-success">{{ session('success') }}</div>
           @endif
           <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover w-100 exchange-rates-table">
+            <table class="table table-striped table-bordered table-hover w-100 taxes-table">
               <thead>
                 <tr>
-                  <th>{{ __('Date Recorded') }}</th>
-                  <th>{{ __('Currency From') }}</th>
-                  <th>{{ __('Currency To') }}</th>
-                  <th>{{ __('Rate') }}</th>
-                  <th>{{ __('Notes') }}</th>
+                  <th>#</th>
+                  <th>{{ __('Name') }}</th>
+                  <th>{{ __('Percentage') }}</th>
                   <th class="text-end">{{ __('Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
-                @forelse($rates as $r)
+                @foreach($taxes as $tax)
                   <tr>
-                    <td>{{ $r->created_at ? $r->created_at->format('d-m-Y H:i') : '' }}</td>
-                    <td>{{ $r->currency_from }}</td>
-                    <td>{{ $r->currency_to }}</td>
-                    <td>{{ $r->change }}</td>
-                    <td>{{ \Illuminate\Support\Str::limit($r->notes, 60) }}</td>
+                    <td>{{ $tax->id }}</td>
+                    <td>{{ $tax->name }}</td>
+                    <td>{{ number_format($tax->percentage, 2) }}%</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:140px;">
-                        <a href="{{ route('exchange-rates.edit', $r->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
+                        <a href="{{ route('taxes.edit', $tax->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
                           <i data-feather="edit-2"></i>
                         </a>
-                        <form class="m-0" action="{{ route('exchange-rates.destroy', $r->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this rate?') }}')" style="display:inline;">
+                        <form class="m-0 mr-1" action="{{ route('taxes.status', $tax->id) }}" method="POST">
+                          @csrf
+                          <button type="submit" class="btn btn-icon btn-flat-{{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
+                            <i data-feather="{{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'toggle-right' : 'toggle-left' }}"></i>
+                          </button>
+                        </form>
+                        <form class="m-0" action="{{ route('taxes.destroy', $tax->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this tax?') }}');">
                           @csrf
                           @method('DELETE')
                           <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
@@ -64,11 +66,7 @@
                       </div>
                     </td>
                   </tr>
-                @empty
-                  <tr>
-                    <td colspan="6" class="text-center">{{ __('No exchange rates recorded yet.') }}</td>
-                  </tr>
-                @endforelse
+                @endforeach
               </tbody>
             </table>
           </div>
@@ -89,7 +87,7 @@
 @section('page-script')
   <script>
     $(document).ready(function() {
-      $('.exchange-rates-table').DataTable({
+      $('.taxes-table').DataTable({
         responsive: true,
         dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
         order: [[0, 'desc']],
@@ -101,10 +99,7 @@
         },
         drawCallback: function() {
           if (feather) {
-            feather.replace({
-              width: 14,
-              height: 14
-            });
+            feather.replace({ width: 14, height: 14 });
           }
         }
       });

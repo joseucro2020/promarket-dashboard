@@ -23,6 +23,7 @@ use App\Models\Supplier;
 use App\Models\ProductProveedor;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use File;
 
@@ -70,6 +71,7 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         try {
+            Log::info('Product store request data: ' . json_encode($request->all()));
             DB::transaction(function () use ($request) {
                 $product = new Product;
                 $this->fillProductData($product, $request);
@@ -97,13 +99,14 @@ class ProductController extends Controller
 
             return redirect()->route('products.index')->with('success', __('Product created successfully.'));
         } catch (\Exception $e) {
+            Log::error('Error creating product: ' . $e->getMessage() . '\n' . $e->getTraceAsString());
             return redirect()->back()->with('error', __('Error creating product: ') . $e->getMessage())->withInput();
         }
     }
 
     public function edit($id)
     {
-        $product = Product::with('images')->findOrFail($id);
+        $product = Product::with(['images', 'colors.amounts'])->findOrFail($id);
         $categories = Category::all();
         $taxes = Taxe::where('status', Taxe::STATUS_ACTIVE)->get();
         return view('panel.products.edit', compact('product', 'categories', 'taxes'));
@@ -112,18 +115,69 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, $id)
     {
         try {
+            Log::info('Product update request id: ' . $id . ' data: ' . json_encode($request->all()));
             DB::transaction(function () use ($request, $id) {
                 $product = Product::findOrFail($id);
+                Log::info('Product before update: ' . json_encode($product->toArray()));
                 $this->fillProductData($product, $request);
                 $product->save();
+                Log::info('Product after update: ' . json_encode($product->toArray()));
 
+                $this->handlePresentations($request, $product);
                 $this->handleImageUpload($request, $product, true);
             });
 
             return redirect()->route('products.index')->with('success', __('Product updated successfully.'));
         } catch (\Exception $e) {
+            Log::error('Error updating product: ' . $e->getMessage() . '\n' . $e->getTraceAsString());
             return redirect()->back()->with('error', __('Error updating product: ') . $e->getMessage())->withInput();
         }
+    }
+
+    private function handlePresentations(Request $request, Product $product)
+    {
+        $color = $product->colors()->first();
+        if (!$color) {
+            $color = ProductColor::create([
+                'name' => 'por defecto',
+                'name_english' => 'default',
+                'product_id' => $product->id,
+            ]);
+        }
+
+        $submittedIds = [];
+
+        if ($request->has('presentations')) {
+            foreach ($request->presentations as $data) {
+                $amountData = [
+                    'product_color_id' => $color->id,
+                    'category_size_id' => $data['unit'] ?? 1,
+                    'unit' => $data['unit'] ?? 1,
+                    'presentation' => $data['presentation'],
+                    'amount' => $data['amount'],
+                    'price' => $data['price'],
+                    'cost' => $data['cost'],
+                    'min' => $data['min'],
+                    'max' => $data['max'],
+                    'umbral' => $data['umbral'],
+                    'sku' => $data['sku'],
+                ];
+
+                if (isset($data['id'])) {
+                    $amount = ProductAmount::find($data['id']);
+                    if ($amount) {
+                        $amount->update($amountData);
+                        $submittedIds[] = $amount->id;
+                    }
+                } else {
+                    $amount = ProductAmount::create($amountData);
+                    $submittedIds[] = $amount->id;
+                }
+            }
+        }
+
+        // Delete removed presentations (soft delete if model uses SoftDeletes)
+        $color->amounts()->whereNotIn('id', $submittedIds)->delete();
     }
 
     public function destroy($id)
@@ -345,32 +399,188 @@ class ProductController extends Controller
         $product->taxe_id = $request->taxe_id;
         $product->retail = $request->retail;
         $product->wholesale = $request->wholesale;
+        $product->variable = $request->variable ?? 0;
+        // Map form fields to DB columns
+        if ($request->has('min_stock_deactivate')) {
+            $product->minexi = $request->input('min_stock_deactivate');
+        }
+        if ($request->has('max_stock_activate')) {
+            $product->maxexi = $request->input('max_stock_activate');
+        }
     }
 
     private function handleImageUpload(Request $request, Product $product, $isUpdate = false)
     {
+        $url = 'img/products/';
+        Log::info('handleImageUpload start for product: ' . $product->id . ' hasFile(image): ' . ($request->hasFile('image') ? 'yes' : 'no') . ' secondary_count: ' . (count($request->file('secondary_images') ?? [])));
+
+        // Main image
         if ($request->hasFile('image')) {
-            $imageName = time().'.'.$request->image->extension();  
-            $request->image->move(public_path('img/products'), $imageName);
-            
+            $file = $request->file('image');
+            $file_name = time() . '_main.' . $file->getClientOriginalExtension();
+            try {
+                $file->move(public_path($url), $file_name);
+                Log::info('Main image moved: ' . $file_name);
+            } catch (\Exception $e) {
+                Log::error('Error moving main image: ' . $e->getMessage());
+            }
+
+            // Try to resize if helper exists
+            if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
+                try {
+                    ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file);
+                } catch (\Exception $e) {
+                    Log::error('Resize error: ' . $e->getMessage());
+                }
+            }
+
             if ($isUpdate) {
                 $productImage = $product->images()->where('main', '1')->first();
                 if ($productImage) {
-                    $productImage->update(['file' => $imageName]);
+                    // delete old file
+                    $old = $productImage->file;
+                    if ($old && File::exists(public_path($url . $old))) {
+                        try { File::delete(public_path($url . $old)); } catch (\Exception $e) { Log::error('Error deleting old main image: '.$e->getMessage()); }
+                        Log::info('Deleted old main image: ' . $old);
+                    }
+                    $productImage->update(['file' => $file_name]);
                 } else {
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'file' => $imageName,
-                        'main' => '1'
-                    ]);
+                    ProductImage::create(['product_id' => $product->id, 'file' => $file_name, 'main' => '1']);
                 }
             } else {
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'file' => $imageName,
-                    'main' => '1'
-                ]);
+                ProductImage::create(['product_id' => $product->id, 'file' => $file_name, 'main' => '1']);
             }
         }
+
+        // Secondary images (multiple)
+        if ($request->hasFile('secondary_images')) {
+            foreach ($request->file('secondary_images') as $file) {
+                try {
+                    $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    try {
+                        $file->move(public_path($url), $imageName);
+                        Log::info('Secondary image moved: ' . $imageName);
+                    } catch (\Exception $e) {
+                        Log::error('Error moving secondary image: ' . $e->getMessage());
+                    }
+
+                    if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
+                        try {
+                            ResizeImage::dimenssion($imageName, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file);
+                        } catch (\Exception $e) {
+                            Log::error('Resize error secondary: ' . $e->getMessage());
+                        }
+                    }
+
+                    $img = ProductImage::create(['product_id' => $product->id, 'file' => $imageName, 'main' => '0']);
+                    Log::info('Created secondary image record id: ' . $img->id . ' file: ' . $imageName);
+                } catch (\Exception $e) {
+                    Log::error('Error creating secondary image: ' . $e->getMessage());
+                }
+            }
+        }
+
+        // Delete images by id (also delete physical files)
+        if ($request->has('delete_images')) {
+            $ids = $request->delete_images;
+            if (is_array($ids) && count($ids) > 0) {
+                $items = ProductImage::whereIn('id', $ids)->get();
+                foreach ($items as $item) {
+                    if ($item->file && File::exists(public_path($url . $item->file))) {
+                        try { File::delete(public_path($url . $item->file)); } catch (\Exception $e) { Log::error('Delete file error: '.$e->getMessage()); }
+                    }
+                }
+                ProductImage::whereIn('id', $ids)->delete();
+            }
+        }
+    }
+
+    public function updateImage(Request $request)
+    {
+        $url = "img/products/";
+        $hasMain = ProductImage::where('product_id', $request->product_id)->where('main', '1')->exists();
+        $fileId = null;
+        $file_name = null;
+
+        if (!$hasMain) {
+            $file = $request->file('file');
+            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
+                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
+                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path($url), $file_name);
+
+            if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+            }
+
+            $detail = new ProductImage;
+            $detail->file = $file_name;
+            $detail->main = '1';
+            $detail->product_id = $request->product_id;
+            $detail->save();
+            $fileId = $detail->id;
+            return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name]);
+        }
+
+        if ($request->id == NULL || $request->id == 'null') {
+            $item = ProductImage::where('product_id', $request->product_id)->where('main', '1')->first();
+            $odlFile = $item->file;
+            $file = $request->file('file');
+            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
+                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
+                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path($url), $file_name);
+
+            if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+            }
+
+            if ($odlFile && File::exists(public_path($url . $odlFile))) {
+                File::delete(public_path($url . $odlFile));
+            }
+
+            $item->file = $file_name;
+            $item->save();
+            $fileId = $item->id;
+        } else if ($request->id == 0) {
+            $file = $request->file('file');
+            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
+                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
+                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path($url), $file_name);
+
+            if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+            }
+
+            $detail = new ProductImage;
+            $detail->file = $file_name;
+            $detail->product_id = $request->product_id;
+            $detail->save();
+            $fileId = $detail->id;
+        } else {
+            $item = ProductImage::find($request->id);
+            $odlFile = $item->file;
+            $file = $request->file('file');
+            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
+                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
+                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path($url), $file_name);
+
+            if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+            }
+
+            if ($odlFile && File::exists(public_path($url . $odlFile))) {
+                File::delete(public_path($url . $odlFile));
+            }
+            $item->file = $file_name;
+            $item->save();
+            $fileId = $request->id;
+        }
+
+        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name]);
     }
 }

@@ -16,8 +16,10 @@ use App\Http\Controllers\PagesController;
 use App\Http\Controllers\MiscellaneousController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChartsController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TaxController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +57,22 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('productos/{id}/editar', [ProductController::class, 'edit'])->name('products.edit');
   Route::put('productos/{id}', [ProductController::class, 'update'])->name('products.update');
   Route::delete('productos/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+  Route::get('impuestos', [TaxController::class, 'index'])->name('taxes.index');
+  Route::get('impuestos/nuevo', [TaxController::class, 'create'])->name('taxes.create');
+  Route::post('impuestos', [TaxController::class, 'store'])->name('taxes.store');
+  Route::get('impuestos/{id}/editar', [TaxController::class, 'edit'])->name('taxes.edit');
+  Route::put('impuestos/{id}', [TaxController::class, 'update'])->name('taxes.update');
+  Route::delete('impuestos/{id}', [TaxController::class, 'destroy'])->name('taxes.destroy');
+  Route::post('impuestos/{id}/status', [TaxController::class, 'status'])->name('taxes.status');
+
+  Route::get('cupones', [CouponController::class, 'index'])->name('coupons.index');
+  Route::get('cupones/nuevo', [CouponController::class, 'create'])->name('coupons.create');
+  Route::post('cupones', [CouponController::class, 'store'])->name('coupons.store');
+  Route::get('cupones/{coupon}/editar', [CouponController::class, 'edit'])->name('coupons.edit');
+  Route::put('cupones/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
+  Route::delete('cupones/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+  Route::post('cupones/{coupon}/status', [CouponController::class, 'status'])->name('coupons.status');
 });
 
 Auth::routes(['verify' => true]);

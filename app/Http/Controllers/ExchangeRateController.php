@@ -10,7 +10,7 @@ class ExchangeRateController extends Controller
 {
     public function index()
     {
-        $rates = ExchangeRate::orderBy('created_at','desc')->paginate(10);
+        $rates = ExchangeRate::orderBy('created_at','desc')->get();
         return view('panel.exchange_rates.index', compact('rates'));
     }
 

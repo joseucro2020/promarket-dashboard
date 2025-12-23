@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Exchange Rate'))
+@section('title', __('Coupons'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -13,48 +13,54 @@
   <div class="row">
     <div class="col-12">
       <div class="card">
-        <div class="card-header border-bottom p-1">
-          <div class="head-label">
-            <h4 class="mb-0">{{ __('Exchange Rate Registry') }}</h4>
-          </div>
-          <div class="dt-action-buttons text-right">
-            <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
-              </a>
-            </div>
-          </div>
+        <div class="card-header border-bottom p-1 d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">{{ __('Coupons') }}</h4>
+          <a href="{{ route('coupons.create') }}" class="btn btn-primary">
+            <i data-feather="plus" class="me-50"></i>{{ __('Add New') }}
+          </a>
         </div>
         <div class="card-body">
           @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
           @endif
           <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover w-100 exchange-rates-table">
+            <table class="table table-striped table-bordered table-hover w-100 coupons-table">
               <thead>
                 <tr>
-                  <th>{{ __('Date Recorded') }}</th>
-                  <th>{{ __('Currency From') }}</th>
-                  <th>{{ __('Currency To') }}</th>
-                  <th>{{ __('Rate') }}</th>
-                  <th>{{ __('Notes') }}</th>
+                  <th>#</th>
+                  <th>{{ __('Seller PRO') }}</th>
+                  <th>{{ __('Seller Identification PRO') }}</th>
+                  <th>{{ __('Seller Type') }}</th>
+                  <th>{{ __('Coupon Code') }}</th>
+                  <th>{{ __('Uses per client') }}</th>
+                  <th>{{ __('Discount Percentage') }}</th>
+                  <th>{{ __('Coupon Status') }}</th>
                   <th class="text-end">{{ __('Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
-                @forelse($rates as $r)
+                @foreach($coupons as $coupon)
                   <tr>
-                    <td>{{ $r->created_at ? $r->created_at->format('d-m-Y H:i') : '' }}</td>
-                    <td>{{ $r->currency_from }}</td>
-                    <td>{{ $r->currency_to }}</td>
-                    <td>{{ $r->change }}</td>
-                    <td>{{ \Illuminate\Support\Str::limit($r->notes, 60) }}</td>
+                    <td>{{ $coupon->id }}</td>
+                    <td>{{ $coupon->user->name ?? '-' }}</td>
+                    <td>{{ $coupon->user->identificacion ?? '-' }}</td>
+                    <td>{{ $coupon->user->persona ?? '-' }}</td>
+                    <td>{{ $coupon->code }}</td>
+                    <td>{{ $coupon->uses }}</td>
+                    <td>{{ number_format($coupon->discount_percentage, 2) }}%</td>
+                    <td>{{ $coupon->status_name }}</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:140px;">
-                        <a href="{{ route('exchange-rates.edit', $r->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
+                        <a href="{{ route('coupons.edit', $coupon) }}" class="me-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
                           <i data-feather="edit-2"></i>
                         </a>
-                        <form class="m-0" action="{{ route('exchange-rates.destroy', $r->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this rate?') }}')" style="display:inline;">
+                        <form class="m-0 me-1" action="{{ route('coupons.status', $coupon) }}" method="POST">
+                          @csrf
+                          <button type="submit" class="btn btn-icon btn-flat-{{ $coupon->status === \App\Models\Coupon::STATUS_ACTIVE ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
+                            <i data-feather="{{ $coupon->status === \App\Models\Coupon::STATUS_ACTIVE ? 'toggle-right' : 'toggle-left' }}"></i>
+                          </button>
+                        </form>
+                        <form class="m-0" action="{{ route('coupons.destroy', $coupon) }}" method="POST" onsubmit="return confirm('{{ __('Delete this coupon?') }}');">
                           @csrf
                           @method('DELETE')
                           <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
@@ -64,11 +70,7 @@
                       </div>
                     </td>
                   </tr>
-                @empty
-                  <tr>
-                    <td colspan="6" class="text-center">{{ __('No exchange rates recorded yet.') }}</td>
-                  </tr>
-                @endforelse
+                @endforeach
               </tbody>
             </table>
           </div>
@@ -89,7 +91,7 @@
 @section('page-script')
   <script>
     $(document).ready(function() {
-      $('.exchange-rates-table').DataTable({
+      $('.coupons-table').DataTable({
         responsive: true,
         dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
         order: [[0, 'desc']],
@@ -101,10 +103,7 @@
         },
         drawCallback: function() {
           if (feather) {
-            feather.replace({
-              width: 14,
-              height: 14
-            });
+            feather.replace({ width: 14, height: 14 });
           }
         }
       });
