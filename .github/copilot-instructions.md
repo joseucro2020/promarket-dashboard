@@ -1,52 +1,39 @@
 <!-- Copilot instructions para agentes AI: resumen operativo del repo -->
 # Instrucciones rápidas para agentes AI (proyecto: promarket-dashboard)
 
-Este proyecto es una aplicación Laravel (v8) con frontend compilado por `laravel-mix`.
-Las instrucciones aquí se enfocan en lo que un agente necesita saber para ser productivo rápidamente.
+## 1) Panorama general y arquitectura
+- **Stack**: Laravel 8 con Blade y `laravel/ui`, y assets administrados por `laravel-mix`/`npm` (vea `package.json` y `webpack.mix.js`).
+- **Routing principal**: `routes/web.php` centraliza los grupos `dashboard`, `app`, `ui`, `component`, `page-layouts`, `form`, y en especial el prefijo `panel` para los módulos de negocio (tasa de cambio, productos, impuestos, cupones, etc.). Cada ruta del panel sigue la convención REST (`index`, `create`, `store`, `edit`, `update`, `destroy`, `status`).
+- **Controladores y vistas**: los controladores de módulo viven en `app/Http/Controllers` (p.ej. `ExchangeRateController`, `ProductController`, `TaxController`, `CouponController`) y entregan datos a las vistas bajo `resources/views/panel/<modulo>`.
+- **Menús compartidos**: `app/Providers/MenuServiceProvider.php` decodifica `resources/data/menu-data/{vertical,horizontal}Menu.json` y comparte `menuData` con cada vista. Cualquier nueva entrada del panel debe registrarse en esos JSON o los menús no reflejarán el cambio.
 
-1) Gran panorama
-- **Stack**: Laravel 8 (PHP ^7.3|^8.0), Blade views, assets administrados con `laravel-mix` + `npm`.
-- **Estructura clave**: `routes/web.php` define las rutas principales; controladores en `app/Http/Controllers`; vistas en `resources/views`.
-- **Autoload**: `composer.json` registra `app/` y además carga `app/Helpers/helpers.php` vía `autoload.files`.
+## 2) Flujos de desarrollo y comandos frecuentes
+- **Setup**: `composer install`, copiar `.env.example` a `.env`, y ejecutar `php artisan key:generate`. El proyecto se prueba comúnmente sobre Laragon en Windows, pero `php artisan serve` funciona también.
+- **Assets**: `npm install` seguido de `npm run dev`, `npm run production`, `npm run watch`, o `npm run hot` según convenga. Todos los scripts están definidos en `package.json` y usan `webpack.mix.js` para compilar SCSS/JS y copiar assets.
+- **Pruebas**: se ejecutan con `vendor/bin/phpunit` o `./vendor/bin/phpunit`. No hay script npm para phpunit.
 
-2) Flujos de desarrollo / comandos frecuentes
-- **Instalación PHP**: `composer install`.
-- **Config .env (Windows)**: `copy .env.example .env` y `php artisan key:generate`.
-- **Assets**: `npm install` luego `npm run dev` (desarrollo) o `npm run production` (build optimizado).
-- **Servidor**: en desarrollo usar Laragon o `php artisan serve` si se prefiere.
-- **Tests**: `vendor/bin/phpunit` o `./vendor/bin/phpunit` (no hay script npm para tests).
+- **Panel UI**: toda nueva funcionalidad visual del panel debe tener su ruta en `routes/web.php`, su acción en el controlador correspondiente y vistas en `resources/views/panel/<nombre>`. Cada módulo centralizado en `panel/` sigue la convención `list`/`form`/`view` (por ejemplo `resources/views/panel/products/index.blade.php`). Las plantillas reutilizan `menuData` (desde `MenuServiceProvider`) y los assets compilados en `public/js/core` y `public/css`.
+- **Listados y detalles**: use siempre el componente de `datatable` del panel para mostrar tablas (ya lo usan `resources/views/panel/exchange_rates/index.blade.php` o `resources/views/panel/products/index.blade.php`), tanto para la vista de lista como para los detalles/ediciones. Evite crear tablas sin `datatable`, y reutilice la configuración existente (`js/scripts/datatables/`).
+- **Ejemplo de módulo**: los nuevos módulos como `panel/coupons` o `panel/taxes` siguen este patrón: su controlador vive en `app/Http/Controllers`, los formularios y listados están en `resources/views/panel/coupons` o `resources/views/panel/taxes`, y cada tabla respeta el mismo `datatable` compartido.
+- **Locales**: el par `resources/lang/es/locale.php` y `resources/lang/en/locale.php` contiene cadenas traducidas; use `lang/{locale}` (controlado por `LanguageController::swap`) para cambiar idioma y mantenga ambos archivos sincronizados.
+- **Menu data**: `resources/data/menu-data/verticalMenu.json` (y el horizontal) definen qué entradas aparecen en la barra lateral. Modifíquelos cuidadosamente y valide el JSON, ya que el `boot()` del proveedor falla si no puede parsearlo.
+- **Copia de assets estáticos**: `resources/images` y `resources/data` se copian a `public/images` y `public/data` mediante `mix.copyDirectory` (ver `webpack.mix.js`). Evite agregar activos directamente en `public/` si se pueden generar desde `resources/`.
+- **Carpeta public/img**: contiene imágenes de productos y ya está en `.gitignore`; no incluya esos archivos en los commits.
 
-3) Patrones y convenciones específicas del proyecto
-- **Compilación de assets por convención**: `webpack.mix.js` usa la función `mixAssetsDir('sass/base/plugins/**/!(_)*.scss', ...)`.
-  - Añadir SCSS en `resources/sass/base/...` o `resources/assets/scss/` permite que Mix lo incluya automáticamente.
-  - `resources/data` y `resources/images` se copian a `public/data` y `public/images` por Mix.
-- **RTL build**: si `MIX_CONTENT_DIRECTION` en `.env` está definido a `rtl`, el proceso ejecuta `rtlcss` sobre `public/css/`.
-- **Menus**: `app/Providers/MenuServiceProvider.php` lee `resources/data/menu-data/verticalMenu.json` y `horizontalMenu.json` y comparte `menuData` a todas las vistas. Evita duplicar esa lógica; actualiza esos JSON para cambiar menús.
-- **Rutas y vistas**: las acciones de controladores devuelven vistas con nombres consistentes — busca en `routes/web.php` para mapear paths a controladores (por ejemplo la ruta `'/'` llama `DashboardController::dashboardEcommerce`).
-- **Localización**: existe la ruta `lang/{locale}` manejada por `LanguageController::swap` — usa este punto para cambios de idioma.
+## 4) Compilación y dependencias clave
+- **Mix y SCSS**: `webpack.mix.js` usa la función auxiliar `mixAssetsDir` para procesar SCSS en `resources/sass/base/*`, JS en `resources/js/scripts`, y copiar `vendors`, `fonts`, `images` y `data`. Añadir nuevos SCSS/JS dentro de esas carpetas garantiza que Mix los procese automáticamente.
+- **RTL**: al fijar `MIX_CONTENT_DIRECTION=rtl`, el hook `mix.then()` ejecuta `rtlcss` en `public/css` para generar estilos espejo.
+- **Dependencias**: el frontend usa `bootstrap@4.6.0`, `jquery`, `axios`, `rtlcss`, `sass`, `laravel-mix@6`, `webpack@5` y loaders como `sass-loader` y `resolve-url-loader` (vea `package.json`).
 
-4) Integraciones externas y dependencias notables
-- **Frontend**: `bootstrap@4.6.0`, `jquery`, `axios`, `rtlcss`.
-- **Laravel**: `laravel/ui` está presente (flujo de autenticación vía `Auth::routes()`).
-- **Datos estáticos**: `resources/data` contiene JSON usados por la UI (menús, listados de ejemplo, etc.).
+## 5) Qué verificar antes de subir cambios
+- Para nuevas vistas: asegúrese de añadir rutas en `routes/web.php`, actualizar el controlador y mantener la consistencia de los nombres `index`, `form`, `create`, `edit`, etc., que ya existen bajo `panel`.
+- Si agrega un módulo nuevo, revise que `app/Http/Controllers` tenga la nueva clase, que sus vistas vivan en `resources/views/panel/<modulo>` y que el menú lateral incluya la entrada en `resources/data/menu-data/verticalMenu.json`.
+- Cambios en locales o menú necesitan el cache de vistas limpio (`php artisan view:clear`) y quizá recompilar (`npm run dev`) para que Blade detecte las nuevas cadenas.
+- Antes de confirmar, vuelve a compilar assets (`npm run dev` o `npm run production`) y asegúrate de que los JSON modificados siguen siendo válidos; un error de sintaxis rompe la carga de `menuData`.
 
-5) Qué buscar cuando cambias código
-- Si tocas vistas/plantillas: confirmar que los assets CSS/JS correspondientes estén en `resources/sass` o `resources/js` para que Mix los procese.
-- Si añades una nueva sección de UI, registra rutas en `routes/web.php` y crea el controlador correspondiente en `app/Http/Controllers` (siguiendo la convención existente).
-- Evita tocar `MenuServiceProvider::boot()` sin validar que `resources/data/menu-data/*.json` siga siendo válido JSON; cualquier error rompe el compartido en vistas.
-
-6) Ejemplos concretos extraídos del repo
-- Ruta principal: `routes/web.php` → `Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce');`
-- Menú compartido: `app/Providers/MenuServiceProvider.php` lee `resources/data/menu-data/verticalMenu.json` y hace `\\View::share('menuData', [...])`.
-- Mix: `webpack.mix.js` compila `resources/js/core/app.js` y `resources/sass/core.scss` y copia `resources/data` a `public/data`.
-
-7) Recomendaciones para PRs y revisiones automatizadas
-- Ejecuta `composer install` y `npm ci && npm run dev` (o `npm run production`) en el pipeline antes de probar visualmente los cambios.
-- Para cambios en CSS/JS, asegúrate de que los archivos estén en las rutas que `webpack.mix.js` inspecciona (usa `mixAssetsDir` patterns).
-- Cuando modifiques JSON bajo `resources/data`, añade una verificación rápida de sintaxis JSON en los tests / CI.
-
-8) Preguntas abiertas que un agente puede hacer al autor
-- ¿Se prefiere que los builds de assets se ejecuten en CI (sí/no)?
-- ¿Hay convenciones de nombres de vistas (por ejemplo `dashboard-ecommerce` -> `resources/views/dashboard/ecommerce.blade.php`)?
+## 6) Preguntas abiertas para el autor
+- ¿Se espera que los builds de assets se ejecuten automáticamente en CI con `npm ci` o solo se hagan localmente?
+- ¿Hay convenciones adicionales para las vistas dentro de `resources/views/panel`, como usar `index.blade.php` frente a `form.blade.php`?
+- ¿Los nuevos módulos deben reutilizar un layout Blade ya existente o prefieres crear vistas específicas?
 
 Si algo aquí queda poco claro, dime qué sección quieres que amplíe (comandos de Windows, ejemplos de vistas, o mapeo controlador→vista).

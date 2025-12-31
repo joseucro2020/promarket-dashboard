@@ -11,6 +11,11 @@ class Offer extends Model
 
     protected $fillable = ['percentage', 'start', 'end'];
 
+    protected $casts = [
+        'start' => 'date',
+        'end' => 'date',
+    ];
+
     const ACTIVE = 1;
     const INACTIVE = 0;
 

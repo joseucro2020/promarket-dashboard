@@ -1,16 +1,14 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Taxes'))
+@section('title', __('Suppliers'))
 
 @section('vendor-style')
-  {{-- Page Css files --}}
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap4.min.css')) }}">
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap4.min.css')) }}">
 @endsection
 
 @section('page-style')
-  {{-- Page Css files --}}
   <link rel="stylesheet" href="{{ asset(mix('css/base/plugins/forms/form-validation.css')) }}">
   <link rel="stylesheet" href="{{ asset(mix('css/base/pages/app-user.css')) }}">
 @endsection
@@ -22,11 +20,11 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Impuestos') }}</h4>
+            <h4 class="mb-0">{{ __('Proveedores') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('taxes.create') }}" class="dt-button create-new btn btn-primary">
+              <a href="{{ route('suppliers.create') }}" class="dt-button create-new btn btn-primary">
                 <i data-feather="plus"></i> {{ __('Add New') }}
               </a>
             </div>
@@ -37,33 +35,37 @@
             <div class="alert alert-success">{{ session('success') }}</div>
           @endif
           <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover w-100 module-list-table taxes-table">
+            <table class="table table-striped table-bordered table-hover w-100 module-list-table suppliers-table">
               <thead>
                 <tr>
                   <th>#</th>
                   <th>{{ __('Name') }}</th>
-                  <th>{{ __('Percentage') }}</th>
+                  <th>{{ __('Country') }}</th>
+                  <th>{{ __('Phone') }}</th>
+                  <th>{{ __('Email') }}</th>
                   <th class="text-end">{{ __('Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
-                @foreach($taxes as $tax)
+                @foreach($suppliers as $s)
                   <tr>
-                    <td>{{ $tax->id }}</td>
-                    <td>{{ $tax->name }}</td>
-                    <td>{{ number_format($tax->percentage, 2) }}%</td>
+                    <td>{{ $s->id }}</td>
+                    <td>{{ $s->nombre_prove }}</td>
+                    <td>{{ $s->pais_prove }}</td>
+                    <td>{{ $s->tlf_prove }}</td>
+                    <td>{{ $s->email_prove }}</td>
                     <td>
                       <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
-                        <a href="{{ route('taxes.edit', $tax->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('suppliers.edit', $s->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
                           <i data-feather="edit-2"></i>
                         </a>
-                        <form class="m-0 mr-1" action="{{ route('taxes.status', $tax->id) }}" method="POST">
+                        <form class="m-0 mr-1" action="{{ route('suppliers.status', $s->id) }}" method="POST">
                           @csrf
-                          <button type="submit" class="btn btn-icon btn-flat-{{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                            <i data-feather="{{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'toggle-right' : 'toggle-left' }}"></i>
+                          <button type="submit" class="btn btn-icon btn-flat-{{ $s->status_prove == '1' ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
+                            <i data-feather="{{ $s->status_prove == '1' ? 'toggle-right' : 'toggle-left' }}"></i>
                           </button>
                         </form>
-                        <form class="m-0" action="{{ route('taxes.destroy', $tax->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this tax?') }}');">
+                        <form class="m-0" action="{{ route('suppliers.destroy', $s->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this supplier?') }}');">
                           @csrf
                           @method('DELETE')
                           <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
@@ -85,7 +87,6 @@
 @endsection
 
 @section('vendor-script')
-  {{-- Vendor js files --}}
   <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
   <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
   <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
@@ -97,4 +98,16 @@
 
 @section('page-script')
   <script src="{{ asset(mix('js/scripts/pages/app-taxes-list.js')) }}"></script>
+  <script>
+    $(function() {
+      $('.suppliers-table').DataTable({
+        responsive: true,
+        dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
+        order: [[1, 'desc']],
+        columnDefs: [{ orderable: false, targets: -1 }],
+        drawCallback: function() { if (feather) { feather.replace({ width: 14, height: 14 }); } }
+      });
+    });
+  </script>
 @endsection

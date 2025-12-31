@@ -20,6 +20,14 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\OfferController;
+use App\Http\Controllers\ShippingFeeController;
+use App\Http\Controllers\SmsController;
+use App\Http\Controllers\WebServicesController;
+use App\Http\Controllers\Admin\BuyOrderController;
+use App\Http\Controllers\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +81,80 @@ Route::group(['prefix' => 'panel'], function () {
   Route::put('cupones/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
   Route::delete('cupones/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
   Route::post('cupones/{coupon}/status', [CouponController::class, 'status'])->name('coupons.status');
+
+  Route::get('promociones', [PromotionController::class, 'index'])->name('promotions.index');
+  
+  // Shipping Fees
+  Route::get('tasa-envio', [ShippingFeeController::class, 'index'])->name('shipping-fees.index');
+  Route::put('tasa-envio/{id}', [ShippingFeeController::class, 'update'])->name('shipping-fees.update');
+  Route::get('tasa-envio/all', [ShippingFeeController::class, 'getAll'])->name('shipping-fees.getAll');
+  Route::post('tasa-envio/minimum', [ShippingFeeController::class, 'updateMinimum'])->name('shipping-fees.minimum');
+
+  // SMS Sending
+  Route::get('envio-sms', [SmsController::class, 'index'])->name('sms.index');
+  Route::post('envio-sms/enviar', [SmsController::class, 'enviar'])->name('sms.enviar');
+
+  // Kromi Market
+  Route::get('kromi-market', [WebServicesController::class, 'index'])->name('kromi.index');
+  Route::get('kromi-market/kromimarket', [WebServicesController::class, 'kromimarket'])->name('kromi.kromimarket');
+  Route::post('kromi-market/import_csv', [WebServicesController::class, 'import_csv'])->name('kromi.import_csv');
+  Route::get('promociones/nuevo', [PromotionController::class, 'create'])->name('promotions.create');
+  Route::post('promociones', [PromotionController::class, 'store'])->name('promotions.store');
+  Route::get('promociones/{promotion}/editar', [PromotionController::class, 'edit'])->name('promotions.edit');
+  Route::put('promociones/{promotion}', [PromotionController::class, 'update'])->name('promotions.update');
+  Route::delete('promociones/{promotion}', [PromotionController::class, 'destroy'])->name('promotions.destroy');
+  Route::post('promociones/{promotion}/status', [PromotionController::class, 'status'])->name('promotions.status');
+  Route::post('promociones/{promotion}/orden', [PromotionController::class, 'updateOrder'])->name('promotions.order');
+  Route::get('promociones/{id}/subcategorias', [PromotionController::class, 'getsubcategory'])->name('promotions.subcategories');
+  Route::get('promociones/productos', [PromotionController::class, 'getproducts'])->name('promotions.products');
+  
+  // Suppliers (Proveedores)
+  Route::get('proveedores', [SupplierController::class, 'index'])->name('suppliers.index');
+  Route::get('proveedores/nuevo', [SupplierController::class, 'create'])->name('suppliers.create');
+  Route::post('proveedores', [SupplierController::class, 'store'])->name('suppliers.store');
+  Route::get('proveedores/{id}/editar', [SupplierController::class, 'edit'])->name('suppliers.edit');
+  Route::put('proveedores/{id}', [SupplierController::class, 'update'])->name('suppliers.update');
+  Route::post('proveedores/{id}/status', [SupplierController::class, 'status'])->name('suppliers.status');
+  // API: cargar estados y municipios dinámicamente
+  Route::get('paises/{id}/estados', [SupplierController::class, 'getStates'])->name('paises.estados');
+  Route::get('estados/{id}/municipios', [SupplierController::class, 'getMunicipalities'])->name('estados.municipios');
+  Route::delete('proveedores/{id}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
+
+  // Purchase Orders (Órdenes de Compra)
+  Route::get('ordenes-compra', [BuyOrderController::class, 'index'])->name('buyorders.index');
+  Route::get('ordenes-compra/nuevo', [BuyOrderController::class, 'create'])->name('buyorders.create');
+  Route::post('ordenes-compra', [BuyOrderController::class, 'store'])->name('buyorders.store');
+  Route::get('ordenes-compra/{id}/editar', [BuyOrderController::class, 'edit'])->name('buyorders.edit');
+  Route::put('ordenes-compra/{id}', [BuyOrderController::class, 'update'])->name('buyorders.update');
+  Route::delete('ordenes-compra/{id}', [BuyOrderController::class, 'destroy'])->name('buyorders.destroy');
+  Route::post('ordenes-compra/{id}/aprobar/{row}', [BuyOrderController::class, 'aprobar'])->name('buyorders.aprobar');
+  Route::post('ordenes-compra/{id}/anular', [BuyOrderController::class, 'anular'])->name('buyorders.anular');
+  Route::post('ordenes-compra/export', [BuyOrderController::class, 'exportExcel'])->name('buyorders.export');
+  Route::post('ordenes-compra/date', [BuyOrderController::class, 'date'])->name('buyorders.date');
+  Route::post('ordenes-compra/details', [BuyOrderController::class, 'getDetails'])->name('buyorders.getDetails');
+
+  // Inventory Replenishment
+  Route::get('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'index'])->name('inventory.index');
+  Route::get('reposicion-de-inventario/nuevo', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'create'])->name('inventory.create');
+  Route::post('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'store'])->name('inventory.store');
+  
+  // Discounts
+  Route::get('descuentos', [DiscountController::class, 'index'])->name('discounts.index');
+  Route::get('descuentos/nuevo', [DiscountController::class, 'create'])->name('discounts.create');
+  Route::post('descuentos', [DiscountController::class, 'store'])->name('discounts.store');
+  Route::get('descuentos/{discount}/editar', [DiscountController::class, 'edit'])->name('discounts.edit');
+  Route::put('descuentos/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
+  Route::delete('descuentos/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
+  Route::post('descuentos/{discount}/status', [DiscountController::class, 'status'])->name('discounts.status');
+  
+  // Offers
+  Route::get('ofertas', [OfferController::class, 'index'])->name('offers.index');
+  Route::get('ofertas/nuevo', [OfferController::class, 'create'])->name('offers.create');
+  Route::post('ofertas', [OfferController::class, 'store'])->name('offers.store');
+  Route::get('ofertas/{offer}/editar', [OfferController::class, 'edit'])->name('offers.edit');
+  Route::put('ofertas/{offer}', [OfferController::class, 'update'])->name('offers.update');
+  Route::delete('ofertas/{offer}', [OfferController::class, 'destroy'])->name('offers.destroy');
+  Route::post('ofertas/{offer}/status', [OfferController::class, 'status'])->name('offers.status');
 });
 
 Auth::routes(['verify' => true]);
