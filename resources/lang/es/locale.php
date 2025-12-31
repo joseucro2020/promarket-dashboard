@@ -101,4 +101,32 @@ return [
   "Tax updated successfully." => "Impuesto actualizado correctamente.",
   "Tax deleted successfully." => "Impuesto eliminado correctamente.",
   "Tax status updated." => "Estado del impuesto actualizado."
+  ,"Promotions" => "Promociones"
+  ,"Promotions List" => "Lista de promociones"
+  ,"New Promotion" => "Nueva promoción"
+  ,"Edit Promotion" => "Editar promoción"
+  ,"Start Date" => "Fecha de inicio"
+  ,"End Date" => "Fecha de finalización"
+  ,"Promotion status" => "Estado de la promoción"
+  ,"Order" => "Orden"
+  ,"Delete this promotion?" => "¿Eliminar esta promoción?"
+  ,"No promotions yet." => "Aún no hay promociones."
+  ,"Promotion saved successfully." => "Promoción guardada correctamente."
+  ,"Promotion updated successfully." => "Promoción actualizada correctamente."
+  ,"Promotion deleted successfully." => "Promoción eliminada correctamente."
+  ,"Promotion status inactive" => "Sin Publicar"
+  ,"Promotion status active" => "Publicada"
+  ,"Promotion status sold_out" => "Productos Sin Existencia"
+  ,"Product search" => "Buscador de productos"
+  ,"Select Category" => "Seleccione la Categoría"
+  ,"Select Subcategory" => "Seleccione la Sub-Categoría"
+  ,"Select Sub-Subcategory" => "Seleccione la Sub-SubCategoría"
+  ,"Select product" => "Seleccione producto"
+  ,"Quantity" => "Cantidad"
+  ,"Stock" => "Stock"
+  ,"Presentation" => "Presentación"
+  ,"Kromi Market" => "Kromi Market"
+  ,"Suppliers" => "Proveedores"
+  
+  
 ];

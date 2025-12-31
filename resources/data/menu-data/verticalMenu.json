@@ -25,7 +25,7 @@
       "name": "Kromi Market",
       "icon": "shopping-cart",
       "slug": "kromi-market"
-    },
+    },    
     {
       "url": "panel/verificar-pedidos",
       "name": "Verify Orders",
@@ -85,6 +85,24 @@
       "name": "Products",
       "icon": "box",
       "slug": "panel-productos"
+    },
+    {
+      "url": "panel/proveedores",
+      "name": "Suppliers",
+      "icon": "users",
+      "slug": "panel-proveedores"
+    },
+    {
+      "url": "panel/ordenes-compra",
+      "name": "Purchase order",
+      "icon": "file-text",
+      "slug": "panel-ordenes-compra"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Inventory Replenishment",
+      "icon": "refresh-cw",
+      "slug": "panel-reposicion-de-inventario"
     }
   ]
 }
