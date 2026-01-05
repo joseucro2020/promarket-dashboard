@@ -1,0 +1,171 @@
+@extends('layouts/contentLayoutMaster')
+
+@section('title', __('Top Categories Report'))
+
+@section('content')
+<div class="container">
+  <h2 class="text-center mb-3">{{ __('Top Categories Report') }}</h2>
+
+  <form id="filterForm" class="row mb-3 align-items-end">
+    <div class="col-md-5">
+      <label for="init">{{ __('From') }}</label>
+      <input type="date" id="init" name="init" class="form-control">
+    </div>
+
+    <div class="col-md-5">
+      <label for="end">{{ __('To') }}</label>
+      <input type="date" id="end" name="end" class="form-control">
+    </div>
+
+    <div class="col-md-2 text-right">
+      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('Filter') }}</button>
+    </div>
+  </form>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <canvas id="topCategoriesChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="mb-3">
+        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
+        <button id="exportPdf" class="btn btn-danger">{{ __('Export PDF') }}</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table" id="reportTable">
+          <thead>
+            <tr>
+              <th>{{ __('Categories') }}</th>
+              <th>{{ __('Subcategories') }}</th>
+              <th>{{ __('Units sold') }}</th>
+              <th>{{ __('Total sale') }}</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let topCategoriesChart = null;
+
+function renderChart(labels, values){
+  const ctx = document.getElementById('topCategoriesChart').getContext('2d');
+  if(topCategoriesChart) topCategoriesChart.destroy();
+
+  topCategoriesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '{{ __("Quantity") }}',
+        data: values,
+        backgroundColor: 'rgba(234,84,85,0.65)',
+        borderColor: 'rgba(234,84,85,1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      plugins: { legend: { display: true } }
+    }
+  });
+}
+
+function populateTable(rows){
+  const tbody = document.getElementById('reportBody');
+  tbody.innerHTML = '';
+
+  rows.forEach(r => {
+    const category = r.name ?? '';
+    const subcategory = r.subname ?? '';
+    const sold = Number(r.purchases_number ?? 0);
+    const totalSale = r.purchases_sales ?? '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${category}</td>
+      <td>${subcategory}</td>
+      <td>${sold}</td>
+      <td>${totalSale}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function fetchTopCategoriesData(init, end){
+  const base = `{{ url('panel/reports/top-categories/data') }}`;
+  const url = `${base}/${encodeURIComponent(init)}/${encodeURIComponent(end)}`;
+
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if(!res.ok){
+    const txt = await res.text();
+    throw new Error(txt || `HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+async function doFilter(){
+  const init = document.getElementById('init').value;
+  const end = document.getElementById('end').value;
+
+  if(!init || !end){
+    alert('{{ __("Select date range") }}');
+    return;
+  }
+
+  try {
+    const data = await fetchTopCategoriesData(init, end);
+    const labels = data.map(r => `${String(r.name ?? '')} - ${String(r.subname ?? '')}`.trim());
+    const values = data.map(r => Number(r.purchases_number ?? 0));
+    renderChart(labels, values);
+    populateTable(data);
+  } catch (e) {
+    console.error(e);
+    alert('Error cargando reporte. Revisa consola / logs.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const today = new Date();
+  const prior = new Date();
+  prior.setDate(today.getDate() - 30);
+
+  document.getElementById('end').value = today.toISOString().slice(0,10);
+  document.getElementById('init').value = prior.toISOString().slice(0,10);
+
+  document.getElementById('btnFilter').addEventListener('click', doFilter);
+
+  document.getElementById('exportCsv').addEventListener('click', function(){
+    const rows = Array.from(document.querySelectorAll('#reportTable tr'));
+    const csv = rows
+      .map(r => Array.from(r.querySelectorAll('th,td'))
+        .map(cell => `\"${cell.innerText.replace(/\"/g,'\"\"')}\"`)
+        .join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'top_categories_report.csv';
+    link.click();
+  });
+
+  document.getElementById('exportPdf').addEventListener('click', function(){
+    window.print();
+  });
+
+  doFilter();
+});
+</script>
+@endpush
+
+@endsection

@@ -1,19 +1,16 @@
 {
-  "menu": [
-    {
+  "menu": [{
       "name": "Dashboards",
       "badge": "",
       "badgeClass": "badge badge-light-warning badge-pill ml-auto mr-1",
       "icon": "home",
       "slug": "",
-      "submenu": [        
-        {
-          "url": "/panel",
-          "name": "eCommerce",
-          "icon": "circle",
-          "slug": "dashboard-ecommerce"
-        }
-      ]
+      "submenu": [{
+        "url": "/panel",
+        "name": "eCommerce",
+        "icon": "circle",
+        "slug": "dashboard-ecommerce"
+      }]
     },
 
     {
@@ -25,13 +22,13 @@
       "name": "Kromi Market",
       "icon": "shopping-cart",
       "slug": "kromi-market"
-    },    
+    },
     {
       "url": "panel/verificar-pedidos",
       "name": "Verify Orders",
       "icon": "check-circle",
       "slug": "verificar-pedidos"
-    },    
+    },
     {
       "url": "panel/tasa-de-cambios",
       "name": "Exchange Rate",
@@ -103,6 +100,138 @@
       "name": "Inventory Replenishment",
       "icon": "refresh-cw",
       "slug": "panel-reposicion-de-inventario"
+    },
+    {
+      "name": "Reports",
+      "icon": "file-text",
+      "slug": "",
+      "submenu": [{
+          "url": "panel/reports/sales",
+          "name": "Sales",
+          "icon": "bar-chart-2",
+          "slug": "reports-sales"
+        },
+        {
+          "url": "panel/reports/orders",
+          "name": "Orders",
+          "icon": "shopping-cart",
+          "slug": "reports-orders"
+        },
+        {
+          "url": "panel/reports/top-products",
+          "name": "Top Selling Products",
+          "icon": "trending-up",
+          "slug": "reports-top-products"
+        },
+        {
+          "url": "panel/reports/top-categories",
+          "name": "Top Selling Categories",
+          "icon": "layers",
+          "slug": "reports-top-categories"
+        },
+        {
+          "url": "panel/reports/users-registered",
+          "name": "Users Registered by Date",
+          "icon": "users",
+          "slug": "reports-users-registered"
+        },
+        {
+          "url": "panel/reports/affiliates",
+          "name": "Affiliates",
+          "icon": "user-check",
+          "slug": "reports-affiliates"
+        },
+        {
+          "url": "panel/reports/waste-history",
+          "name": "Waste History",
+          "icon": "archive",
+          "slug": "reports-waste-history"
+        },
+        {
+          "url": "panel/reports/profit-share",
+          "name": "Profit & Share",
+          "icon": "pie-chart",
+          "slug": "reports-profit-share"
+        }
+      ]
+    },
+    {
+      "url": "panel/cambios-productos-lotes",
+      "name": "Batch Category Change",
+      "icon": "edit-3",
+      "slug": "panel-reposicion-de-inventario"
+    },
+    {
+      "url": "panel/categorias",
+      "name": "Categories",
+      "icon": "layers",
+      "slug": "panel-categories"
+    },
+    {
+      "url": "panel/categorias-especiales",
+      "name": "Special Categories",
+      "icon": "star",
+      "slug": "panel-special-categories"
+    },
+    {
+      "url": "panel/etiquetas",
+      "name": "Tags",
+      "icon": "tag",
+      "slug": "panel-tags"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Orders",
+      "icon": "shopping-cart",
+      "slug": "panel-orders"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Customers",
+      "icon": "users",
+      "slug": "panel-customers"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Pro Sellers",
+      "icon": "user-check",
+      "slug": "panel-pro-sellers"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Bank Accounts",
+      "icon": "credit-card",
+      "slug": "panel-bank-accounts"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "States & Municipalities",
+      "icon": "map-pin",
+      "slug": "panel-states-municipalities"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Banners",
+      "icon": "image",
+      "slug": "panel-banners"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "About Us",
+      "icon": "info",
+      "slug": "panel-about-us"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Contact",
+      "icon": "phone",
+      "slug": "panel-contact"
+    },
+    {
+      "url": "panel/reposicion-de-inventario",
+      "name": "Terms & Conditions",
+      "icon": "file-text",
+      "slug": "panel-terms-conditions"
     }
   ]
 }

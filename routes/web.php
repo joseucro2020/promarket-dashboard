@@ -26,6 +26,11 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ShippingFeeController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\WebServicesController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\CategoryBlocksController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SpecialCategoryController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\Admin\BuyOrderController;
 use App\Http\Controllers\SupplierController;
 
@@ -137,6 +142,67 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'index'])->name('inventory.index');
   Route::get('reposicion-de-inventario/nuevo', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'create'])->name('inventory.create');
   Route::post('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'store'])->name('inventory.store');
+
+  // Batch Category Change (sin Admin)
+  Route::get('cambios-productos-lotes', [CategoryBlocksController::class, 'index'])->name('categoryblocks.index');
+  Route::post('cambios-productos-lotes/search', [CategoryBlocksController::class, 'search'])->name('categoryblocks.search');
+  Route::post('cambios-productos-lotes/update', [CategoryBlocksController::class, 'update'])->name('categoryblocks.update');
+
+  // Categories (sin Admin)
+  Route::get('categorias', [CategoryController::class, 'index'])->name('categories.index');
+  Route::get('categorias/nuevo', [CategoryController::class, 'create'])->name('categories.create');
+  Route::post('categorias', [CategoryController::class, 'store'])->name('categories.store');
+  Route::get('categorias/{id}', [CategoryController::class, 'show'])->name('categories.show');
+  Route::get('categorias/{id}/editar', [CategoryController::class, 'edit'])->name('categories.edit');
+  Route::put('categorias/{id}', [CategoryController::class, 'update'])->name('categories.update');
+  Route::post('categorias/{id}/status', [CategoryController::class, 'status'])->name('categories.status');
+  Route::delete('categorias/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+  // Special Categories (sin Admin)
+  Route::get('categorias-especiales', [SpecialCategoryController::class, 'index'])->name('special-categories.index');
+  Route::post('categorias-especiales', [SpecialCategoryController::class, 'store'])->name('special-categories.store');
+  Route::put('categorias-especiales/{id}', [SpecialCategoryController::class, 'update'])->name('special-categories.update');
+  Route::delete('categorias-especiales/{id}', [SpecialCategoryController::class, 'destroy'])->name('special-categories.destroy');
+  Route::post('categorias-especiales/{id}/status', [SpecialCategoryController::class, 'status'])->name('special-categories.status');
+  Route::get('categorias-especiales/{id}/detail', [SpecialCategoryController::class, 'detail'])->name('special-categories.detail');
+
+  // Tags (sin Admin)
+  Route::get('etiquetas', [TagController::class, 'index'])->name('tags.index');
+  Route::post('etiquetas', [TagController::class, 'store'])->name('tags.store');
+  Route::put('etiquetas/{id}', [TagController::class, 'update'])->name('tags.update');
+  Route::post('etiquetas/{id}/status', [TagController::class, 'status'])->name('tags.status');
+  Route::delete('etiquetas/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
+  // Reports - Sales (sin Admin)
+  Route::get('reports/sales', [ReportController::class, 'index'])->defaults('report', 'sales')->name('reports.sales.index');
+  Route::get('reports/sales/data/{type}/{from}/{to}', [ReportController::class, 'purchases'])->name('reports.sales.data');
+
+  // Reports - Orders (sin Admin)
+  Route::get('reports/orders', [ReportController::class, 'index'])->defaults('report', 'orders')->name('reports.orders.index');
+  Route::get('reports/orders/data/{from}/{to}', [ReportController::class, 'orders'])->name('reports.orders.data');
+
+  // Reports - Top Selling Products (sin Admin)
+  Route::get('reports/top-products', [ReportController::class, 'index'])->defaults('report', 'top-products')->name('reports.top-products.index');
+  Route::get('reports/top-products/data/{from}/{to}/{idProd?}', [ReportController::class, 'products'])->name('reports.top-products.data');
+
+  // Reports - Top Selling Categories (sin Admin)
+  Route::get('reports/top-categories', [ReportController::class, 'index'])->defaults('report', 'top-categories')->name('reports.top-categories.index');
+  Route::get('reports/top-categories/data/{from}/{to}', [ReportController::class, 'categories'])->name('reports.top-categories.data');
+
+  // Reports - Users Registered by Date (sin Admin)
+  Route::get('reports/users-registered', [ReportController::class, 'index'])->defaults('report', 'users-registered')->name('reports.users-registered.index');
+  Route::get('reports/users-registered/data/{from}/{to}', [ReportController::class, 'users'])->name('reports.users-registered.data');
+
+  // Reports - Affiliates (sin Admin)
+  Route::get('reports/affiliates', [ReportController::class, 'index'])->defaults('report', 'affiliates')->name('reports.affiliates.index');
+  Route::get('reports/affiliates/data', [ReportController::class, 'referrals'])->name('reports.affiliates.data');
+
+  // Reports - Waste History (sin Admin)
+  Route::get('reports/waste-history', [ReportController::class, 'index'])->defaults('report', 'waste-history')->name('reports.waste-history.index');
+  Route::get('reports/waste-history/data', [ReportController::class, 'mermafilter'])->name('reports.waste-history.data');
+
+  // Reports - Profit & Share (sin Admin)
+  Route::get('reports/profit-share', [ReportController::class, 'lucro'])->name('reports.profit-share.index');
+  Route::get('reports/profit-share/data', [ReportController::class, 'lucrofilter'])->name('reports.profit-share.data');
   
   // Discounts
   Route::get('descuentos', [DiscountController::class, 'index'])->name('discounts.index');
