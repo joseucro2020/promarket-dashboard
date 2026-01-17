@@ -6,10 +6,10 @@
 <section>
   <div class="card">
     <div class="card-header">
-      <h3>Kromi Market - Import Preview</h3>
+      <h3>{{ __('Kromi Market - Import Preview') }}</h3>
     </div>
     <div class="card-body">
-      <p>Interfaz para mapear y registrar productos desde CSV/Excel.</p>
+      <p>{{ __('Interface to map and register products from CSV/Excel.') }}</p>
     </div>
   </div>
 </section>

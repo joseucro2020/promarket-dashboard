@@ -188,6 +188,49 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', __('Product deleted successfully.'));
     }
 
+    /**
+     * Actualiza la utilidad y precio de una presentación (ProductAmount) vía AJAX.
+     * Request esperado: amount[price] (numeric), amount[utilidad] (int 0-100)
+     */
+    public function updateUtilidad(Request $request, $id)
+    {
+        $validator = \Validator::make($request->all(), [
+            'amount.price' => 'required|numeric',
+            'amount.utilidad' => 'required|integer|min:0|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['result' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            return DB::transaction(function() use ($request, $id) {
+                $ProductAmount = ProductAmount::with(['product_color', 'product'])->findOrFail($id);
+
+                $price = $request->input('amount.price');
+                $utilidad = intval($request->input('amount.utilidad'));
+
+                $ProductAmount->price = $price;
+                $ProductAmount->utilidad = $utilidad;
+                $ProductAmount->save();
+
+                if ($ProductAmount->product) {
+                    $Product = Product::find($ProductAmount->product->id);
+                    if ($Product) {
+                        $Product->price_1 = $price;
+                        $Product->price_2 = $price;
+                        $Product->save();
+                    }
+                }
+
+                return response()->json(['result' => true, 'ProductAmount' => $ProductAmount], 200);
+            });
+        } catch (\Exception $e) {
+            Log::error('Error updating utilidad: ' . $e->getMessage());
+            return response()->json(['result' => false, 'message' => 'Error actualizando utilidad'], 500);
+        }
+    }
+
     // --- Private Helper Methods ---
 
     private function buildIndexQuery(Request $request)

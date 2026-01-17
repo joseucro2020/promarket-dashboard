@@ -33,6 +33,13 @@ use App\Http\Controllers\SpecialCategoryController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Admin\BuyOrderController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\StatesMunicipalitiesController;
+use App\Http\Controllers\BannerController;
+use App\Http\Controllers\AboutUsController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\TermsConditionsController;
+use App\Http\Controllers\PaymentGatewayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,6 +77,8 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('productos/{id}/editar', [ProductController::class, 'edit'])->name('products.edit');
   Route::put('productos/{id}', [ProductController::class, 'update'])->name('products.update');
   Route::delete('productos/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+  // AJAX: actualizar utilidad/price de una presentación
+  Route::post('product-amounts/{id}/utilidad', [ProductController::class, 'updateUtilidad'])->name('product-amounts.utilidad');
 
   Route::get('impuestos', [TaxController::class, 'index'])->name('taxes.index');
   Route::get('impuestos/nuevo', [TaxController::class, 'create'])->name('taxes.create');
@@ -103,6 +112,8 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('kromi-market', [WebServicesController::class, 'index'])->name('kromi.index');
   Route::get('kromi-market/kromimarket', [WebServicesController::class, 'kromimarket'])->name('kromi.kromimarket');
   Route::post('kromi-market/import_csv', [WebServicesController::class, 'import_csv'])->name('kromi.import_csv');
+  Route::post('kromi-market/register', [WebServicesController::class, 'registerKromi'])->name('kromi.register');
+  Route::get('kromi-market/products', [WebServicesController::class, 'products'])->name('kromi.products');
   Route::get('promociones/nuevo', [PromotionController::class, 'create'])->name('promotions.create');
   Route::post('promociones', [PromotionController::class, 'store'])->name('promotions.store');
   Route::get('promociones/{promotion}/editar', [PromotionController::class, 'edit'])->name('promotions.edit');
@@ -137,6 +148,51 @@ Route::group(['prefix' => 'panel'], function () {
   Route::post('ordenes-compra/export', [BuyOrderController::class, 'exportExcel'])->name('buyorders.export');
   Route::post('ordenes-compra/date', [BuyOrderController::class, 'date'])->name('buyorders.date');
   Route::post('ordenes-compra/details', [BuyOrderController::class, 'getDetails'])->name('buyorders.getDetails');
+
+  // Orders (site purchases)
+  Route::get('pedidos/{id}/print', function($id){
+      $purchase = App\Models\Purchase::with(['details','user','delivery'])->find($id);
+      return view('panel.purchases.print', compact('purchase'));
+  })->name('purchases.print');
+  Route::get('pedidos', [App\Http\Controllers\PurchaseController::class, 'index'])->name('purchases.index');
+  Route::post('pedidos/date', [App\Http\Controllers\PurchaseController::class, 'date'])->name('purchases.date');
+  Route::post('pedidos/details', [App\Http\Controllers\PurchaseController::class, 'getDetails'])->name('purchases.getDetails');
+  Route::post('pedidos/details-company', [App\Http\Controllers\PurchaseController::class, 'getDetailsCompany'])->name('purchases.getDetailsCompany');
+  Route::post('pedidos/export', [App\Http\Controllers\PurchaseController::class, 'exportExcel'])->name('purchases.export');
+  Route::post('pedidos/{id}/approve', [App\Http\Controllers\PurchaseController::class, 'approve'])->name('purchases.approve');
+  Route::post('pedidos/{id}/reject', [App\Http\Controllers\PurchaseController::class, 'reject'])->name('purchases.reject');
+
+  // Clients (Customers)
+  Route::get('clientes', [App\Http\Controllers\ClientController::class, 'index'])->name('clients.index');
+  Route::get('clientes/all', [App\Http\Controllers\ClientController::class, 'getAll'])->name('clients.getAll');
+  Route::post('clientes/{id}/status', [App\Http\Controllers\ClientController::class, 'changeStatus'])->name('clients.changeStatus');
+  Route::post('clientes/{id}/delete', [App\Http\Controllers\ClientController::class, 'delete'])->name('clients.delete');
+  Route::post('clientes/{id}/convert-to-pro', [App\Http\Controllers\ClientController::class, 'convertToPro'])->name('clients.convertToPro');
+  Route::post('clientes/update', [App\Http\Controllers\ClientController::class, 'update'])->name('clients.update');
+  Route::post('clientes/export', [App\Http\Controllers\ClientController::class, 'exportExcel'])->name('clients.export');
+
+  // Pro Sellers (Vendedores PRO)
+  Route::get('pro-sellers', [App\Http\Controllers\ProSellerController::class, 'index'])->name('pro-sellers.index');
+  Route::get('pro-sellers/all', [App\Http\Controllers\ProSellerController::class, 'getAll'])->name('pro-sellers.getAll');
+  Route::post('pro-sellers/{id}/status', [App\Http\Controllers\ProSellerController::class, 'changeStatus'])->name('pro-sellers.changeStatus');
+  Route::post('pro-sellers/{id}/delete', [App\Http\Controllers\ProSellerController::class, 'delete'])->name('pro-sellers.delete');
+  Route::get('pro-sellers/{id}/balance', [App\Http\Controllers\ProSellerController::class, 'getBalance'])->name('pro-sellers.balance');
+  Route::post('pro-sellers/referral/{id}/delete', [App\Http\Controllers\ProSellerController::class, 'deleteReferral'])->name('pro-sellers.deleteReferral');
+
+  // Bank Accounts (Cuentas Bancarias)
+  Route::get('cuentas-bancarias', [BankController::class, 'index'])->name('bank-accounts.index');
+  Route::post('cuentas-bancarias', [BankController::class, 'store'])->name('bank-accounts.store');
+  Route::put('cuentas-bancarias/{id}', [BankController::class, 'update'])->name('bank-accounts.update');
+  Route::delete('cuentas-bancarias/{id}', [BankController::class, 'destroy'])->name('bank-accounts.destroy');
+  Route::post('cuentas-bancarias/{id}/status', [BankController::class, 'status'])->name('bank-accounts.status');
+
+  // States & Municipalities (Estados y Municipios)
+  Route::get('estados-municipios', [StatesMunicipalitiesController::class, 'index'])->name('states-municipalities.index');
+  Route::get('estados-municipios/{id}', [StatesMunicipalitiesController::class, 'show'])->name('states-municipalities.show');
+  Route::put('estados-municipios/{id}', [StatesMunicipalitiesController::class, 'update'])->name('states-municipalities.update');
+  Route::post('estados-municipios/{id}/status', [StatesMunicipalitiesController::class, 'status'])->name('states-municipalities.status');
+  Route::put('estados-municipios/municipios/{id}', [StatesMunicipalitiesController::class, 'updateMunicipality'])->name('states-municipalities.municipalities.update');
+  Route::post('estados-municipios/municipios/{id}/status', [StatesMunicipalitiesController::class, 'municipalityStatus'])->name('states-municipalities.municipalities.status');
 
   // Inventory Replenishment
   Route::get('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'index'])->name('inventory.index');
@@ -221,6 +277,34 @@ Route::group(['prefix' => 'panel'], function () {
   Route::put('ofertas/{offer}', [OfferController::class, 'update'])->name('offers.update');
   Route::delete('ofertas/{offer}', [OfferController::class, 'destroy'])->name('offers.destroy');
   Route::post('ofertas/{offer}/status', [OfferController::class, 'status'])->name('offers.status');
+
+  // Banners
+  Route::get('banners', [BannerController::class, 'index'])->name('banners.index');
+  Route::post('banners/upload', [BannerController::class, 'upload'])->name('banners.upload');
+  Route::delete('banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+  // About Us
+  Route::get('about-us', [AboutUsController::class, 'index'])->name('about-us.index');
+  Route::post('about-us', [AboutUsController::class, 'store'])->name('about-us.store');
+  Route::put('about-us/{id}', [AboutUsController::class, 'update'])->name('about-us.update');
+
+  // Contact
+  Route::get('contact', [ContactController::class, 'index'])->name('contact.index');
+  Route::get('contact/{id}/edit', [ContactController::class, 'edit'])->name('contact.edit');
+  Route::put('contact/{id}', [ContactController::class, 'update'])->name('contact.update');
+
+  // Terms & Conditions
+  Route::get('terms-conditions', [TermsConditionsController::class, 'index'])->name('terms-conditions.index');
+  Route::post('terms-conditions', [TermsConditionsController::class, 'store'])->name('terms-conditions.store');
+
+  // Payment Gateway
+  Route::get('payment-gateway', [PaymentGatewayController::class, 'index'])->name('payment-gateway.index');
+  Route::get('payment-gateway/nuevo', [PaymentGatewayController::class, 'create'])->name('payment-gateway.create');
+  Route::post('payment-gateway', [PaymentGatewayController::class, 'store'])->name('payment-gateway.store');
+  Route::get('payment-gateway/{id}/edit', [PaymentGatewayController::class, 'edit'])->name('payment-gateway.edit');
+  Route::put('payment-gateway/{id}', [PaymentGatewayController::class, 'update'])->name('payment-gateway.update');
+  Route::delete('payment-gateway/{id}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateway.destroy');
+  Route::post('payment-gateway/{id}/status', [PaymentGatewayController::class, 'status'])->name('payment-gateway.status');
 });
 
 Auth::routes(['verify' => true]);

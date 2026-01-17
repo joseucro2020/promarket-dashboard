@@ -31,6 +31,17 @@
 - Cambios en locales o menú necesitan el cache de vistas limpio (`php artisan view:clear`) y quizá recompilar (`npm run dev`) para que Blade detecte las nuevas cadenas.
 - Antes de confirmar, vuelve a compilar assets (`npm run dev` o `npm run production`) y asegúrate de que los JSON modificados siguen siendo válidos; un error de sintaxis rompe la carga de `menuData`.
 
+## Reglas obligatorias para agentes AI
+- **Listados:** Siempre use el componente `datatable` del panel para todas las listas. No cree tablas HTML básicas para listados de datos; reutilice la configuración y estilos existentes en `js/scripts/datatables/`.
+- **Traducciones:** Todas las etiquetas visibles en las vistas deben estar traducidas. Use claves en `resources/lang/en/locale.php` y `resources/lang/es/locale.php` (o archivos específicos por módulo) y `__()` en Blade. No dejar cadenas literales en las vistas.
+- **Imágenes de referencia:** Si el usuario adjunta una captura o maqueta, tómatela como referencia y haz la vista lo más parecida posible (estructura, orden de columnas, íconos y espaciado). No improvises diseños muy distintos.
+- **Imágenes de referencia:** Si el usuario adjunta una captura o maqueta, tómatela como referencia y haz la vista lo más parecida posible (estructura, orden de columnas, íconos y espaciado). No improvises diseños muy distintos.
+- **Iconos:** Use un estándar único de iconos en las listas (por ejemplo `feather`), mantenga el mismo conjunto, orden y tamaños para las acciones (ver, editar, imprimir, eliminar). Use `data-feather` y clases consistentes para estilos; evite mezclar librerías de iconos dentro de la misma vista.
+- **Ubicación de las vistas:** Todas las vistas de la UI administrativa deben vivir en `resources/views/panel/<modulo>`. Crea una carpeta por módulo y coloca `index.blade.php`, `form.blade.php`, `_details.blade.php`, etc., siguiendo la convención del proyecto.
+- **Controladores:** Crea los controladores en la raíz `app/Http/Controllers` (no en `app/Http/Controllers/Admin`). Si hay referencias antiguas a `Admin\`, deja un _stub_ con comentario indicando la deprecación y apunta las rutas al controlador raíz.
+- **Entradas de menú:** Cuando agregues un módulo nuevo, registra su entrada en `resources/data/menu-data/verticalMenu.json` (y horizontal si aplica) para que aparezca en la barra lateral. Valida el JSON antes de compilar.
+- **Comprobaciones rápidas antes de entregar:** ejecutar `php artisan view:clear`, `php artisan config:clear` y `npm run dev` localmente para confirmar que Blade e idiomas cargan correctamente.
+
 ## 6) Preguntas abiertas para el autor
 - ¿Se espera que los builds de assets se ejecuten automáticamente en CI con `npm ci` o solo se hagan localmente?
 - ¿Hay convenciones adicionales para las vistas dentro de `resources/views/panel`, como usar `index.blade.php` frente a `form.blade.php`?

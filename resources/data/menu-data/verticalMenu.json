@@ -180,58 +180,64 @@
       "slug": "panel-tags"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/pedidos",
       "name": "Orders",
       "icon": "shopping-cart",
       "slug": "panel-orders"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/clientes",
       "name": "Customers",
       "icon": "users",
       "slug": "panel-customers"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/pro-sellers",
       "name": "Pro Sellers",
       "icon": "user-check",
       "slug": "panel-pro-sellers"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/cuentas-bancarias",
       "name": "Bank Accounts",
       "icon": "credit-card",
       "slug": "panel-bank-accounts"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/estados-municipios",
       "name": "States & Municipalities",
       "icon": "map-pin",
       "slug": "panel-states-municipalities"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/banners",
       "name": "Banners",
       "icon": "image",
       "slug": "panel-banners"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/about-us",
       "name": "About Us",
       "icon": "info",
       "slug": "panel-about-us"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/contact",
       "name": "Contact",
       "icon": "phone",
       "slug": "panel-contact"
     },
     {
-      "url": "panel/reposicion-de-inventario",
+      "url": "panel/terms-conditions",
       "name": "Terms & Conditions",
       "icon": "file-text",
       "slug": "panel-terms-conditions"
+    },
+    {
+      "url": "panel/payment-gateway",
+      "name": "Payment Gateway",
+      "icon": "credit-card",
+      "slug": "panel-payment-gateway"
     }
   ]
 }
