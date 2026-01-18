@@ -122,6 +122,86 @@
           return String(str).toLowerCase().replace(/\b\S/g, function(t){ return t.toUpperCase(); });
         } catch(e) { return str; }
       }
+      // Helper: normalize SKU/text for reliable comparisons
+      function normalizeSku(s) {
+        if (!s) return '';
+        try {
+          var str = String(s).replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+          // Normalize unicode and remove diacritics
+          if (str.normalize) str = str.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+          // collapse whitespace, trim and lowercase
+          str = str.replace(/\s+/g, ' ').trim().toLowerCase();
+          // remove any remaining non-alphanumeric characters but keep dash and underscore
+          str = str.replace(/[^a-z0-9\-_ ]+/g, '');
+          // remove spaces to normalize formatting (e.g., "SKU 001" -> "sku001")
+          str = str.replace(/\s+/g, '');
+          return str;
+        } catch(e) {
+          return String(s).trim().toLowerCase().replace(/[^a-z0-9\-_]+/g, '');
+        }
+      }
+      // Flag that indicates Promarket products have been loaded
+      var promarketLoaded = false;
+      // Global set of normalized SKUs from Promarket (populated on AJAX load)
+      var promarketSkusGlobal = {};
+
+      // Check Kromi table rows against loaded Promarket SKUs and mark matches
+      function markExistingSkus() {
+        try {
+          var promarketSkus = {};
+          // If we have a global promarket SKUs set from the AJAX load, prefer it
+          if (promarketSkusGlobal && Object.keys(promarketSkusGlobal).length) {
+            promarketSkus = promarketSkusGlobal;
+          } else {
+            // Fallback: try to build from rendered table rows/column data
+            try {
+              var promarketData = promarketTable.column(0).data() || [];
+              for (var i = 0; i < promarketData.length; i++) {
+                try {
+                  var h = promarketData[i] || '';
+                  var raw = '';
+                  if (typeof h === 'string') raw = $('<div>').html(h).text();
+                  else if (h && h.nodeType) raw = $(h).text();
+                  var txt = normalizeSku(raw);
+                  if (txt) promarketSkus[txt] = true;
+                } catch(e) { }
+              }
+              var pNodes = promarketTable.rows().nodes() || [];
+              $(pNodes).each(function(i, node) {
+                try {
+                  var $n = $(node);
+                  var raw = $n.find('.kromi-sku').text().trim();
+                  if (!raw) raw = $n.find('td').eq(0).text().trim();
+                  if (!raw) raw = $n.text().trim();
+                  var txt = normalizeSku(raw);
+                  if (txt) promarketSkus[txt] = true;
+                } catch(e) { }
+              });
+            } catch(e) { console.warn('[markExistingSkus] Error building promarket SKUs', e); }
+            var keys = Object.keys(promarketSkus || {});
+            console.info('[markExistingSkus] Promarket SKUs count (fallback):', keys.length, 'sample:', keys.slice(0,10));
+          }
+
+          var activeCount = 0;
+          kromiTable.rows().nodes().each(function(idx, node) {
+            var $node = $(node);
+            var rawSku = $node.find('.kromi-sku').text().trim();
+            if (!rawSku) rawSku = $node.find('td').eq(1).text().trim(); // checkbox at col 0
+            if (!rawSku) rawSku = $node.text().trim();
+            var skuText = normalizeSku(rawSku);
+            // Debug log for target SKUs
+            if (debugMap[skuText]) console.info('[markExistingSkus] Kromi row SKU:', debugMap[skuText], 'raw:', rawSku, 'normalized:', skuText, 'existsInPromarket:', !!promarketSkus[skuText]);
+            if (skuText && promarketSkus[skuText]) {
+              $node.find('input[type="checkbox"]').prop('checked', true);
+              $node.addClass('table-success');
+              activeCount++;
+            }
+          });
+          $('#kromi-active-count').text(activeCount);
+        } catch(e) {
+          console.warn('Error checking existing SKUs', e);
+        }
+      }
       var kromiTable = $('#kromi-products-table').DataTable({
         responsive: true,
         columns: [
@@ -205,6 +285,62 @@
         }
       });
 
+      // Helper to refresh kromi header state (active count + header checkbox)
+      function refreshKromiHeaderState() {
+        var allNodes = kromiTable.rows().nodes();
+        var totalAll = $(allNodes).find('input[type="checkbox"]').length;
+        var checkedAll = $(allNodes).find('input[type="checkbox"]:checked').length;
+        $('#kromi-active-count').text(checkedAll);
+        var header = $('#kromi-select-all')[0];
+        if (header) {
+          header.checked = (totalAll > 0) && (checkedAll === totalAll);
+          header.indeterminate = checkedAll > 0 && checkedAll < totalAll;
+        }
+      }
+
+      // Filter: show only rows with checked checkbox
+      var kromiShowActiveOnly = false;
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex, rowData) {
+        // apply only to kromi-products-table
+        if (!settings || !settings.nTable) return true;
+        if (settings.nTable.id !== 'kromi-products-table') return true;
+        if (!kromiShowActiveOnly) return true;
+        try {
+          var node = kromiTable.row(dataIndex).node();
+          if (!node) return false;
+          return $(node).find('input[type="checkbox"]').is(':checked');
+        } catch(e) { return false; }
+      });
+
+      // Toggle filter control
+      $(document).on('change', '#kromi-filter-active', function() {
+        kromiShowActiveOnly = $(this).is(':checked');
+        kromiTable.draw(false);
+        // refresh header state because draw may hide rows
+        setTimeout(refreshKromiHeaderState, 50);
+      });
+
+      // Invert selection button: toggle checkboxes across ALL rows
+      $(document).on('click', '#kromi-invert-selection', function() {
+        var allNodes = kromiTable.rows().nodes() || [];
+        var checkedCount = 0;
+        $(allNodes).each(function(i, node) {
+          try {
+            var $r = $(node);
+            var $cb = $r.find('input[type="checkbox"]');
+            if (!$cb.length) return;
+            var newState = !$cb.is(':checked');
+            $cb.prop('checked', newState);
+            if (newState) $r.addClass('table-success'); else $r.removeClass('table-success');
+            if (newState) checkedCount++;
+          } catch(e) { }
+        });
+        // update header state and count
+        refreshKromiHeaderState();
+        // If filter is active, re-draw to reflect visible rows
+        if (kromiShowActiveOnly) kromiTable.draw(false);
+      });
+
       // Table overlay controls
       function showTableLoading() { $('#kromi-table-loading').show(); }
       function hideTableLoading() { $('#kromi-table-loading').hide(); }
@@ -217,13 +353,16 @@
           dataType: 'json',
           success: function(response) {
             if (response.products && Array.isArray(response.products)) {
-              // Keep Kromi CSV maps untouched; we populate Promarket table
+                // Keep Kromi CSV maps untouched; we populate Promarket table
+                // reset global SKU map and populate from response
+                promarketSkusGlobal = {};
               promarketTable.clear();
               var rows = response.products.map(function(p) {
                 var sku = p.sku || '';
+                try { var nsku = normalizeSku(sku); if (nsku) promarketSkusGlobal[nsku] = true; } catch(e) {}
                 var skuHtml = '<span class="badge badge-light-primary kromi-sku">' + $('<div>').text(sku).html() + '</span>';
                 var nameHtml = $('<div>').text(toTitleCase(p.name || '')).html();
-                var cost = p.price !== undefined ? p.price : '';
+                var cost = p.cost !== undefined ? p.cost : '';
                 var costFormatted = '';
                 if (cost !== '') {
                   var cnum = Number(String(cost).replace(/[^0-9\-\.,]/g,'').replace(/,/g, '.'));
@@ -259,6 +398,10 @@
                 return [skuHtml, nameHtml, costFormatted, profitHtml, priceFormatted, qtyHtml, fatherId, sonId, grandsonId];
               });
               promarketTable.rows.add(rows).draw();
+              promarketLoaded = true;
+              // ensure Kromi rows are marked if CSV already uploaded
+              // prefer using the in-memory promarketSkusGlobal for deterministic matching
+              markExistingSkus();
               // Delegate change handler for utilidad selects (also works for future redraws)
               $(document).off('change', '.utilidad-select').on('change', '.utilidad-select', function() {
                 var $sel = $(this);
@@ -433,29 +576,28 @@
                 return [checkbox, skuHtml, nameHtml, costFormatted, qtyHtml, father, son, grandson];
               });
               kromiTable.rows.add(rows).draw();
-              // Mark CSV rows that already exist in promarketTable: check box and highlight
-              try {
-                var promarketSkus = {};
-                var promarketData = promarketTable.column(0).data() || [];
-                for (var i = 0; i < promarketData.length; i++) {
-                  var h = promarketData[i] || '';
-                  var txt = $('<div>').html(h).text().trim().toLowerCase();
-                  if (txt) promarketSkus[txt] = true;
-                }
-
-                var activeCount = 0;
-                kromiTable.rows().nodes().each(function(idx, node) {
-                  var $node = $(node);
-                  var skuText = $node.find('.kromi-sku').text().trim().toLowerCase();
-                  if (skuText && promarketSkus[skuText]) {
-                    $node.find('input[type="checkbox"]').prop('checked', true);
-                    $node.addClass('table-success');
-                    activeCount++;
-                  }
+              // If Promarket products already loaded, mark matches immediately using the in-memory set.
+              if (promarketLoaded && promarketSkusGlobal && Object.keys(promarketSkusGlobal).length) {
+                var activeLocal = 0;
+                var kNodes = kromiTable.rows().nodes() || [];
+                $(kNodes).each(function(i, node) {
+                  try {
+                    var $n = $(node);
+                    var rawSku = $n.find('.kromi-sku').text().trim();
+                    if (!rawSku) rawSku = $n.find('td').eq(1).text().trim();
+                    if (!rawSku) rawSku = $n.text().trim();
+                    var skuNorm = normalizeSku(rawSku);
+                    if (skuNorm && promarketSkusGlobal[skuNorm]) {
+                      $n.find('input[type="checkbox"]').prop('checked', true);
+                      $n.addClass('table-success');
+                      activeLocal++;
+                    }
+                  } catch(e) { }
                 });
-                $('#kromi-active-count').text(activeCount);
-              } catch(e) {
-                console.warn('Error checking existing SKUs', e);
+                $('#kromi-active-count').text(activeLocal);
+              } else if (promarketLoaded) {
+                // fallback: run existing matcher which will try to build from table if needed
+                markExistingSkus();
               }
               // clear any previous category/sub/sub-sub filters
               kromiTable.column(5).search('').column(6).search('').column(7).search('').draw();
@@ -635,6 +777,7 @@
           $('#promarket-sub-subcategories-loading').hide();
         }, 100);
       });
+      
       $(document).on('change', '#kromi-subcategories', function() {
         var subId = $(this).val();
         var $subsub = $('#kromi-sub-subcategories');
@@ -910,8 +1053,17 @@
 
           <div class="card">
             <div class="card-header">
-              <h6 class="mb-0">{{ __('Product list') }} <span id="kromi-active-count" class="badge badge-light-success">0</span></h6>
-            </div>
+                <div class="d-flex align-items-center justify-content-between">
+                  <h6 class="mb-0">{{ __('Product list') }} <span id="kromi-active-count" class="badge badge-light-success">0</span></h6>
+                  <div class="d-flex align-items-center">
+                    <div class="form-check form-check-inline mr-2">
+                      <input class="form-check-input" type="checkbox" id="kromi-filter-active">
+                      <label class="form-check-label small mb-0" for="kromi-filter-active">{{ __('Show only active') }}</label>
+                    </div>
+                    <button id="kromi-invert-selection" type="button" class="btn btn-sm btn-outline-secondary">{{ __('Invert selection') }}</button>
+                  </div>
+                </div>
+              </div>
             <div class="card-body p-0">
               <div class="table-responsive kromi-table-wrapper">
                 <div id="kromi-table-loading" class="kromi-table-loading" style="display:none;">

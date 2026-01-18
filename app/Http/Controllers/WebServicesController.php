@@ -171,15 +171,18 @@ class WebServicesController extends Controller
 
         $products = collect($data->items())->map(function ($p) {
             // Prefer amounts from loaded relations if available
-            $sku = null; $price = null; $amount = 0;
+            $sku = null; $price = null; $amount = 0; $utilidad = null; $product_amount_id = null; $cost = null;
             if (!empty($p->colors)) {
                 foreach ($p->colors as $color) {
-                    if (!empty($color->amounts)) {
-                        $a = $color->amounts[0];
+                    if ($color->amounts && $color->amounts->isNotEmpty()) {
+                        $a = $color->amounts->first();
                         if ($a) {
                             $sku = $a->sku ?? $sku;
                             $price = $a->price ?? $price;
                             $amount = $a->amount ?? $amount;
+                            $utilidad = $a->utilidad ?? $utilidad;
+                            $product_amount_id = $a->id ?? $product_amount_id;
+                            $cost = $a->cost ?? $cost;
                             break;
                         }
                     }
@@ -195,6 +198,9 @@ class WebServicesController extends Controller
                     $sku = $pa->sku ?? $sku;
                     $price = $pa->price ?? $price;
                     $amount = $pa->amount ?? $amount;
+                    $utilidad = $pa->utilidad ?? $utilidad;
+                    $product_amount_id = $pa->id ?? $product_amount_id;
+                    $cost = $pa->cost ?? $cost;
                 }
             }
 
@@ -210,6 +216,9 @@ class WebServicesController extends Controller
                 'grandson' => optional($p->subsubcategories)->name ?? '',
                 'price' => $price ?? ($p->price_1 ?? 0),
                 'amount' => $amount ?? 0,
+                'product_amount_id' => $product_amount_id ?? null,
+                'cost' => $cost ?? 0,
+                'utilidad' => $utilidad ?? 0
             ];
         })->toArray();
 
@@ -309,6 +318,7 @@ class WebServicesController extends Controller
                 $size->amount = $amount;
                 $size->product_color_id = $color->id;
                 $size->category_size_id = 1;
+                $size->unit = 0;
                 $size->min = 1;
                 $size->max = 6;
                 $size->cost = $price;
