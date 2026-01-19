@@ -19,15 +19,21 @@
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary">
+              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary me-2">
                 <i data-feather="plus"></i> {{ __('Add New') }}
               </a>
+              <form id="fetch-bcv-form" method="POST" action="{{ route('exchange-rates.fetch-now') }}" style="display:inline;">
+                @csrf
+                <button id="fetch-bcv-btn" type="button" class="btn btn-outline-info">
+                  <i data-feather="refresh-cw"></i> {{ __('Fetch Rates Now') }}
+                </button>
+              </form>
             </div>
           </div>
         </div>
         <div class="card-body">
           @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <div id="exchange-rate-success" style="display:none;">{{ session('success') }}</div>
           @endif
           <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover w-100 exchange-rates-table">
@@ -44,7 +50,7 @@
               <tbody>
                 @forelse($rates as $r)
                   <tr>
-                    <td>{{ $r->created_at ? $r->created_at->format('d-m-Y H:i') : '' }}</td>
+                    <td data-order="{{ $r->created_at ? $r->created_at->format('Y-m-d H:i:s') : '' }}">{{ $r->created_at ? $r->created_at->format('d-m-Y H:i') : '' }}</td>
                     <td>{{ $r->currency_from }}</td>
                     <td>{{ $r->currency_to }}</td>
                     <td>{{ $r->change }}</td>
@@ -87,7 +93,8 @@
 @endsection
 
 @section('page-script')
-  <script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
     $(document).ready(function() {
       $('.exchange-rates-table').DataTable({
         responsive: true,
@@ -108,6 +115,52 @@
           }
         }
       });
+      // highlight newest row and show toast when redirected after update/create using SweetAlert2
+      const successEl = document.getElementById('exchange-rate-success');
+      if (successEl) {
+        const msg = successEl.textContent.trim();
+        if (msg) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: msg,
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true
+          });
+        }
+
+        // highlight first row in table briefly
+        const firstRow = document.querySelector('.exchange-rates-table tbody tr');
+        if (firstRow) {
+          firstRow.style.transition = 'background-color 0.5s ease';
+          firstRow.style.backgroundColor = '#e6ffed';
+          setTimeout(()=>{ firstRow.style.backgroundColor = ''; }, 3000);
+        }
+      }
+
+      // fetch now button confirmation
+      const fetchBtn = document.getElementById('fetch-bcv-btn');
+      const fetchForm = document.getElementById('fetch-bcv-form');
+      if (fetchBtn && fetchForm) {
+        fetchBtn.addEventListener('click', function(){
+          Swal.fire({
+            title: '{{ __('Fetch Rates Now') }}',
+            text: '{{ __('This will fetch the latest rates from BCV now. Continue?') }}',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '{{ __('Yes, fetch') }}',
+            cancelButtonText: '{{ __('Cancel') }}'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              fetchBtn.disabled = true;
+              fetchBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> {{ __('Fetching...') }}';
+              fetchForm.submit();
+            }
+          });
+        });
+      }
     });
   </script>
 @endsection

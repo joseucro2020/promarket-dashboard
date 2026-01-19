@@ -24,7 +24,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Fetch BCV rates daily at 05:00
+        $schedule->command('exchange_rates:fetch-bcv')->dailyAt('05:00');
     }
 
     /**

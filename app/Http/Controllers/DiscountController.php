@@ -77,20 +77,56 @@ class DiscountController extends Controller
 
     public function store(DiscountRequest $request)
     {
-        $discount = Discount::create($request->validated());
+        $data = $request->validated();
 
-        if ($discount->type === 'quantity_product') {
-            $discount->products()->attach($request->products_id ?? []);
-        } else {
-            $existsOtherActive = Discount::where('type', $discount->type)
-                ->where('status', Discount::ACTIVE)
-                ->where('id', '!=', $discount->id)
-                ->exists();
-
-            if ($existsOtherActive) {
-                $discount->status = Discount::INACTIVE;
-                $discount->save();
+        // Map incoming discount_mode to internal type names
+        $mode = $request->input('discount_mode');
+        if ($mode) {
+            switch ($mode) {
+                case 'quantity':
+                    $data['type'] = 'quantity_product';
+                    $data['quantity_product'] = $request->input('quantity_products');
+                    // clear other type-related fields
+                    $data['minimum_purchase'] = null;
+                    $data['quantity_purchase'] = null;
+                    break;
+                case 'amount':
+                    $data['type'] = 'minimum_purchase';
+                    $data['minimum_purchase'] = $request->input('min_amount');
+                    $data['quantity_product'] = null;
+                    $data['quantity_purchase'] = null;
+                    break;
+                case 'count':
+                    $data['type'] = 'quantity_purchase';
+                    $data['quantity_purchase'] = $request->input('quantity_products');
+                    $data['quantity_product'] = null;
+                    $data['minimum_purchase'] = null;
+                    break;
             }
+        }
+
+        $discount = Discount::create($data);
+
+        // Attach products only for quantity_product type if provided
+        if (($data['type'] ?? null) === 'quantity_product') {
+            if ($request->has('products_id')) {
+                $discount->products()->sync($request->input('products_id', []));
+            }
+        }
+
+        // If this type should be unique and there is an existing active of same type, deactivate new one
+        $existsOtherActive = Discount::where('type', $discount->type)
+            ->where('status', Discount::ACTIVE)
+            ->where('id', '!=', $discount->id)
+            ->exists();
+
+        if ($existsOtherActive) {
+            $discount->status = Discount::INACTIVE;
+            $discount->save();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => __('Discount saved successfully.'), 'redirect' => route('discounts.index')]);
         }
 
         return redirect()->route('discounts.index')->with('success', __('Discount saved successfully.'));
@@ -150,9 +186,47 @@ class DiscountController extends Controller
 
     public function update(DiscountRequest $request, Discount $discount)
     {
-        $discount->fill($request->validated());
+        $data = $request->validated();
+
+        $mode = $request->input('discount_mode');
+        if ($mode) {
+            switch ($mode) {
+                case 'quantity':
+                    $data['type'] = 'quantity_product';
+                    $data['quantity_product'] = $request->input('quantity_products');
+                    $data['minimum_purchase'] = null;
+                    $data['quantity_purchase'] = null;
+                    break;
+                case 'amount':
+                    $data['type'] = 'minimum_purchase';
+                    $data['minimum_purchase'] = $request->input('min_amount');
+                    $data['quantity_product'] = null;
+                    $data['quantity_purchase'] = null;
+                    break;
+                case 'count':
+                    $data['type'] = 'quantity_purchase';
+                    $data['quantity_purchase'] = $request->input('quantity_products');
+                    $data['quantity_product'] = null;
+                    $data['minimum_purchase'] = null;
+                    break;
+            }
+        }
+
+        $discount->fill($data);
         $discount->save();
-        $discount->products()->sync($request->products_id ?? []);
+
+        if (($data['type'] ?? null) === 'quantity_product') {
+            if ($request->has('products_id')) {
+                $discount->products()->sync($request->input('products_id', []));
+            }
+        } else {
+            // ensure no leftover product relations for non-quantity types
+            $discount->products()->detach();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => __('Discount updated successfully.'), 'redirect' => route('discounts.index')]);
+        }
 
         return redirect()->route('discounts.index')->with('success', __('Discount updated successfully.'));
     }
@@ -212,5 +286,63 @@ class DiscountController extends Controller
         $discount->save();
 
         return response()->json($discount);
+    }
+
+    /**
+     * Server-side endpoint for DataTables to fetch products with filters for discounts
+     */
+    public function productsData(Request $request)
+    {
+        $start = (int)($request->input('start', 0));
+        $length = (int)($request->input('length', 10));
+        $search = $request->input('search.value', '');
+
+        $query = Product::where('status', Product::STATUS_ACTIVE)->with('categories');
+
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->input('category'));
+        }
+        if ($request->filled('subcategory')) {
+            $query->where('subcategory_id', $request->input('subcategory'));
+        }
+        if ($request->filled('subsubcategory')) {
+            $query->where('subsubcategory_id', $request->input('subsubcategory'));
+        }
+
+        $recordsTotal = Product::where('status', Product::STATUS_ACTIVE)->count();
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $recordsFiltered = $query->count();
+
+        // ordering
+        $orderColIndex = $request->input('order.0.column', 1);
+        $orderDir = $request->input('order.0.dir', 'asc');
+        $columnsMap = [0 => 'id', 1 => 'name'];
+        $orderColumn = $columnsMap[$orderColIndex] ?? 'name';
+
+        $rows = $query->orderBy($orderColumn, $orderDir)
+            ->skip($start)
+            ->take($length)
+            ->get(['id', 'name', 'category_id', 'price_1']);
+
+        $data = [];
+        foreach ($rows as $row) {
+            $categoryName = $row->categories->name ?? '';
+            $price = $row->price_1 ?? '';
+            $action = '<button type="button" class="btn btn-sm btn-outline-primary btn-add-product" data-id="'.$row->id.'" data-name="'.htmlspecialchars($row->name, ENT_QUOTES).'">'.__('Add').'</button>';
+            $data[] = ['select' => $action, 'name' => $row->name, 'category' => $categoryName, 'price' => $price];
+        }
+
+        return response()->json([
+            'draw' => (int)$request->input('draw', 0),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
     }
 }

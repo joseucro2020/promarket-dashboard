@@ -15,8 +15,10 @@ class OfferRequest extends FormRequest
     {
         return [
             'percentage' => 'required|numeric|min:0|max:100',
-            'start' => 'nullable|date',
-            'end' => 'nullable|date|after_or_equal:start',
+            'start' => 'required|date',
+            'end' => 'required|date|after_or_equal:start',
+            'products' => 'required|array|min:1',
+            'products.*' => 'integer|exists:products,id',
         ];
     }
 }

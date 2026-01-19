@@ -69,6 +69,8 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('tasa-de-cambios/{id}/editar', [ExchangeRateController::class, 'edit'])->name('exchange-rates.edit');
   Route::put('tasa-de-cambios/{id}', [ExchangeRateController::class, 'update'])->name('exchange-rates.update');
   Route::delete('tasa-de-cambios/{id}', [ExchangeRateController::class, 'destroy'])->name('exchange-rates.destroy');
+  // Trigger fetch-now from UI
+  Route::post('tasa-de-cambios/fetch-now', [ExchangeRateController::class, 'fetchBcvNow'])->name('exchange-rates.fetch-now');
 
   // Routes para el módulo de Productos
   Route::get('productos', [ProductController::class, 'index'])->name('products.index');
@@ -265,6 +267,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('descuentos/nuevo', [DiscountController::class, 'create'])->name('discounts.create');
   Route::post('descuentos', [DiscountController::class, 'store'])->name('discounts.store');
   Route::get('descuentos/{discount}/editar', [DiscountController::class, 'edit'])->name('discounts.edit');
+  Route::get('descuentos/productos-data', [DiscountController::class, 'productsData'])->name('discounts.products.data');
   Route::put('descuentos/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
   Route::delete('descuentos/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
   Route::post('descuentos/{discount}/status', [DiscountController::class, 'status'])->name('discounts.status');
@@ -272,6 +275,7 @@ Route::group(['prefix' => 'panel'], function () {
   // Offers
   Route::get('ofertas', [OfferController::class, 'index'])->name('offers.index');
   Route::get('ofertas/nuevo', [OfferController::class, 'create'])->name('offers.create');
+  Route::get('ofertas/productos-data', [OfferController::class, 'productsData'])->name('offers.products.data');
   Route::post('ofertas', [OfferController::class, 'store'])->name('offers.store');
   Route::get('ofertas/{offer}/editar', [OfferController::class, 'edit'])->name('offers.edit');
   Route::put('ofertas/{offer}', [OfferController::class, 'update'])->name('offers.update');

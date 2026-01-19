@@ -40,13 +40,13 @@ class ShippingFeeController extends Controller
     {
         $shippingFee = ShippingFee::find($id);
         if (! $shippingFee) {
-            return response()->json(['result' => false, 'message' => 'Not found'], 404);
+            return redirect()->back()->with('error', __('Not found'));
         }
 
         $shippingFee->amount = $request->input('amount');
         $shippingFee->save();
 
-        return response()->json(['result' => true, 'message' => 'Tasa de envio actualizada', 'shippingFee' => $shippingFee]);
+        return redirect()->route('shipping-fees.index')->with('success', __('Shipping fee updated'));
     }
 
     public function getAll()

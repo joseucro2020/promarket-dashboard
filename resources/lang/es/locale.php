@@ -2,6 +2,8 @@
 
 return [
   "Exchange Rate" => "Tasa de cambio",
+  "Edit Exchange Rate" => "Editar tasa",
+  "New Exchange Rate" => "Nueva tasa",
   "Exchange Rate Registry" => "Registro de tasa de cambio",
   "Register new rate" => "Registrar nueva tasa",
   "Date Recorded" => "Fecha registrada",
@@ -23,6 +25,12 @@ return [
   "Delete this bank account?" => "¿Eliminar esta cuenta bancaria?",
   "An error occurred" => "Ocurrió un error",
   "Products" => "Productos",
+  "All Categories" => "Todas las Categorías",
+  "All Subcategories" => "Todas las Subcategorías",
+  "All Sub-Subcategories" => "Todas las Sub-Subcategorías",
+  "Offer Products" => "Productos de la Oferta",
+  "Product already added" => "Producto ya agregado",
+  "Remove" => "Eliminar",
   "Products List" => "Lista de Productos",
   "Add New" => "Agregar Nuevo",
   "Add Product" => "Agregar Producto",
@@ -62,6 +70,7 @@ return [
   "Back" => "Volver",
   "Save Changes" => "Guardar Cambios",
   "Cancel" => "Cancelar",
+  "Create" => "Crear",
   "Photo" => "Foto",
   "Category" => "Categoría",
   "Product" => "Producto",
@@ -140,6 +149,16 @@ return [
   ,"Client" => "Cliente"
   ,"Tip" => "Propina"
   ,"Amount" => "Monto"
+  ,"Shipping Fees" => "Tarifas de envío"
+  ,"Minimum Purchase" => "Compra mínima"
+  ,"Enter minimum purchase amount $" => "Ingrese el monto mínimo de compra $"
+  ,"No shipping fees configured yet." => "Aún no hay tarifas de envío configuradas."
+  ,"Save this fee?" => "¿Guardar esta tarifa?"
+  ,"Shipping fee updated" => "Tarifa de envío actualizada"
+  ,"Not found" => "No encontrado"
+  ,"Save minimum purchase?" => "¿Guardar compra mínima?"
+  ,"National" => "Nacional"
+  ,"Regional" => "Regional"
   ,"Payment Type" => "Tipo de pago"
   ,"Payment Method" => "Medio de pago"
   ,"Delivery Type" => "Tipo de Entrega"
@@ -241,6 +260,26 @@ return [
   ,"The config field must be valid JSON." => "El campo config debe ser un JSON válido."
 
   ,"Search" => "Buscar"
+
+  // Discounts / Coupons translations added
+  ,"Crear nuevo descuento" => "Crear nuevo descuento"
+  ,"Campos requeridos" => "Campos requeridos"
+  ,"Nombre del descuento" => "Nombre del descuento"
+  ,"Limite de uso por cliente" => "Límite de uso por cliente"
+  ,"Fecha de inicio" => "Fecha de inicio"
+  ,"Fecha de finalización" => "Fecha de finalización"
+  ,"Porcentaje de descuento" => "Porcentaje de descuento"
+  ,"Descuento por cantidad de productos" => "Descuento por cantidad de productos"
+  ,"Descuento por monto de compra" => "Descuento por monto de compra"
+  ,"Descuento nro. de compras" => "Descuento nro. de compras"
+  ,"Cantidad productos para al aplicar descuento" => "Cantidad productos para aplicar el descuento"
+  ,"Seleccione los categoría/productos" => "Seleccione las categorías/productos"
+  ,"Guardar" => "Guardar"
+  ,"Please fix the following errors" => "Por favor corrija los siguientes errores"
+  ,"Guardado correctamente" => "Guardado correctamente"
+  ,"Seleccione" => "Seleccione"
+  ,"Minimum amount" => "Monto mínimo para aplicar el descuento"
+  ,"Number of purchases required to apply discount" => "Cantidad de compras necesarias para aplicar el descuento"
 
   // Categories module
   ,"Category (Spanish)" => "Categoría (Español)"
@@ -345,6 +384,8 @@ return [
   ,"Net Sales bs" => "Ventas Netas bs"
   ,"Net Profit" => "Utilidad Neta"
   ,"Select date range" => "Seleccione rango de fechas"
+  ,"Show only active" => "Solo activos"
+  ,"Invert selection" => "Invertir selección"
 
 ];
 

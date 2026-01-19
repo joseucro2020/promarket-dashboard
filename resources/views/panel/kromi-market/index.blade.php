@@ -1073,7 +1073,7 @@
                   <thead>
                     <tr>
                       <th style="width:30px;"><input id="kromi-select-all" type="checkbox"></th>
-                      <th>SKU</th>
+                      <th>{{ __('SKU') }}</th>
                       <th>{{ __('Name') }}</th>
                       <th>{{ __('Cost') }}</th>
                       <th>{{ __('Quantity') }}</th>
@@ -1147,7 +1147,7 @@
                 <table class="table table-hover" id="promarket-products-table">
                   <thead>
                     <tr>
-                      <th>SKU</th>
+                      <th>{{ __('SKU') }}</th>
                       <th>{{ __('Name') }}</th>
                       <th>{{ __('Cost') }}</th>
                       <th>{{ __('Profit') }}</th>
