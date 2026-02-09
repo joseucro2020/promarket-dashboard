@@ -9,7 +9,7 @@
       <div class="card">
         <div class="card-header">
           <h4 class="card-title">{{ __('Edit Product') }}</h4>
-          <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a>
+          {{-- <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a> --}}
         </div>
         <div class="card-body">
           <form action="{{ route('products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
@@ -379,8 +379,16 @@
 
             <div class="row mt-2">
                 <div class="col-12">
-                    <button type="submit" class="btn btn-primary mr-1">{{ __('Save Changes') }}</button>
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
+                    {{-- <button type="submit" class="btn btn-primary mr-1">{{ __('Save Changes') }}</button>
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a> --}}
+
+                    <div class="mt-4 d-flex justify-content-end">
+                    <a href="{{ route('products.index') }}"
+                    class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
+                    <button type="submit" id="products-submit" class="btn btn-primary"
+                    disabled>{{ isset($products) ? __('Update') : __('Save') }}</button>
+                    </div>
+                
                 </div>
             </div>
 

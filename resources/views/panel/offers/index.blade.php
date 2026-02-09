@@ -49,16 +49,17 @@
                     <td>{{ optional($offer->end)->format('d-m-Y') }}</td>
                     <td>{{ number_format($offer->percentage, 2) }}%</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
-                        <a href="{{ route('offers.edit', $offer) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit-2"></i>
-                        </a>
+                      <div class="d-flex align-items-center">
                         <form class="m-0 mr-1" action="{{ route('offers.status', $offer) }}" method="POST">
                           @csrf
-                          <button type="submit" class="btn btn-icon btn-flat-{{ $offer->status === \App\Models\Offer::ACTIVE ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                            <i data-feather="{{ $offer->status === \App\Models\Offer::ACTIVE ? 'toggle-right' : 'toggle-left' }}"></i>
-                          </button>
+                          <div class="custom-control custom-switch custom-switch-success">
+                            <input type="checkbox" class="custom-control-input" id="offer_status_{{ $offer->id }}" {{ $offer->status === \App\Models\Offer::ACTIVE ? 'checked' : '' }} onchange="this.form.submit()" />
+                            <label class="custom-control-label" for="offer_status_{{ $offer->id }}"></label>
+                          </div>
                         </form>
+                        <a href="{{ route('offers.edit', $offer) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <i data-feather="edit"></i>
+                        </a>
                         <form class="m-0" action="{{ route('offers.destroy', $offer) }}" method="POST" onsubmit="return confirm('{{ __('Delete this offer?') }}');">
                           @csrf
                           @method('DELETE')

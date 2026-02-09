@@ -64,13 +64,22 @@
       serverSide: false,
       ajax: {
         url: "{{ url('panel/clientes/all') }}",
-        type: 'GET'
+        type: 'GET',
+        dataSrc: ''
       },
       columns: [
         { data: 'name' },
         { data: 'identificacion' },
         { data: 'persona' },
-        { data: 'created_at', render: function(d){ return d ? moment(d).format('DD-MM-YYYY') : ''; } },
+        { data: 'created_at', render: function(d){
+          if (!d) return '';
+          var date = new Date(d);
+          if (isNaN(date.getTime())) return '';
+          var day = String(date.getDate()).padStart(2, '0');
+          var month = String(date.getMonth() + 1).padStart(2, '0');
+          var year = date.getFullYear();
+          return day + '-' + month + '-' + year;
+        } },
         { data: 'telefono' },
         { data: 'status', render: function(d){ return d == 1 ? '{{ __('Active') }}' : '{{ __('Inactive') }}'; } },
         { data: null, orderable:false, searchable:false }
@@ -82,25 +91,28 @@
           var checked = data.status == 1 ? 'checked' : '';
           var html = '';
           // status toggle
-          html += '<div style="display:inline-block; margin-right:6px;">'
-            + '<input class="form-check-input client-status-toggle" type="checkbox" data-id="'+id+'" '+checked+'> '
-            + '</div>';
+          html += '<form class="m-0 mr-1" style="display:inline-block;">'
+            + '<div class="custom-control custom-switch custom-switch-success">'
+            + '<input class="custom-control-input client-status-toggle" type="checkbox" id="client_status_'+id+'" data-id="'+id+'" '+checked+'> '
+            + '<label class="custom-control-label" for="client_status_'+id+'"></label>'
+            + '</div>'
+            + '</form>';
           // view/profile
-          html += '<a class="btn btn-sm btn-icon" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('View') }}">'
+          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('View') }}">'
             + '<i data-feather="eye"></i></a> ';
           // edit (link to profile/edit if exists)
-          html += '<a class="btn btn-sm btn-icon" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('Edit') }}">'
-            + '<i data-feather="edit-2"></i></a> ';
+          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('Edit') }}">'
+            + '<i data-feather="edit"></i></a> ';
           // invoice/details
-          html += '<button class="btn btn-sm btn-icon btn-invoice" data-id="'+id+'" title="{{ __('Details') }}">'
+          html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-invoice" data-id="'+id+'" title="{{ __('Details') }}">'
             + '<i data-feather="file-text"></i></button> ';
           // convert to pro
-          html += '<button class="btn btn-sm btn-icon btn-convert" data-id="'+id+'" title="{{ __('Convert to Pro') }}">'
+          html += '<button class="btn btn-sm btn-icon btn-flat-info mr-1 btn-convert" data-id="'+id+'" title="{{ __('Convert to Pro') }}">'
             + '<i data-feather="user"></i></button> ';
           // delete
-          html += '<button class="btn btn-sm btn-icon btn-delete text-danger" data-id="'+id+'" title="{{ __('Delete') }}">'
-            + '<i data-feather="trash-2"></i></button>';
-          return '<div class="btn-group" role="group">'+html+'</div>';
+          html += '<button class="btn btn-sm btn-icon btn-flat-danger btn-delete" data-id="'+id+'" title="{{ __('Delete') }}">'
+            + '<i data-feather="trash"></i></button>';
+          return '<div class="d-flex align-items-center">'+html+'</div>';
         }
       }],
       drawCallback: function(){ feather.replace(); }

@@ -6,11 +6,11 @@
 <section class="row">
   <div class="col-12">
     <div class="card">
-      <div class="card-header border-bottom p-1 d-flex justify-content-between align-items-center">
+      <div class="card-header">
         <h4 class="mb-0">{{ isset($coupon) ? __('Edit Coupon') : __('New Coupon') }}</h4>
-        <a href="{{ route('coupons.index') }}" class="btn btn-outline-primary btn-sm">
+        {{-- <a href="{{ route('coupons.index') }}" class="btn btn-outline-primary btn-sm">
           <i data-feather="arrow-left" class="me-50"></i>{{ __('Back') }}
-        </a>
+        </a> --}}
       </div>
       <div class="card-body">
         <form method="POST" action="{{ isset($coupon) ? route('coupons.update', $coupon) : route('coupons.store') }}">
@@ -80,10 +80,13 @@
           </div>
           <div class="row">
             <div class="col-12 d-flex justify-content-end mt-2">
-              <button type="submit" class="btn btn-primary">
-                <i data-feather="save" class="me-50"></i>{{ isset($coupon) ? __('Update coupon') : __('Save coupon') }}
-              </button>
+              <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
+              <button type="submit" class="btn btn-primary">{{ isset($coupon) ? __('Update') : __('Save') }}</button>
             </div>
+            {{-- <div class="mt-4 d-flex justify-content-end">
+              <a href="{{ route('coupons.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
+              <button type="submit" class="btn btn-primary">{{ isset($coupon) ? __('Update') : __('Save') }}</button>
+            </div> --}}
           </div>
         </form>
       </div>

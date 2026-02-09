@@ -3,6 +3,9 @@
 @section('title', isset($discount) ? __('Edit Discount') : __('New Discount'))
 
 @section('vendor-style')
+  <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
+  <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap4.min.css')) }}">
+  <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap4.min.css')) }}">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endsection
 
@@ -113,7 +116,7 @@
                     <input type="number" id="quantity_products" name="quantity_products" class="form-control" min="0" value="{{ $value_quantity }}">
                   </div>
                   <div id="group-min-amount" style="display:none;">
-                    <label for="min_amount">{{ __('Minimum amount') }} <span class="text-danger">*</span></label>
+                    <label for="min_amount">{{ __('Minimum amount to apply discount') }} <span class="text-danger">*</span></label>
                     <input type="number" step="0.01" id="min_amount" name="min_amount" class="form-control" min="0" value="{{ $value_min_amount }}">
                   </div>
                 </div>
@@ -232,6 +235,12 @@
 @endsection
 
 @section('vendor-script')
+  <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+  <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
+  <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+  <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap4.js')) }}"></script>
+  <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
+  <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.bootstrap4.min.js')) }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
@@ -325,26 +334,28 @@
         else if (mode === 'amount') modeOk = minAmount;
         else modeOk = true; // count mode or others require no extra field
 
-        var categoryNeeded = (mode !== 'amount');
+        var categoryNeeded = $('#group-category').is(':visible');
         var ok = name && start && end && percentage && modeOk && (categoryNeeded ? category : true);
         $('#discount-submit').prop('disabled', !ok);
       }
 
       function toggleModeUI() {
         var mode = $('input[name="discount_mode"]:checked').val();
+        var modeId = $('input[name="discount_mode"]:checked').attr('id');
+        console.log('Discount mode selected:', { mode: mode, id: modeId });
         if (mode === 'amount') {
-          // amount: show min amount (half width), hide quantity and category
+          // amount: show min amount, hide quantity, category, and products
           $('#group-quantity').hide();
           $('#group-min-amount').show();
           $('#group-category').hide();
-          $('#col-quantity').removeClass('col-md-12').addClass('col-md-6');
+          $('#col-quantity').removeClass('col-md-6').addClass('col-md-12');
           $('#group-limit').show();
           $('#products-picker').hide();
         } else if (mode === 'quantity') {
-          // quantity: show quantity and category side-by-side
+          // quantity: show quantity input and products segment only
           $('#group-min-amount').hide();
           $('#group-quantity').show();
-          $('#group-category').show();
+          $('#group-category').hide();
           $('#group-limit').show();
           $('#col-quantity').removeClass('col-md-12').addClass('col-md-6');
           // restore quantity label

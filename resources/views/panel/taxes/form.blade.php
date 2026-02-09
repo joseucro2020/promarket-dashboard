@@ -6,11 +6,8 @@
 <section class="row">
   <div class="col-12">
     <div class="card">
-      <div class="card-header border-bottom p-1 d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">{{ isset($taxe) ? __('Edit Tax') : __('New Tax') }}</h4>
-        <a href="{{ route('taxes.index') }}" class="btn btn-outline-primary btn-sm">
-          <i data-feather="arrow-left" class="me-50"></i>{{ __('Back') }}
-        </a>
+      <div class="card-header">
+        <h4 class="mb-0">{{ isset($taxe) ? __('Edit Tax') : __('New Tax') }}</h4>        
       </div>
       <div class="card-body">
         <form method="POST" action="{{ isset($taxe) ? route('taxes.update', $taxe->id) : route('taxes.store') }}">
@@ -43,9 +40,11 @@
           </div>
           <div class="row">
             <div class="col-12 d-flex justify-content-end mt-2">
-              <button type="submit" class="btn btn-primary">
-                <i data-feather="save" class="me-50"></i>{{ isset($taxe) ? __('Update tax') : __('Save tax') }}
-              </button>
+              <a href="{{ route('taxes.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
+              {{-- <button type="submit" class="btn btn-primary">
+                <i data-feather="save" class="me-50"></i>{{ isset($taxe) ? __('Update') : __('Save') }}
+              </button> --}}
+              <button type="submit" class="btn btn-primary">{{ isset($taxe) ? __('Update') : __('Save') }}</button>
             </div>
           </div>
         </form>

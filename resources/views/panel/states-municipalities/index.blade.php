@@ -44,15 +44,14 @@
                         {{ !empty($state->created_at) ? \Carbon\Carbon::parse($state->created_at)->format('d-m-Y') : '' }}
                       </td>
                       <td class="text-center">
-                        <div class="d-inline-flex align-items-center" style="gap: 14px;">
-                          <a href="#" class="btn-edit-state" title="{{ __('Edit') }}">
-                            <i data-feather="edit-2" class="text-info"></i>
-                          </a>
-
-                          <div class="custom-control custom-switch custom-switch-success m-0">
+                        <div class="d-inline-flex align-items-center">
+                          <div class="custom-control custom-switch custom-switch-success mr-1">
                             <input type="checkbox" class="custom-control-input state-status-toggle" id="state-status-{{ $state->id }}" {{ (int)($state->status ?? 0) === 1 ? 'checked' : '' }}>
                             <label class="custom-control-label" for="state-status-{{ $state->id }}"></label>
                           </div>
+                          <button type="button" class="btn btn-icon btn-flat-success mr-1 btn-edit-state" title="{{ __('Edit') }}">
+                            <i data-feather="edit"></i>
+                          </button>
                         </div>
                       </td>
                     </tr>

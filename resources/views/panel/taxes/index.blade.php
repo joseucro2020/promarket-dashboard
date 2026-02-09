@@ -53,16 +53,17 @@
                     <td>{{ $tax->name }}</td>
                     <td>{{ number_format($tax->percentage, 2) }}%</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
-                        <a href="{{ route('taxes.edit', $tax->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit-2"></i>
-                        </a>
+                      <div class="d-flex align-items-center">
                         <form class="m-0 mr-1" action="{{ route('taxes.status', $tax->id) }}" method="POST">
                           @csrf
-                          <button type="submit" class="btn btn-icon btn-flat-{{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                            <i data-feather="{{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'toggle-right' : 'toggle-left' }}"></i>
-                          </button>
+                          <div class="custom-control custom-switch custom-switch-success">
+                            <input type="checkbox" class="custom-control-input" id="tax_status_{{ $tax->id }}" {{ $tax->status === \App\Models\Taxe::STATUS_ACTIVE ? 'checked' : '' }} onchange="this.form.submit()" />
+                            <label class="custom-control-label" for="tax_status_{{ $tax->id }}"></label>
+                          </div>
                         </form>
+                        <a href="{{ route('taxes.edit', $tax->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <i data-feather="edit"></i>
+                        </a>
                         <form class="m-0" action="{{ route('taxes.destroy', $tax->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this tax?') }}');">
                           @csrf
                           @method('DELETE')
@@ -96,5 +97,5 @@
 @endsection
 
 @section('page-script')
-  <script src="{{ asset(mix('js/scripts/pages/app-taxes-list.js')) }}"></script>
+  <script src="{{ asset(mix('js/scripts/pages/app-module-list.js')) }}"></script>
 @endsection

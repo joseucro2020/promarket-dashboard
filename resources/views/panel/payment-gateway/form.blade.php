@@ -2,31 +2,25 @@
 
 @section('title', __('Payment Gateway'))
 
-@section('page-style')
-  <style>
-    .pg-form-title { font-style: italic; }
-    .pg-preview {
-      width: 52px;
-      height: 52px;
-      object-fit: contain;
-      border-radius: 10px;
-      border: 1px solid rgba(0,0,0,.08);
-      background: #fff;
-      padding: 6px;
-    }
-  </style>
-@endsection
-
 @section('content')
-<section>
-  <h2 class="text-center pg-form-title mb-3">{{ $gateway ? __('Edit Payment Gateway') : __('New Payment Gateway') }}</h2>
+@php $gateway = $gateway ?? null; @endphp
 
-  <div class="row justify-content-center">
-    <div class="col-12 col-lg-10 col-xl-8">
+<section>
+  <div class="row">
+    <div class="col-12">
       <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">{{ $gateway ? __('Edit Payment Gateway') : __('New Payment Gateway') }}</h4>
+        </div>
         <div class="card-body">
           @if ($errors->any())
-            <div class="alert alert-danger">{{ __('Please review the form fields.') }}</div>
+            <div class="alert alert-danger">
+              <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
           @endif
 
           <form method="POST" action="{{ $gateway ? route('payment-gateway.update', $gateway->id) : route('payment-gateway.store') }}" enctype="multipart/form-data">
@@ -55,7 +49,7 @@
               <div class="col-md-4">
                 <div class="form-group">
                   <label>{{ __('Currency') }}</label>
-                  <input type="text" class="form-control" name="currency" value="{{ old('currency', $gateway->currency ?? '') }}" placeholder="USD / VES">
+                  <input type="text" class="form-control" name="currency" value="{{ old('currency', $gateway->currency ?? '') }}" placeholder="{{ __('USD / VES') }}">
                   @error('currency')<small class="text-danger">{{ $message }}</small>@enderror
                 </div>
               </div>
@@ -138,27 +132,22 @@
 
               <div class="col-md-12">
                 <div class="form-group">
-                  <label>{{ __('Icon') }} (JPG/PNG)</label>
-                  <div class="d-flex align-items-center" style="gap: 1rem;">
-                    @if(!empty($gateway?->icon))
-                      <img class="pg-preview" src="{{ asset($gateway->icon) }}" alt="{{ $gateway->name }}">
-                    @else
-                      <div class="pg-preview d-flex align-items-center justify-content-center text-muted">{{ __('No icon') }}</div>
-                    @endif
-
-                    <div class="flex-grow-1">
-                      <input type="file" class="form-control" name="icon_file" accept="image/png,image/jpeg">
-                      @error('icon_file')<small class="text-danger">{{ $message }}</small>@enderror
-                      <small class="text-muted">{{ __('JPG/PNG up to 5MB') }}</small>
+                  <label>{{ __('Icon') }} ({{ __('JPG/PNG') }})</label>
+                  <input type="file" class="form-control" name="icon_file" accept="image/png,image/jpeg">
+                  @error('icon_file')<small class="text-danger">{{ $message }}</small>@enderror
+                  <small class="text-muted">{{ __('JPG/PNG up to 5MB') }}</small>
+                  @if(!empty($gateway) && !empty($gateway->icon))
+                    <div class="mt-2">
+                      <img src="{{ asset($gateway->icon) }}" alt="{{ $gateway->name }}" class="img-fluid" style="max-height: 80px;">
                     </div>
-                  </div>
+                  @endif
                 </div>
               </div>
             </div>
 
-            <div class="d-flex justify-content-between mt-2">
-              <a href="{{ route('payment-gateway.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a>
-              <button type="submit" class="btn btn-primary px-4">{{ __('Save') }}</button>
+            <div class="mt-4 d-flex justify-content-end">
+              <a href="{{ route('payment-gateway.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
+              <button type="submit" class="btn btn-primary">{{ $gateway ? __('Update') : __('Save') }}</button>
             </div>
           </form>
         </div>

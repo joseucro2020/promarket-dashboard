@@ -56,16 +56,17 @@
                       <td>{{ $account->number }}</td>
                       <td>{{ $account->identification }}</td>
                       <td>
-                        <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
-                          <a href="#" class="mr-1 btn-edit-account" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                            <i data-feather="edit-2" class="text-primary"></i>
-                          </a>
-                          <button type="button" class="btn btn-icon mr-1 btn-toggle-status btn-flat-{{ (int)$account->status === 1 ? 'success' : 'secondary' }}" data-id="{{ $account->id }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                            <i data-feather="{{ (int)$account->status === 1 ? 'eye' : 'eye-off' }}"></i>
+                        <div class="d-flex align-items-center">
+                          <div class="custom-control custom-switch custom-switch-success mr-1">
+                            <input type="checkbox" class="custom-control-input btn-toggle-status" id="bank_status_{{ $account->id }}" data-id="{{ $account->id }}" {{ (int)$account->status === 1 ? 'checked' : '' }} />
+                            <label class="custom-control-label" for="bank_status_{{ $account->id }}"></label>
+                          </div>
+                          <button type="button" class="btn btn-icon btn-flat-success mr-1 btn-edit-account" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                            <i data-feather="edit"></i>
                           </button>
-                          <a href="#" class="btn-delete-account" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
-                            <i data-feather="trash" class="text-danger"></i>
-                          </a>
+                          <button type="button" class="btn btn-icon btn-flat-danger btn-delete-account" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                            <i data-feather="trash"></i>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -218,7 +219,7 @@
       });
     });
 
-    $(document).on('click', '.btn-toggle-status', function () {
+    $(document).on('change', '.btn-toggle-status', function () {
       var id = $(this).data('id');
 
       $.ajax({

@@ -50,16 +50,17 @@
                     <td>{{ number_format($coupon->discount_percentage, 2) }}%</td>
                     <td>{{ $coupon->status_name }}</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
-                        <a href="{{ route('coupons.edit', $coupon) }}" class="me-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit-2"></i>
-                        </a>
-                        <form class="m-0 me-1" action="{{ route('coupons.status', $coupon) }}" method="POST">
+                      <div class="d-flex align-items-center">
+                        <form class="m-0 mr-1" action="{{ route('coupons.status', $coupon) }}" method="POST">
                           @csrf
-                          <button type="submit" class="btn btn-icon btn-flat-{{ $coupon->status === \App\Models\Coupon::STATUS_ACTIVE ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                            <i data-feather="{{ $coupon->status === \App\Models\Coupon::STATUS_ACTIVE ? 'toggle-right' : 'toggle-left' }}"></i>
-                          </button>
+                          <div class="custom-control custom-switch custom-switch-success">
+                            <input type="checkbox" class="custom-control-input" id="coupon_status_{{ $coupon->id }}" {{ $coupon->status === \App\Models\Coupon::STATUS_ACTIVE ? 'checked' : '' }} onchange="this.form.submit()" />
+                            <label class="custom-control-label" for="coupon_status_{{ $coupon->id }}"></label>
+                          </div>
                         </form>
+                        <a href="{{ route('coupons.edit', $coupon) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <i data-feather="edit"></i>
+                        </a>
                         <form class="m-0" action="{{ route('coupons.destroy', $coupon) }}" method="POST" onsubmit="return confirm('{{ __('Delete this coupon?') }}');">
                           @csrf
                           @method('DELETE')

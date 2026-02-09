@@ -21,7 +21,7 @@
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <a href="{{ route('promotions.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('New Promotion') }}
+                <i data-feather="plus"></i> {{ __('Add New') }}
               </a>
             </div>
           </div>
@@ -71,13 +71,14 @@
                       <input type="number" class="form-control promotions-order-input" data-id="{{ $promotion->id }}" value="{{ $promotion->order }}" min="0">
                     </td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:140px;">
-                        <a href="{{ route('promotions.edit', $promotion) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit-2"></i>
+                      <div class="d-flex align-items-center">
+                        <div class="custom-control custom-switch custom-switch-success mr-1">
+                          <input type="checkbox" class="custom-control-input promotion-status-toggle" id="promotion_status_{{ $promotion->id }}" data-id="{{ $promotion->id }}" data-status="{{ $promotion->status }}" {{ $promotion->status === \App\Models\Promotion::STATUS_ACTIVE ? 'checked' : '' }} />
+                          <label class="custom-control-label" for="promotion_status_{{ $promotion->id }}"></label>
+                        </div>
+                        <a href="{{ route('promotions.edit', $promotion) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <i data-feather="edit"></i>
                         </a>
-                        <button type="button" class="btn btn-icon btn-flat-warning mr-1 toggle-status" data-id="{{ $promotion->id }}" data-status="{{ $promotion->status }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                          <i data-feather="refresh-ccw"></i>
-                        </button>
                         <form class="m-0" action="{{ route('promotions.destroy', $promotion) }}" method="POST" onsubmit="return confirm('{{ __('Delete this promotion?') }}');">
                           @csrf
                           @method('DELETE')
@@ -151,9 +152,8 @@
         });
       });
 
-      $('body').on('click', '.toggle-status', function () {
-        const button = $(this);
-        const promotionId = button.data('id');
+      $('body').on('change', '.promotion-status-toggle', function () {
+        const promotionId = $(this).data('id');
 
         $.ajax({
           url: statusUrlTemplate.replace('__ID__', promotionId),

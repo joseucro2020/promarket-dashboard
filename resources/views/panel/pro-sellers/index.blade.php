@@ -16,13 +16,13 @@
             <div class="head-label">
               <h4 class="mb-0">{{ __('Pro Sellers') }}</h4>
             </div>
-          <div class="dt-action-buttons text-right">
+          {{-- <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <button type="button" class="dt-button create-new btn btn-primary" data-toggle="modal" data-target="#newProClientModal">
                 <i data-feather="plus"></i> {{ __('Register new PRO client') }}
               </button>
             </div>
-          </div>
+          </div> --}}
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -93,13 +93,22 @@
       responsive: true,
       ajax: {
         url: "{{ url('panel/pro-sellers/all') }}",
-        type: 'GET'
+        type: 'GET',
+        dataSrc: ''
       },
       columns: [
         { data: 'name' },
         { data: 'identificacion' },
         { data: 'persona' },
-        { data: 'created_at', render: function(d){ return d ? moment(d).format('DD-MM-YYYY') : ''; } },
+        { data: 'created_at', render: function(d){
+          if (!d) return '';
+          var date = new Date(d);
+          if (isNaN(date.getTime())) return '';
+          var day = String(date.getDate()).padStart(2, '0');
+          var month = String(date.getMonth() + 1).padStart(2, '0');
+          var year = date.getFullYear();
+          return day + '-' + month + '-' + year;
+        } },
         { data: 'telefono' },
         { data: 'status', render: function(d){ return d == 1 ? '{{ __('Active') }}' : '{{ __('Inactive') }}'; } },
         { data: null, orderable:false, searchable:false }
@@ -110,14 +119,25 @@
           var id = data.id;
           var checked = data.status == 1 ? 'checked' : '';
           var html = '';
-          html += '<input class="form-check-input pro-status-toggle" type="checkbox" data-id="'+id+'" '+checked+'> ';
-          html += '<a class="btn btn-sm btn-icon" href="{{ url('panel/pro-sellers') }}/'+id+'"><i data-feather="eye"></i></a> ';
-          html += '<a class="btn btn-sm btn-icon" href="{{ url('panel/pro-sellers') }}/'+id+'"><i data-feather="edit-2"></i></a> ';
-          html += '<button class="btn btn-sm btn-icon btn-delete text-danger" data-id="'+id+'"><i data-feather="trash-2"></i></button> ';
-          html += '<button class="btn btn-sm btn-icon btn-balance" data-id="'+id+'"><i data-feather="dollar-sign"></i></button> ';
-          html += '<button class="btn btn-sm btn-icon btn-promote" data-id="'+id+'"><i data-feather="volume-2"></i></button> ';
-          html += '<a class="btn btn-sm btn-icon" href="{{ url('panel/pro-sellers') }}/'+id+'"><i data-feather="user"></i></a>';
-          return '<div class="btn-group" role="group">'+html+'</div>';
+          html += '<form class="m-0 mr-1" style="display:inline-block;">'
+            + '<div class="custom-control custom-switch custom-switch-success">'
+            + '<input class="custom-control-input pro-status-toggle" type="checkbox" id="pro_status_'+id+'" data-id="'+id+'" '+checked+'> '
+            + '<label class="custom-control-label" for="pro_status_'+id+'"></label>'
+            + '</div>'
+            + '</form>';
+          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('View') }}">'
+            + '<i data-feather="eye"></i></a> ';
+          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('Edit') }}">'
+            + '<i data-feather="edit"></i></a> ';
+          html += '<button class="btn btn-sm btn-icon btn-flat-danger mr-1 btn-delete" data-id="'+id+'" title="{{ __('Delete') }}">'
+            + '<i data-feather="trash"></i></button> ';
+          html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-balance" data-id="'+id+'" title="{{ __('Balance') }}">'
+            + '<i data-feather="dollar-sign"></i></button> ';
+          html += '<button class="btn btn-sm btn-icon btn-flat-info mr-1 btn-promote" data-id="'+id+'" title="{{ __('Promote') }}">'
+            + '<i data-feather="volume-2"></i></button> ';
+          html += '<a class="btn btn-sm btn-icon btn-flat-secondary" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('Profile') }}">'
+            + '<i data-feather="user"></i></a>';
+          return '<div class="d-flex align-items-center">'+html+'</div>';
         }
       }],
       drawCallback: function(){ feather.replace(); }

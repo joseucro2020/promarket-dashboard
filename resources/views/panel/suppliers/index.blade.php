@@ -55,16 +55,17 @@
                     <td>{{ $s->tlf_prove }}</td>
                     <td>{{ $s->email_prove }}</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:170px;">
-                        <a href="{{ route('suppliers.edit', $s->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit-2"></i>
-                        </a>
+                      <div class="d-flex align-items-center">
                         <form class="m-0 mr-1" action="{{ route('suppliers.status', $s->id) }}" method="POST">
                           @csrf
-                          <button type="submit" class="btn btn-icon btn-flat-{{ $s->status_prove == '1' ? 'success' : 'secondary' }}" data-toggle="tooltip" data-placement="top" title="{{ __('Toggle status') }}">
-                            <i data-feather="{{ $s->status_prove == '1' ? 'toggle-right' : 'toggle-left' }}"></i>
-                          </button>
+                          <div class="custom-control custom-switch custom-switch-success">
+                            <input type="checkbox" class="custom-control-input" id="supplier_status_{{ $s->id }}" {{ $s->status_prove == '1' ? 'checked' : '' }} onchange="this.form.submit()" />
+                            <label class="custom-control-label" for="supplier_status_{{ $s->id }}"></label>
+                          </div>
                         </form>
+                        <a href="{{ route('suppliers.edit', $s->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <i data-feather="edit"></i>
+                        </a>
                         <form class="m-0" action="{{ route('suppliers.destroy', $s->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this supplier?') }}');">
                           @csrf
                           @method('DELETE')
