@@ -9,6 +9,8 @@ use App\Http\Requests\DiscountRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\Subcategory;
+use App\Models\Subsubcategories;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -72,6 +74,8 @@ class DiscountController extends Controller
         return view('panel.discounts.form', [
             'categories' => $categories,
             'products' => $products,
+            'subcategories' => Subcategory::where('status','1')->get(),
+            'subsub' => Subsubcategories::where('status','1')->get(),
         ]);
     }
 
@@ -181,6 +185,8 @@ class DiscountController extends Controller
             'categories' => $categories,
             'products' => $products,
             'discount' => $discount->load('products'),
+            'subcategories' => Subcategory::where('status','1')->get(),
+            'subsub' => Subsubcategories::where('status','1')->get(),
         ]);
     }
 
@@ -333,9 +339,10 @@ class DiscountController extends Controller
         $data = [];
         foreach ($rows as $row) {
             $categoryName = $row->categories->name ?? '';
-            $price = $row->price_1 ?? '';
-            $action = '<button type="button" class="btn btn-sm btn-outline-primary btn-add-product" data-id="'.$row->id.'" data-name="'.htmlspecialchars($row->name, ENT_QUOTES).'">'.__('Add').'</button>';
-            $data[] = ['select' => $action, 'name' => $row->name, 'category' => $categoryName, 'price' => $price];
+            $img = $row->image_url ? $row->image_url : url('images/placeholder.png');
+            $imgHtml = '<div class="text-center"><img src="'.$img.'" style="max-height:48px" class="img-fluid"/></div>';
+            $action = '<button type="button" class="btn btn-icon btn-flat-success btn-add-product" data-id="'.$row->id.'" data-name="'.htmlspecialchars($row->name, ENT_QUOTES).'" title="'.__('Add').'"><i data-feather="plus"></i></button>';
+            $data[] = ['image' => $imgHtml, 'name' => $row->name, 'category' => $categoryName, 'select' => $action];
         }
 
         return response()->json([

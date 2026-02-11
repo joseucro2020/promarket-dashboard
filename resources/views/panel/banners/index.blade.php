@@ -8,120 +8,35 @@
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap4.min.css')) }}">
 @endsection
 
-@section('page-style')
-  <style>
-    .banner-upload-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: .75rem;
-      padding: 1rem 1.25rem;
-      border: 1px dashed rgba(0,0,0,.2);
-      border-radius: .5rem;
-      background: rgba(0,0,0,.01);
-    }
-    .banner-upload-btn i { width: 38px; height: 38px; }
-
-    /* Gallery view (DataTable-backed) */
-    .banners-table thead { display: none; }
-    .banners-table.dataTable { border-collapse: separate !important; border-spacing: 0; }
-    .banners-table.dataTable tbody {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.25rem;
-      padding: 1.25rem 0;
-    }
-    .banners-table.dataTable tbody tr {
-      display: block;
-      position: relative;
-      width: 320px;
-      border: 1px solid rgba(0,0,0,.12);
-      border-radius: .5rem;
-      padding: .75rem;
-      background: #fff;
-      box-shadow: 0 1px 2px rgba(0,0,0,.03);
-    }
-    .banners-table.dataTable tbody tr:hover {
-      box-shadow: 0 6px 18px rgba(0,0,0,.08);
-      transform: translateY(-1px);
-      transition: .15s ease;
-    }
-    .banners-table.dataTable tbody td {
-      display: block;
-      padding: 0;
-      border: 0 !important;
-      background: transparent !important;
-    }
-    .banner-thumb {
-      width: 100%;
-      height: 96px;
-      object-fit: cover;
-      border-radius: .35rem;
-      border: 1px solid rgba(0,0,0,.08);
-      background: #f8f8f8;
-      cursor: pointer;
-    }
-    .banner-actions {
-      position: absolute;
-      top: .55rem;
-      right: .55rem;
-      display: flex;
-      gap: .35rem;
-      z-index: 2;
-    }
-    .banner-actions .btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(0,0,0,.10);
-    }
-    .banner-actions .btn:hover { background: #fff; }
-    .banner-meta {
-      margin-top: .6rem;
-      display: flex;
-      justify-content: space-between;
-      gap: .5rem;
-      color: #6c757d;
-      font-size: .8rem;
-    }
-    @media (max-width: 576px) {
-      .banners-table.dataTable tbody tr { width: 100%; }
-    }
-  </style>
-@endsection
-
 @section('content')
 <section id="basic-datatable">
   <div class="row">
     <div class="col-12">
-      <h2 class="text-center mb-2">{{ __('Banners') }}</h2>
-
       <div class="card">
+        <div class="card-header border-bottom p-1">
+          <div class="head-label">
+            <h4 class="mb-0">{{ __('Banners List') }}</h4>
+          </div>
+          <div class="dt-action-buttons text-right">
+            <div class="dt-buttons d-inline-flex">
+              <button type="button" class="dt-button create-new btn btn-primary" onclick="window.__selectBannerFile(0)">
+                <i data-feather="plus"></i> {{ __('Add New') }}
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="card-body">
           @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
           @endif
 
-          <div class="d-flex justify-content-start mb-2">
-            <button type="button" class="banner-upload-btn btn btn-link p-0" onclick="window.__selectBannerFile(0)">
-              <i data-feather="plus-circle" class="text-primary"></i>
-              <div class="text-left">
-                <div class="font-weight-bold">{{ __('Add New') }}</div>
-                <small class="text-muted">{{ __('JPG/PNG up to 5MB') }}</small>
-              </div>
-            </button>
-            <input id="bannerFileInput" type="file" accept="image/png,image/jpeg" class="d-none" />
-          </div>
+          <input id="bannerFileInput" type="file" accept="image/png,image/jpeg" class="d-none" />
 
           <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover w-100 module-list-table banners-table">
+            <table class="table table-striped table-bordered table-hover w-100 banners-table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>{{ __('ID') }}</th>
                   <th>{{ __('Photo') }}</th>
                   <th>{{ __('File') }}</th>
                   <th>{{ __('Registration') }}</th>
@@ -129,40 +44,38 @@
                 </tr>
               </thead>
               <tbody>
-                @foreach($banners as $banner)
+                @forelse($banners as $banner)
                   <tr data-id="{{ $banner->id }}" data-file="{{ $banner->foto }}">
                     <td>{{ $banner->id }}</td>
                     <td>
-                      <div class="banner-actions">
-                        <button type="button" class="btn" onclick="window.__selectBannerFile({{ $banner->id }})" title="{{ __('Edit') }}">
-                          <i data-feather="upload"></i>
-                        </button>
-
-                        <form class="m-0" action="{{ route('banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this banner?') }}');">
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" class="btn" title="{{ __('Delete') }}">
-                            <i data-feather="x"></i>
-                          </button>
-                        </form>
-                      </div>
-
                       @if($banner->foto && file_exists(public_path('img/slider/'.$banner->foto)))
-                        <img class="banner-thumb" src="{{ asset('img/slider/'.$banner->foto) }}" alt="Banner #{{ $banner->id }}" onclick="window.__selectBannerFile({{ $banner->id }})">
+                        <img class="img-fluid rounded" style="max-height: 64px;" src="{{ asset('img/slider/'.$banner->foto) }}" alt="Banner #{{ $banner->id }}" onclick="window.__selectBannerFile({{ $banner->id }})">
                       @else
-                        <div class="text-muted">{{ __('No image') }}</div>
+                        <span class="text-muted">{{ __('No image') }}</span>
                       @endif
                     </td>
                     <td>{{ $banner->foto }}</td>
                     <td>{{ optional($banner->created_at)->format('Y-m-d H:i') }}</td>
                     <td>
-                      <div class="banner-meta">
-                        <span>#{{ $banner->id }}</span>
-                        <span>{{ optional($banner->created_at)->format('Y-m-d H:i') }}</span>
+                      <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}" onclick="window.__selectBannerFile({{ $banner->id }})">
+                          <i data-feather="edit"></i>
+                        </button>
+                        <form class="m-0" action="{{ route('banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this banner?') }}');">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                            <i data-feather="trash"></i>
+                          </button>
+                        </form>
                       </div>
                     </td>
                   </tr>
-                @endforeach
+                @empty
+                  <tr>
+                    <td colspan="5" class="text-center">{{ __('No banners yet.') }}</td>
+                  </tr>
+                @endforelse
               </tbody>
             </table>
           </div>
@@ -192,16 +105,22 @@
   $(function() {
     $('.banners-table').DataTable({
       responsive: true,
-      dom: 't',
-      language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
-      paging: false,
-      info: false,
-      searching: false,
-      ordering: false,
+      dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+      order: [[0, 'desc']],
       columnDefs: [
-        { visible: false, targets: [0, 2, 3] }
+        { orderable: false, targets: -1 }
       ],
-      drawCallback: function() { if (feather) { feather.replace({ width: 14, height: 14 }); } }
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
+      },
+      drawCallback: function() {
+        if (feather) {
+          feather.replace({
+            width: 14,
+            height: 14
+          });
+        }
+      }
     });
 
     const input = document.getElementById('bannerFileInput');

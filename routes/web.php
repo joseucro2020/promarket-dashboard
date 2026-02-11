@@ -79,6 +79,8 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('productos/{id}/editar', [ProductController::class, 'edit'])->name('products.edit');
   Route::put('productos/{id}', [ProductController::class, 'update'])->name('products.update');
   Route::delete('productos/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+  Route::post('productos/{id}/status', [ProductController::class, 'status'])->name('products.status');
+  Route::get('productos/{id}/subcategorias', [ProductController::class, 'getSubcategories'])->name('products.subcategories');
   // AJAX: actualizar utilidad/price de una presentación
   Route::post('product-amounts/{id}/utilidad', [ProductController::class, 'updateUtilidad'])->name('product-amounts.utilidad');
 
@@ -191,6 +193,9 @@ Route::group(['prefix' => 'panel'], function () {
   // States & Municipalities (Estados y Municipios)
   Route::get('estados-municipios', [StatesMunicipalitiesController::class, 'index'])->name('states-municipalities.index');
   Route::get('estados-municipios/{id}', [StatesMunicipalitiesController::class, 'show'])->name('states-municipalities.show');
+  Route::get('estados-municipios/municipios/{id}/sectores', [StatesMunicipalitiesController::class, 'parishes'])->name('states-municipalities.municipalities.parishes');
+  Route::post('estados-municipios/municipios/{id}/sectores', [StatesMunicipalitiesController::class, 'storeParish'])->name('states-municipalities.parishes.store');
+  Route::delete('estados-municipios/municipios/sectores/{id}', [StatesMunicipalitiesController::class, 'destroyParish'])->name('states-municipalities.parishes.destroy');
   Route::put('estados-municipios/{id}', [StatesMunicipalitiesController::class, 'update'])->name('states-municipalities.update');
   Route::post('estados-municipios/{id}/status', [StatesMunicipalitiesController::class, 'status'])->name('states-municipalities.status');
   Route::put('estados-municipios/municipios/{id}', [StatesMunicipalitiesController::class, 'updateMunicipality'])->name('states-municipalities.municipalities.update');

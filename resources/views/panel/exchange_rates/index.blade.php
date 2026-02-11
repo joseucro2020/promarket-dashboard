@@ -15,11 +15,11 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Exchange Rate Registry') }}</h4>
+            <h4 class="mb-0">{{ __('Exchange Rates List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary me-2">
+              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary mr-1">
                 <i data-feather="plus"></i> {{ __('Add New') }}
               </a>
               <form id="fetch-bcv-form" method="POST" action="{{ route('exchange-rates.fetch-now') }}" style="display:inline;">
@@ -56,11 +56,11 @@
                     <td>{{ $r->change }}</td>
                     <td>{{ \Illuminate\Support\Str::limit($r->notes, 60) }}</td>
                     <td>
-                      <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:140px;">
-                        <a href="{{ route('exchange-rates.edit', $r->id) }}" class="mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit-2"></i>
+                      <div class="d-flex align-items-center">
+                        <a href="{{ route('exchange-rates.edit', $r->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('exchange-rates.destroy', $r->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this rate?') }}')" style="display:inline;">
+                        <form class="m-0" action="{{ route('exchange-rates.destroy', $r->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this rate?') }}')">
                           @csrf
                           @method('DELETE')
                           <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
@@ -93,8 +93,8 @@
 @endsection
 
 @section('page-script')
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
     $(document).ready(function() {
       $('.exchange-rates-table').DataTable({
         responsive: true,
@@ -115,7 +115,7 @@
           }
         }
       });
-      // highlight newest row and show toast when redirected after update/create using SweetAlert2
+      // Highlight newest row and show toast when redirected after update/create.
       const successEl = document.getElementById('exchange-rate-success');
       if (successEl) {
         const msg = successEl.textContent.trim();
@@ -131,7 +131,7 @@
           });
         }
 
-        // highlight first row in table briefly
+        // Highlight first row in table briefly.
         const firstRow = document.querySelector('.exchange-rates-table tbody tr');
         if (firstRow) {
           firstRow.style.transition = 'background-color 0.5s ease';
@@ -140,7 +140,7 @@
         }
       }
 
-      // fetch now button confirmation
+      // Fetch-now button confirmation.
       const fetchBtn = document.getElementById('fetch-bcv-btn');
       const fetchForm = document.getElementById('fetch-bcv-form');
       if (fetchBtn && fetchForm) {

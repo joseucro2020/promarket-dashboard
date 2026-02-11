@@ -46,10 +46,15 @@
               </thead>
               <tbody>
                 @forelse($promotions as $promotion)
+                  @php
+                    $isActive = $promotion->status === \App\Models\Promotion::STATUS_ACTIVE
+                      && !($promotion->start_date && $promotion->start_date->isFuture())
+                      && !($promotion->end_date && $promotion->end_date->isPast());
+                  @endphp
                   <tr>
                     <td>{{ $promotion->title }}</td>
-                    <td>{{ optional($promotion->start_date)->format('d-m-Y') }}</td>
-                    <td>{{ optional($promotion->end_date)->format('d-m-Y') }}</td>
+                    <td data-order="{{ optional($promotion->start_date)->format('Y-m-d') }}">{{ optional($promotion->start_date)->format('d-m-Y') }}</td>
+                    <td data-order="{{ optional($promotion->end_date)->format('Y-m-d') }}">{{ optional($promotion->end_date)->format('d-m-Y') }}</td>
                     <td>{{ $promotion->discount_percentage }}%</td>
                     <td>{{ $promotion->limit }}</td>
                     <td class="text-center">
@@ -65,7 +70,7 @@
                             $badge = 'badge badge-pill badge-light-secondary';
                         }
                       @endphp
-                      <span class="{{ $badge }}">{{ $promotion->status_name }}</span>
+                      <span class="{{ $badge }} promotion-status-badge" data-status="{{ $promotion->status }}">{{ $promotion->status_name }}</span>
                     </td>
                     <td class="text-center" style="min-width:120px;">
                       <input type="number" class="form-control promotions-order-input" data-id="{{ $promotion->id }}" value="{{ $promotion->order }}" min="0">
@@ -73,7 +78,7 @@
                     <td>
                       <div class="d-flex align-items-center">
                         <div class="custom-control custom-switch custom-switch-success mr-1">
-                          <input type="checkbox" class="custom-control-input promotion-status-toggle" id="promotion_status_{{ $promotion->id }}" data-id="{{ $promotion->id }}" data-status="{{ $promotion->status }}" {{ $promotion->status === \App\Models\Promotion::STATUS_ACTIVE ? 'checked' : '' }} />
+                          <input type="checkbox" class="custom-control-input promotion-status-toggle" id="promotion_status_{{ $promotion->id }}" data-url="{{ route('promotions.status', $promotion) }}" {{ $isActive ? 'checked' : '' }} />
                           <label class="custom-control-label" for="promotion_status_{{ $promotion->id }}"></label>
                         </div>
                         <a href="{{ route('promotions.edit', $promotion) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
@@ -112,10 +117,10 @@
 @endsection
 
 @section('page-script')
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     $(function() {
       const csrfToken = $('meta[name="csrf-token"]').attr('content');
-      const statusUrlTemplate = "{{ url('panel/promociones/__ID__/status') }}";
       const orderUrlTemplate = "{{ url('panel/promociones/__ID__/orden') }}";
 
       $('.promotions-table').DataTable({
@@ -152,16 +157,95 @@
         });
       });
 
-      $('body').on('change', '.promotion-status-toggle', function () {
-        const promotionId = $(this).data('id');
+      function isPromotionActive(payload) {
+        if (!payload || typeof payload.status === 'undefined') return false;
+        const statusActive = parseInt(payload.status, 10) === {{ (int)\App\Models\Promotion::STATUS_ACTIVE }};
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let startOk = true;
+        let endOk = true;
+        if (payload.start_date) {
+          const startDate = new Date(payload.start_date);
+          startOk = startDate <= today;
+        }
+        if (payload.end_date) {
+          const endDate = new Date(payload.end_date);
+          endOk = endDate >= today;
+        }
+        return statusActive && startOk && endOk;
+      }
 
-        $.ajax({
-          url: statusUrlTemplate.replace('__ID__', promotionId),
+      $('body').on('change', '.promotion-status-toggle', function () {
+        const checkbox = this;
+        const url = checkbox.dataset.url;
+        const previous = !checkbox.checked;
+
+        if (!url) {
+          checkbox.checked = previous;
+          return;
+        }
+
+        fetch(url, {
           method: 'POST',
-          headers: { 'X-CSRF-TOKEN': csrfToken },
-        }).done(() => {
-          location.reload();
-        });
+          headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              throw new Error(payload.message || '{{ __('An error occurred') }}');
+            }
+            return response.json();
+          })
+          .then((payload) => {
+            if (payload && typeof payload.status !== 'undefined') {
+              checkbox.checked = isPromotionActive(payload);
+              const $row = $(checkbox).closest('tr');
+              const $badge = $row.find('.promotion-status-badge');
+              const status = parseInt(payload.status, 10);
+              let badgeClass = 'badge badge-pill badge-light-secondary';
+
+              if (status === {{ (int)\App\Models\Promotion::STATUS_ACTIVE }}) {
+                badgeClass = 'badge badge-pill badge-light-success';
+              } else if (status === {{ (int)\App\Models\Promotion::STATUS_SOLD_OUT }}) {
+                badgeClass = 'badge badge-pill badge-light-warning';
+              }
+
+              $badge.attr('class', badgeClass + ' promotion-status-badge');
+              $badge.text(payload.status_name || $badge.text());
+              $badge.attr('data-status', status);
+            }
+            if (window.Swal) {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ __('Information updated successfully.') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+              });
+            }
+          })
+          .catch((error) => {
+            checkbox.checked = previous;
+            const message = error.message || '{{ __('An error occurred') }}';
+            if (window.Swal) {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: message,
+                showConfirmButton: false,
+                timer: 4500,
+                timerProgressBar: true
+              });
+            } else {
+              alert(message);
+            }
+          });
       });
     });
   </script>

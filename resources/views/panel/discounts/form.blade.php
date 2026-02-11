@@ -160,6 +160,11 @@
                           <div class="col-md-6 mb-2">
                             <select id="filter-subcategory" class="form-control select2" data-placeholder="{{ __('Subcategory') }}">
                               <option value="">{{ __('All subcategories') }}</option>
+                              @if(isset($subcategories))
+                                @foreach($subcategories as $sub)
+                                  <option value="{{ $sub->id }}" data-category="{{ $sub->category_id }}">{{ e($sub->name) }}</option>
+                                @endforeach
+                              @endif
                             </select>
                           </div>
                         </div>
@@ -167,6 +172,11 @@
                           <div class="col-md-12 mb-2">
                             <select id="filter-subsubcategory" class="form-control select2" data-placeholder="{{ __('Sub-subcategory') }}">
                               <option value="">{{ __('All sub-subcategories') }}</option>
+                              @if(isset($subsub))
+                                @foreach($subsub as $ss)
+                                  <option value="{{ $ss->id }}" data-subcategory="{{ $ss->subcategory_id }}">{{ e($ss->name) }}</option>
+                                @endforeach
+                              @endif
                             </select>
                           </div>
                         </div>
@@ -176,10 +186,10 @@
                     <table id="discounts-products-table" class="table table-striped table-bordered" style="width:100%">
                       <thead>
                         <tr>
-                          <th>{{ __('') }}</th>
+                          <th class="text-center">{{ __('Logo') }}</th>
                           <th>{{ __('Product') }}</th>
                           <th>{{ __('Category') }}</th>
-                          <th>{{ __('Price') }}</th>
+                          <th class="text-end">{{ __('Actions') }}</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -195,32 +205,37 @@
                     <h5 class="card-title mb-0">{{ __('Selected products for discount') }}</h5>
                   </div>
                   <div class="card-body">
-                    <div id="selected-products-column">
-                      @if(isset($discount) && $selectedMode == 'quantity' && $discount->products->count())
-                        @foreach($discount->products as $p)
-                          <input type="hidden" name="products_id[]" value="{{ $p->id }}">
-                          <div class="d-flex align-items-center mb-1 selected-product-row" data-id="{{ $p->id }}">
-                            <span class="mr-2">{{ e($p->name) }}</span>
-                            <a href="#" class="btn btn-sm btn-outline-danger remove-product" data-id="{{ $p->id }}">{{ __('Remove') }}</a>
-                          </div>
-                        @endforeach
-                      @else
-                        <p class="text-muted">{{ __('No products selected yet.') }}</p>
-                      @endif
+                    <div class="table-responsive">
+                      <table class="table table-striped table-bordered selected-products-table w-100">
+                        <thead>
+                          <tr>
+                            <th>{{ __('Product') }}</th>
+                            <th class="text-end">{{ __('Actions') }}</th>
+                          </tr>
+                        </thead>
+                        <tbody id="selected-products-column">
+                          @if(isset($discount) && $selectedMode == 'quantity' && $discount->products->count())
+                            @foreach($discount->products as $p)
+                              <tr class="selected-product-row" data-id="{{ $p->id }}">
+                                <td>{{ e($p->name) }}</td>
+                                <td class="text-end">
+                                  <button type="button" class="btn btn-icon btn-flat-danger remove-product" data-id="{{ $p->id }}" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}">
+                                    <i data-feather="trash"></i>
+                                  </button>
+                                  <input type="hidden" name="products_id[]" value="{{ $p->id }}">
+                                </td>
+                              </tr>
+                            @endforeach
+                          @endif
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            @if(isset($discount) && $selectedMode == 'quantity' && $discount->products->count())
-              <div id="selected-products" class="mt-2">
-                @foreach($discount->products as $p)
-                  <input type="hidden" name="products_id[]" value="{{ $p->id }}">
-                  <span class="badge badge-primary mr-1 selected-product" data-id="{{ $p->id }}">{{ e($p->name) }} <a href="#" class="text-white ml-1 remove-product" data-id="{{ $p->id }}">&times;</a></span>
-                @endforeach
-              </div>
-            @endif
+
 
             <div class="mt-4 d-flex justify-content-end">
               <a href="{{ route('discounts.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
@@ -265,6 +280,8 @@
       var productsTable = $('#discounts-products-table').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
+        order: [[1, 'asc']],
         ajax: {
           url: '{{ route('discounts.products.data') }}',
           data: function(d) {
@@ -274,47 +291,119 @@
           }
         },
         columns: [
-          { data: 'select', orderable: false, searchable: false },
+          { data: 'image', orderable: false, searchable: false },
           { data: 'name' },
           { data: 'category' },
-          { data: 'price' }
+          { data: 'select', orderable: false, searchable: false }
         ],
+        language: {
+          url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
+        },
         drawCallback: function() {
-          // attach click handlers for select buttons
-          $('.btn-add-product').off('click').on('click', function() {
-            var id = $(this).data('id');
-            var name = $(this).data('name');
-            // prevent duplicates
-            if ($('input[name="products_id[]"][value="' + id + '"]').length === 0) {
-              $('<input>').attr({type: 'hidden', name: 'products_id[]', value: id}).appendTo('#discount-form');
-              var row = $('<div class="d-flex align-items-center mb-1 selected-product-row" data-id="'+id+'"><span class="mr-2">'+name+'</span><a href="#" class="btn btn-sm btn-outline-danger remove-product" data-id="'+id+'">{{ __('Remove') }}</a></div>');
-              if ($('#selected-products-column').length === 0) {
-                // fallback: append to form
-                $('<div id="selected-products-column" class="mt-2"></div>').appendTo('#discount-form');
-              }
-              // if message 'No products selected yet.' exists, remove it
-              $('#selected-products-column').find('.text-muted').remove();
-              $('#selected-products-column').append(row);
-            }
-          });
-          // remove handler
-          $('.remove-product').off('click').on('click', function(e){
-            e.preventDefault();
-            var id = $(this).data('id');
-            $('input[name="products_id[]"][value="'+id+'"]').remove();
-            $('.selected-product-row[data-id="'+id+'"]').remove();
-          });
+          if (window.feather) {
+            feather.replace({ width: 14, height: 14 });
+          }
         }
       });
 
-      // Reload subcategory options when category changes (simple client-side: server endpoint required for full data)
+      var selectedProductsTable = $('.selected-products-table').DataTable({
+        responsive: true,
+        order: [[0, 'asc']],
+        columnDefs: [
+          { orderable: false, targets: -1 }
+        ],
+        language: {
+          url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json',
+          emptyTable: '{{ __('No products selected yet.') }}'
+        },
+        drawCallback: function() {
+          if (window.feather) {
+            feather.replace({ width: 14, height: 14 });
+          }
+        }
+      });
+
+      // Add product to discount (offers-form behavior)
+      $(document).on('click', '.btn-add-product', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        if ($('input[name="products_id[]"][value="' + id + '"]').length) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: '{{ __('Product already added') }}',
+            showConfirmButton: false,
+            timer: 2000
+          });
+          return;
+        }
+
+        const actionHtml = '<button type="button" class="btn btn-icon btn-flat-danger remove-product" data-id="' + id + '" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}"><i data-feather="trash"></i></button>' +
+          '<input type="hidden" name="products_id[]" value="' + id + '">';
+        const rowNode = selectedProductsTable.row.add([name, actionHtml]).draw().node();
+        $(rowNode).attr('data-id', id).addClass('selected-product-row');
+        if (window.feather) {
+          feather.replace({ width: 14, height: 14 });
+        }
+      });
+
+      // Remove product from discount
+      $(document).on('click', '.remove-product', function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('input[name="products_id[]"][value="' + id + '"]').remove();
+        var row = $('.selected-products-table tbody tr[data-id="' + id + '"]');
+        if (row.length) {
+          selectedProductsTable.row(row).remove().draw();
+        }
+      });
+
+      // Dynamic subcategory/subsub filters (same behavior as offers form)
+      const $subcat = $('#filter-subcategory');
+      const $subsub = $('#filter-subsubcategory');
+      const subcatOptions = $subcat.find('option').clone();
+      const subsubOptions = $subsub.find('option').clone();
+
       $('#filter-category').on('change', function() {
-        // clear children selects
-        $('#filter-subcategory').html('<option value="">{{ __('All subcategories') }}</option>').trigger('change');
-        $('#filter-subsubcategory').html('<option value="">{{ __('All sub-subcategories') }}</option>').trigger('change');
+        const cat = $(this).val();
+        if (!cat) {
+          $subcat.empty().append(subcatOptions);
+          $subsub.empty().append(subsubOptions);
+          productsTable.ajax.reload();
+          return;
+        }
+
+        const url = '/panel/promociones/' + cat + '/subcategorias';
+        $.getJSON(url, function(response) {
+          $subcat.empty().append('<option value="">{{ __('All subcategories') }}</option>');
+          response.subcategory.forEach(function(s) {
+            $subcat.append('<option value="' + s.id + '">' + s.name + '</option>');
+          });
+
+          $subsub.empty().append('<option value="">{{ __('All sub-subcategories') }}</option>');
+          productsTable.ajax.reload();
+        });
+      });
+
+      $subcat.on('change', function() {
+        const sub = $(this).val();
+        if (!sub) {
+          $subsub.empty().append(subsubOptions);
+          productsTable.ajax.reload();
+          return;
+        }
+
+        $subsub.empty().append(subsubOptions.filter(function() {
+          const val = $(this).attr('value');
+          if (!val) return true;
+          return $(this).data('subcategory').toString() === sub.toString();
+        }));
+
         productsTable.ajax.reload();
       });
-      $('#filter-subcategory, #filter-subsubcategory').on('change', function() {
+
+      $('#filter-subsubcategory').on('change', function() {
         productsTable.ajax.reload();
       });
 

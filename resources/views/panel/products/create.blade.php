@@ -134,7 +134,7 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>{{ __('Main Category') }}</label>
-                                                <select class="form-control" name="category_id">
+                                                <select class="form-control" id="category_id" name="category_id">
                                                     <option value="">{{ __('Select') }}</option>
                                                     @foreach ($categories as $category)
                                                         <option value="{{ $category->id }}">{{ $category->name }}
@@ -146,7 +146,7 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>{{ __('Sub Category') }}</label>
-                                                <select class="form-control" name="subcategory_id">
+                                                <select class="form-control" id="subcategory_id" name="subcategory_id">
                                                     <option value="">{{ __('Select') }}</option>
                                                     <!-- Subcategories should be loaded via AJAX based on Category -->
                                                 </select>
@@ -155,9 +155,67 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>{{ __('Sub-Sub Category') }}</label>
-                                                <select class="form-control" name="subsubcategory_id">
+                                                <select class="form-control" id="subsubcategory_id" name="subsubcategory_id">
                                                     <option value="">{{ __('Select') }}</option>
                                                 </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <button type="button" class="btn btn-flat-primary d-flex align-items-center p-0" id="toggle-secondary-category-form">
+                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-1" style="width: 28px; height: 28px;">
+                                                        <i data-feather="plus" style="width: 16px; height: 16px;"></i>
+                                                    </div>
+                                                    <span style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('Add secondary category') }}</span>
+                                                </button>
+                                            </div>
+                                            <div id="secondary-category-form" class="border rounded p-2 mb-1 d-none">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>{{ __('Secondary Category') }}</label>
+                                                            <div class="d-flex align-items-center">
+                                                                <select class="form-control" id="secondary_category_id">
+                                                                    <option value="">{{ __('Select') }}</option>
+                                                                    @foreach ($categories as $category)
+                                                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <button type="button" class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1" id="add-secondary-category-item-btn" aria-label="{{ __('Add secondary category') }}">
+                                                                    <i data-feather="plus"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6 d-none" id="secondary_subcategory_wrap">
+                                                        <div class="form-group">
+                                                            <label>{{ __('Secondary Subcategory') }}</label>
+                                                            <div class="d-flex align-items-center">
+                                                                <select class="form-control" id="secondary_subcategory_id">
+                                                                    <option value="">{{ __('Select') }}</option>
+                                                                </select>
+                                                                <button type="button" class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1" id="add-secondary-subcategory-btn" aria-label="{{ __('Add secondary subcategory') }}">
+                                                                    <i data-feather="plus"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="border rounded p-2 p-md-3 bg-white shadow-sm mt-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="text-uppercase small text-muted">{{ __('Secondary Subcategory') }}</span>
+                                                </div>
+                                                <div id="secondary-subcategory-list" class="d-flex flex-wrap">
+                                                    <p class="text-muted mb-0" data-empty>{{ __('No secondary subcategories selected') }}</p>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <span class="text-uppercase small text-muted">{{ __('Secondary Categories') }}</span>
+                                                </div>
+                                                <div id="secondary-category-list" class="d-flex flex-wrap mt-1">
+                                                    <p class="text-muted mb-0" data-empty>{{ __('No secondary categories selected') }}</p>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -231,6 +289,40 @@
                                                 </select>
                                             </div>
                                         </div>
+
+                                        <div class="col-12">
+                                            <label class="font-weight-bold">{{ __('Tags') }}</label>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <button type="button" class="btn btn-flat-primary d-flex align-items-center p-0" id="add-tag-btn">
+                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-1" style="width: 28px; height: 28px;">
+                                                        <i data-feather="plus" style="width: 16px; height: 16px;"></i>
+                                                    </div>
+                                                    <span style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('Add Tag') }}</span>
+                                                </button>
+                                            </div>
+                                            <div id="tag-form" class="row d-none">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <div class="d-flex align-items-center">
+                                                            <select class="form-control" id="tag_select">
+                                                                <option value="">{{ __('Select') }}</option>
+                                                                @foreach ($tags as $tag)
+                                                                    <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            <button type="button"
+                                                                class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1"
+                                                                id="add-tag-item-btn" aria-label="{{ __('Add Tag') }}">
+                                                                <i data-feather="plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div id="tag-list" class="d-flex flex-wrap">
+                                                <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
+                                            </div>
+                                        </div>
                                         <!-- SKU not in fillable
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -270,8 +362,7 @@
                                     <div class="mt-4 d-flex justify-content-end">
                                         <a href="{{ route('products.index') }}"
                                             class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
-                                        <button type="submit" id="products-submit" class="btn btn-primary"
-                                            disabled>{{ isset($products) ? __('Update') : __('Save') }}</button>
+                                        <button type="submit" id="products-submit" class="btn btn-primary">{{ isset($products) ? __('Update') : __('Save') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -282,4 +373,272 @@
             </div>
         </div>
     </section>
+@endsection
+
+@section('page-script')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function showToast(icon, message) {
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: icon,
+                title: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        alert(message);
+    }
+    function loadSubcategories(categoryId, selectedSubcategoryId, selectedSubsubcategoryId) {
+        const $subcat = $('#subcategory_id');
+        const $subsub = $('#subsubcategory_id');
+
+        $subcat.empty().append('<option value="">{{ __('Select') }}</option>');
+        $subsub.empty().append('<option value="">{{ __('Select') }}</option>');
+
+        if (!categoryId) {
+            return;
+        }
+
+        $.getJSON('{{ url('panel/productos') }}/' + categoryId + '/subcategorias', function(response) {
+            const items = response.subcategory || [];
+            items.forEach(function(s) {
+                const selected = selectedSubcategoryId && String(selectedSubcategoryId) === String(s.id) ? 'selected' : '';
+                $subcat.append('<option value="' + s.id + '" ' + selected + '>' + s.name + '</option>');
+            });
+
+            if (selectedSubcategoryId) {
+                const match = items.find(function(s) { return String(s.id) === String(selectedSubcategoryId); });
+                if (match && match.sub_subcategories) {
+                    match.sub_subcategories.forEach(function(ss) {
+                        const selected = selectedSubsubcategoryId && String(selectedSubsubcategoryId) === String(ss.id) ? 'selected' : '';
+                        $subsub.append('<option value="' + ss.id + '" ' + selected + '>' + ss.name + '</option>');
+                    });
+                }
+            }
+        });
+    }
+
+    function loadSecondarySubcategories(categoryId) {
+        const $subcat = $('#secondary_subcategory_id');
+        const $wrap = $('#secondary_subcategory_wrap');
+        $subcat.empty().append('<option value="">{{ __('Select') }}</option>');
+
+        if (!categoryId) {
+            $wrap.addClass('d-none');
+            return;
+        }
+
+        $.getJSON('{{ url('panel/productos') }}/' + categoryId + '/subcategorias', function(response) {
+            const items = response.subcategory || [];
+            if (!items.length) {
+                $wrap.addClass('d-none');
+                return;
+            }
+            $wrap.removeClass('d-none');
+            items.forEach(function(s) {
+                $subcat.append('<option value="' + s.id + '">' + s.name + '</option>');
+            });
+        });
+    }
+
+    function updateEmptyState(container) {
+        const empty = container.querySelector('[data-empty]');
+        const hasItems = container.querySelector('[data-id]');
+        if (empty) {
+            empty.style.display = hasItems ? 'none' : 'block';
+        }
+    }
+
+    function addSelectableItem(selectId, listId, inputName) {
+        const select = document.getElementById(selectId);
+        const list = document.getElementById(listId);
+        const id = select.value;
+        const label = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : '';
+
+        if (!id || !list || list.querySelector('[data-id="' + id + '"]')) {
+            return;
+        }
+
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-light-primary d-flex align-items-center mr-1 mb-1';
+        badge.setAttribute('data-id', id);
+        badge.innerHTML =
+            '<span class="mr-1">' + label + '</span>' +
+            '<input type="hidden" name="' + inputName + '[]" value="' + id + '">' +
+            '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="' + inputName + '" aria-label="{{ __('Remove') }}">' +
+            '<i data-feather="x"></i>' +
+            '</button>';
+
+        list.appendChild(badge);
+        updateEmptyState(list);
+
+        if (feather) {
+            feather.replace();
+        }
+    }
+
+    function addSecondaryCategoryItem() {
+        const select = document.getElementById('secondary_category_id');
+        const list = document.getElementById('secondary-category-list');
+        const id = select ? select.value : '';
+        const label = select && select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : '';
+
+        if (!id) {
+            showToast('warning', '{{ __('Select a secondary category') }}');
+            return;
+        }
+
+        if (!list || list.querySelector('[data-id="' + id + '"]')) {
+            showToast('warning', '{{ __('Secondary category already added') }}');
+            return;
+        }
+
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-light-primary d-flex align-items-center mr-1 mb-1';
+        badge.setAttribute('data-id', id);
+        badge.innerHTML =
+            '<span class="mr-1">' + label + '</span>' +
+            '<input type="hidden" name="secondary_categories[]" value="' + id + '">' +
+            '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="secondary_categories" aria-label="{{ __('Remove') }}">' +
+            '<i data-feather="x"></i>' +
+            '</button>';
+
+        list.appendChild(badge);
+        updateEmptyState(list);
+
+        if (feather) {
+            feather.replace();
+        }
+
+        $('#secondary-category-form').addClass('d-none');
+    }
+
+    function addSecondarySubcategoryItem() {
+        const categorySelect = document.getElementById('secondary_category_id');
+        const subcategorySelect = document.getElementById('secondary_subcategory_id');
+        const list = document.getElementById('secondary-subcategory-list');
+        const id = subcategorySelect ? subcategorySelect.value : '';
+        const label = subcategorySelect && subcategorySelect.options[subcategorySelect.selectedIndex]
+            ? subcategorySelect.options[subcategorySelect.selectedIndex].text
+            : '';
+        const categoryLabel = categorySelect && categorySelect.options[categorySelect.selectedIndex]
+            ? categorySelect.options[categorySelect.selectedIndex].text
+            : '';
+
+        if (!categorySelect || !categorySelect.value) {
+            showToast('warning', '{{ __('Select a secondary category') }}');
+            return;
+        }
+
+        if (!id) {
+            showToast('warning', '{{ __('Select a secondary subcategory') }}');
+            return;
+        }
+
+        if (!list || list.querySelector('[data-id="' + id + '"]')) {
+            showToast('warning', '{{ __('Secondary subcategory already added') }}');
+            return;
+        }
+
+        addSecondaryCategoryItem();
+
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-light-primary d-flex align-items-center mr-1 mb-1';
+        badge.setAttribute('data-id', id);
+        badge.innerHTML =
+            '<span class="mr-1">' + categoryLabel + ' / ' + label + '</span>' +
+            '<input type="hidden" name="secondary_subcategories[]" value="' + id + '">' +
+            '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="secondary_subcategories" aria-label="{{ __('Remove') }}">' +
+            '<i data-feather="x"></i>' +
+            '</button>';
+
+        list.appendChild(badge);
+        updateEmptyState(list);
+
+        if (feather) {
+            feather.replace();
+        }
+
+        $('#secondary-category-form').addClass('d-none');
+    }
+
+    function wireRemove(listId) {
+        const list = document.getElementById(listId);
+        if (!list) {
+            return;
+        }
+
+        list.addEventListener('click', function(event) {
+            const removeButton = event.target.closest('button[data-remove]');
+            if (!removeButton) {
+                return;
+            }
+            const badge = removeButton.closest('[data-id]');
+            if (badge) {
+                badge.remove();
+                updateEmptyState(list);
+            }
+        });
+    }
+
+    $(function() {
+        $('#category_id').on('change', function() {
+            loadSubcategories($(this).val(), null, null);
+        });
+
+        $('#subcategory_id').on('change', function() {
+            const categoryId = $('#category_id').val();
+            const selectedSubcategoryId = $(this).val();
+            loadSubcategories(categoryId, selectedSubcategoryId, null);
+        });
+
+        $('#toggle-secondary-category-form').on('click', function() {
+            $('#secondary-category-form').toggleClass('d-none');
+        });
+
+        $('#secondary_category_id').on('change', function() {
+            loadSecondarySubcategories($(this).val());
+        });
+
+        $('#add-secondary-category-item-btn').on('click', function() {
+            addSecondaryCategoryItem();
+        });
+
+        $('#add-secondary-subcategory-btn').on('click', function() {
+            addSecondarySubcategoryItem();
+        });
+
+        $('#add-tag-btn').on('click', function() {
+            $('#tag-form').toggleClass('d-none');
+        });
+
+        $('#add-tag-item-btn').on('click', function() {
+            const selectedId = $('#tag_select').val();
+            const list = document.getElementById('tag-list');
+
+            if (!selectedId) {
+                showToast('warning', '{{ __('Select a tag') }}');
+                return;
+            }
+
+            if (list && list.querySelector('[data-id="' + selectedId + '"]')) {
+                showToast('warning', '{{ __('Tag already added') }}');
+                return;
+            }
+
+            addSelectableItem('tag_select', 'tag-list', 'tags');
+            $('#tag-form').addClass('d-none');
+        });
+
+        wireRemove('secondary-category-list');
+        wireRemove('secondary-subcategory-list');
+        wireRemove('tag-list');
+    });
+</script>
 @endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Estado;
 use App\Models\Municipality;
 use App\Models\Pais;
+use App\Models\Parish;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -62,6 +63,49 @@ class StatesMunicipalitiesController extends Controller
             'state' => $state,
             'municipalities' => $municipalities,
         ]);
+    }
+
+    public function parishes(int $municipalityId)
+    {
+        $municipality = Municipality::findOrFail($municipalityId);
+
+        $parishes = Parish::where('municipality_id', $municipalityId)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('panel.states-municipalities.parishes', [
+            'municipality' => $municipality,
+            'parishes' => $parishes,
+        ]);
+    }
+
+    public function storeParish(Request $request, int $municipalityId)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $municipality = Municipality::findOrFail($municipalityId);
+
+        Parish::create([
+            'name' => $request->input('name'),
+            'municipality_id' => $municipality->id,
+        ]);
+
+        return redirect()
+            ->route('states-municipalities.municipalities.parishes', $municipality->id)
+            ->with('success', __('Information saved successfully.'));
+    }
+
+    public function destroyParish(int $id)
+    {
+        $parish = Parish::findOrFail($id);
+        $municipalityId = $parish->municipality_id;
+        $parish->delete();
+
+        return redirect()
+            ->route('states-municipalities.municipalities.parishes', $municipalityId)
+            ->with('success', __('Deleted successfully.'));
     }
 
     public function updateMunicipality(Request $request, int $id): JsonResponse

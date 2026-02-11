@@ -8,85 +8,67 @@
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap4.min.css')) }}">
 @endsection
 
-@section('page-style')
-  <style>
-    .contact-title { font-style: italic; }
-    .contact-wrap {
-      border: 2px solid rgba(0,0,0,.18);
-      border-radius: .5rem;
-      padding: 1.5rem;
-      background: #fff;
-    }
-    .contact-search {
-      max-width: 420px;
-      border: 0;
-      border-bottom: 1px solid #ddd;
-      border-radius: 0;
-      padding-left: 2.25rem;
-    }
-    .contact-search-icon {
-      position: absolute;
-      left: .75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #6c757d;
-    }
-    .contact-table th { font-weight: 700; }
-    .contact-actions a { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; }
-  </style>
-@endsection
-
 @section('content')
-  <section>
-    <h2 class="text-center contact-title mb-3">{{ __('Contact Information') }}</h2>
+  <section id="basic-datatable">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header border-bottom p-1">
+            <div class="head-label">
+              <h4 class="mb-0">{{ __('Contact Information') }}</h4>
+            </div>
+          </div>
+          <div class="card-body">
+            @if(session('success'))
+              <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
 
-    <div class="contact-wrap">
-      @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-      @endif
-
-      <div class="position-relative mb-2">
-        <i data-feather="search" class="contact-search-icon"></i>
-        <input id="contactSearch" type="text" class="form-control contact-search" placeholder="{{ __('Search') }}" />
-      </div>
-
-      <div class="table-responsive">
-        <table id="contactTable" class="table table-borderless contact-table w-100">
-          <thead>
-            <tr>
-              <th>{{ __('Address') }}</th>
-              <th>{{ __('Phone') }}</th>
-              <th>{{ __('Email') }}</th>
-              <th class="text-center">{{ __('Action') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach($social as $s)
-              <tr
-                data-address="{{ $s->address }}"
-                data-phone="{{ $s->phone }}"
-                data-email="{{ $s->email }}"
-                data-facebook="{{ $s->facebook }}"
-                data-instagram="{{ $s->instagram }}"
-                data-youtube="{{ $s->youtube }}"
-                data-slogan="{{ $s->slogan }}"
-                data-english_slogan="{{ $s->english_slogan }}"
-              >
-                <td>{{ $s->address }}</td>
-                <td>{{ $s->phone }}</td>
-                <td>{{ $s->email }}</td>
-                <td class="text-center contact-actions">
-                  <a href="#" class="mr-1" onclick="window.__openContactView(this); return false;" title="{{ __('View') }}">
-                    <i data-feather="eye"></i>
-                  </a>
-                  <a href="{{ route('contact.edit', $s->id) }}" title="{{ __('Edit') }}">
-                    <i data-feather="edit-2"></i>
-                  </a>
-                </td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
+            <div class="table-responsive">
+              <table id="contactTable" class="table table-striped table-bordered table-hover w-100 contact-table">
+                <thead>
+                  <tr>
+                    <th>{{ __('Address') }}</th>
+                    <th>{{ __('Phone') }}</th>
+                    <th>{{ __('Email') }}</th>
+                    <th class="text-end">{{ __('Actions') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @forelse($social as $s)
+                    <tr
+                      data-address="{{ $s->address }}"
+                      data-phone="{{ $s->phone }}"
+                      data-email="{{ $s->email }}"
+                      data-facebook="{{ $s->facebook }}"
+                      data-instagram="{{ $s->instagram }}"
+                      data-youtube="{{ $s->youtube }}"
+                      data-slogan="{{ $s->slogan }}"
+                      data-english_slogan="{{ $s->english_slogan }}"
+                    >
+                      <td>{{ $s->address }}</td>
+                      <td>{{ $s->phone }}</td>
+                      <td>{{ $s->email }}</td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <a href="#" class="btn btn-icon btn-flat-primary mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('View') }}" onclick="window.__openContactView(this); return false;">
+                            <i data-feather="eye"></i>
+                          </a>
+                          <a href="{{ route('contact.edit', $s->id) }}" class="btn btn-icon btn-flat-success" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                            <i data-feather="edit"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  @empty
+                    <tr>
+                      <td colspan="4" class="text-center">{{ __('No contact information yet.') }}</td>
+                    </tr>
+                  @endforelse
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -148,18 +130,24 @@
 @section('page-script')
 <script>
   $(function () {
-    const table = $('#contactTable').DataTable({
+    $('#contactTable').DataTable({
       responsive: true,
-      dom: 't',
-      paging: false,
-      info: false,
-      ordering: false,
-      language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
-      drawCallback: function() { if (feather) { feather.replace({ width: 16, height: 16 }); } }
-    });
-
-    $('#contactSearch').on('keyup', function () {
-      table.search(this.value).draw();
+      dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+      order: [[0, 'asc']],
+      columnDefs: [
+        { orderable: false, targets: -1 }
+      ],
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
+      },
+      drawCallback: function() {
+        if (feather) {
+          feather.replace({
+            width: 14,
+            height: 14
+          });
+        }
+      }
     });
   });
 

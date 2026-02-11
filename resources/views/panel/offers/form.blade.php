@@ -136,9 +136,9 @@
                                                                 <td>{{ $sp->id }}</td>
                                                                 <td>{{ $sp->name }}</td>
                                                                 <td class="text-end">
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-danger remove-from-offer"
-                                                                        data-id="{{ $sp->id }}">{{ __('Remove') }}</button>
+                                                                    <button type="button" class="btn btn-icon btn-flat-danger remove-from-offer" data-id="{{ $sp->id }}" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}">
+                                                                        <i data-feather="trash"></i>
+                                                                    </button>
                                                                     <input type="hidden" name="products[]"
                                                                         value="{{ $sp->id }}">
                                                                 </td>
@@ -212,6 +212,11 @@
                 ],
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
+                },
+                drawCallback: function() {
+                    if (window.feather) {
+                        feather.replace({ width: 14, height: 14 });
+                    }
                 }
             });
 
@@ -226,6 +231,11 @@
                 }],
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
+                },
+                drawCallback: function() {
+                    if (window.feather) {
+                        feather.replace({ width: 14, height: 14 });
+                    }
                 }
             });
 
@@ -325,10 +335,13 @@
                 $('form').first().append(input);
                 // add row to offer table
                 const rowNode = offerTable.row.add([id, name,
-                    '<button type="button" class="btn btn-sm btn-danger remove-from-offer" data-id="' +
-                    id + '">{{ __('Remove') }}</button>'
+                    '<button type="button" class="btn btn-icon btn-flat-danger remove-from-offer" data-id="' +
+                    id + '" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}"><i data-feather="trash"></i></button>'
                 ]).draw().node();
                 $(rowNode).attr('data-id', id);
+                if (window.feather) {
+                    feather.replace({ width: 14, height: 14 });
+                }
             });
 
             // Remove from offer

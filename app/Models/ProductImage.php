@@ -24,6 +24,11 @@ class ProductImage extends Model
             return $file;
         }
 
+        $baseUrl = env('ECOMMERCE_IMAGE_URL');
+        if ($baseUrl) {
+            return rtrim($baseUrl, '/') . '/' . $file;
+        }
+
         return asset('img/products/' . $file);
     }
 }

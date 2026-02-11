@@ -66,8 +66,36 @@
 @endsection
 
 @section('page-script')
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     $(document).ready(function() {
+      @if(session('success'))
+        if (window.Swal) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: @json(session('success')),
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        }
+      @endif
+      @if(session('error'))
+        if (window.Swal) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: @json(session('error')),
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true
+          });
+        }
+      @endif
+
       $('#products-table').DataTable({
           processing: true,
           serverSide: true,
@@ -102,6 +130,64 @@
                   });
               }
           }
+      });
+
+      const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+      $('body').on('change', '.product-status-toggle', function () {
+        const checkbox = this;
+        const url = checkbox.dataset.url;
+        const previous = !checkbox.checked;
+
+        if (!url) {
+          checkbox.checked = previous;
+          return;
+        }
+
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              throw new Error(payload.message || '{{ __('An error occurred') }}');
+            }
+            return response.json();
+          })
+          .then(() => {
+            if (window.Swal) {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ __('Information updated successfully.') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+              });
+            }
+          })
+          .catch((error) => {
+            checkbox.checked = previous;
+            const message = error.message || '{{ __('An error occurred') }}';
+            if (window.Swal) {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: message,
+                showConfirmButton: false,
+                timer: 4500,
+                timerProgressBar: true
+              });
+            } else {
+              alert(message);
+            }
+          });
       });
     });
   </script>

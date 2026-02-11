@@ -65,7 +65,8 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $taxes = Taxe::where('status', Taxe::STATUS_ACTIVE)->get();
-        return view('panel.products.create', compact('categories', 'taxes'));
+        $tags = Tag::orderBy('name', 'asc')->get();
+        return view('panel.products.create', compact('categories', 'taxes', 'tags'));
     }
 
     public function store(StoreProductRequest $request)
@@ -77,6 +78,8 @@ class ProductController extends Controller
                 $this->fillProductData($product, $request);
                 $product->status = '1';
                 $product->save();
+
+                $this->syncExtraRelations($product, $request);
 
                 // Create default color
                 $color = ProductColor::create([
@@ -106,10 +109,11 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $product = Product::with(['images', 'colors.amounts'])->findOrFail($id);
+        $product = Product::with(['images', 'colors.amounts', 'secondary_categories', 'secondary_subcategories'])->findOrFail($id);
         $categories = Category::all();
         $taxes = Taxe::where('status', Taxe::STATUS_ACTIVE)->get();
-        return view('panel.products.edit', compact('product', 'categories', 'taxes'));
+        $tags = Tag::orderBy('name', 'asc')->get();
+        return view('panel.products.edit', compact('product', 'categories', 'taxes', 'tags'));
     }
 
     public function update(UpdateProductRequest $request, $id)
@@ -121,6 +125,7 @@ class ProductController extends Controller
                 Log::info('Product before update: ' . json_encode($product->toArray()));
                 $this->fillProductData($product, $request);
                 $product->save();
+                $this->syncExtraRelations($product, $request);
                 Log::info('Product after update: ' . json_encode($product->toArray()));
 
                 $this->handlePresentations($request, $product);
@@ -180,12 +185,63 @@ class ProductController extends Controller
         $color->amounts()->whereNotIn('id', $submittedIds)->delete();
     }
 
+    private function syncExtraRelations(Product $product, Request $request)
+    {
+        $secondaryCategoryIds = array_values(array_unique(array_filter((array) $request->input('secondary_categories', []))));
+        $secondarySubcategoryIds = array_values(array_unique(array_filter((array) $request->input('secondary_subcategories', []))));
+        $tagIds = array_values(array_unique(array_filter((array) $request->input('tags', []))));
+
+        $product->secondary_categories()->sync($secondaryCategoryIds);
+        $product->secondary_subcategories()->sync($secondarySubcategoryIds);
+        $product->tags()->sync($tagIds);
+    }
+
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
         $product->status = '2'; // Soft delete status
         $product->save();
         return redirect()->route('products.index')->with('success', __('Product deleted successfully.'));
+    }
+
+    public function status($id)
+    {
+        $product = Product::findOrFail($id);
+        if ($product->status === '2') {
+            return response()->json(['message' => __('An error occurred')], 422);
+        }
+
+        $product->status = $product->status === '1' ? '0' : '1';
+        $product->save();
+
+        return response()->json($product);
+    }
+
+    public function getSubcategories($id)
+    {
+        $subcategories = Subcategory::where('category_id', $id)
+            ->where('status', '1')
+            ->with(['sub_subcategories' => function ($query) {
+                $query->select('id', 'name', 'subcategory_id')->where('status', '1');
+            }])
+            ->get(['id', 'name', 'category_id']);
+
+        $subcategoriesArray = $subcategories->map(function ($subCategory) {
+            return [
+                'id' => $subCategory->id,
+                'name' => $subCategory->name,
+                'sub_subcategories' => $subCategory->sub_subcategories->map(function ($subSub) {
+                    return [
+                        'id' => $subSub->id,
+                        'name' => $subSub->name,
+                    ];
+                })->toArray(),
+            ];
+        })->toArray();
+
+        return response()->json([
+            'subcategory' => $subcategoriesArray,
+        ]);
     }
 
     /**
@@ -326,9 +382,13 @@ class ProductController extends Controller
             $sortableColumns = ['id', 'name', 'price_1', 'price_2', 'created_at', 'updated_at'];
             if (in_array($columnName, $sortableColumns)) {
                  $query->orderBy('products.'.$columnName, $orderDirection);
+            } else {
+                 $query->orderBy('products.status', 'desc')
+                       ->orderBy('products.id', 'desc');
             }
         } else {
-            $query->orderBy('products.id', 'desc');
+            $query->orderBy('products.status', 'desc')
+                  ->orderBy('products.id', 'desc');
         }
     }
 
@@ -363,12 +423,23 @@ class ProductController extends Controller
             $method = method_field('DELETE');
             $confirm = __('Are you sure?');
             
+            $statusUrl = route('products.status', $product->id);
+            $checked = $product->status === '1' ? 'checked' : '';
+            $disabled = $product->status === '2' ? 'disabled' : '';
+            $deletedBadge = $product->status === '2'
+                ? '<span class="badge badge-light-secondary mr-1">'.__('Deleted').'</span>'
+                : '';
             $actionsHtml = '
-                <div class="d-flex align-items-center col-actions">
-                    <a class="mr-1" href="'.$editUrl.'" data-toggle="tooltip" data-placement="top" title="'.__('Edit').'">
-                        <i data-feather="edit-2"></i>
+                <div class="d-flex align-items-center">
+                    '.$deletedBadge.'
+                    <div class="custom-control custom-switch custom-switch-success mr-1">
+                        <input type="checkbox" class="custom-control-input product-status-toggle" id="product_status_'.$product->id.'" data-url="'.$statusUrl.'" '.$checked.' '.$disabled.' />
+                        <label class="custom-control-label" for="product_status_'.$product->id.'"></label>
+                    </div>
+                    <a href="'.$editUrl.'" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="'.__('Edit').'">
+                        <i data-feather="edit"></i>
                     </a>
-                    <form action="'.$deleteUrl.'" method="POST" onsubmit="return confirm(\''.$confirm.'\');" style="display:inline;">
+                    <form action="'.$deleteUrl.'" method="POST" onsubmit="return confirm(\''.$confirm.'\');" class="m-0">
                         '.$csrf.'
                         '.$method.'
                         <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="'.__('Delete').'">
@@ -452,17 +523,40 @@ class ProductController extends Controller
         }
     }
 
+    private function getProductImageDiskPath(): string
+    {
+        $path = env('ECOMMERCE_IMAGE_PATH');
+
+        if ($path) {
+            return rtrim($path, '\\/');
+        }
+
+        return public_path('img/products');
+    }
+
+    private function getProductImagePublicPath(): string
+    {
+        $path = env('ECOMMERCE_IMAGE_PUBLIC_PATH', 'img/products');
+
+        return rtrim($path, '/\\') . '/';
+    }
+
     private function handleImageUpload(Request $request, Product $product, $isUpdate = false)
     {
-        $url = 'img/products/';
+        $diskPath = $this->getProductImageDiskPath();
+        $publicPath = $this->getProductImagePublicPath();
         Log::info('handleImageUpload start for product: ' . $product->id . ' hasFile(image): ' . ($request->hasFile('image') ? 'yes' : 'no') . ' secondary_count: ' . (count($request->file('secondary_images') ?? [])));
+
+        if (!File::exists($diskPath)) {
+            File::makeDirectory($diskPath, 0755, true);
+        }
 
         // Main image
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $file_name = time() . '_main.' . $file->getClientOriginalExtension();
             try {
-                $file->move(public_path($url), $file_name);
+                $file->move($diskPath, $file_name);
                 Log::info('Main image moved: ' . $file_name);
             } catch (\Exception $e) {
                 Log::error('Error moving main image: ' . $e->getMessage());
@@ -471,7 +565,7 @@ class ProductController extends Controller
             // Try to resize if helper exists
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
                 try {
-                    ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file);
+                    ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $publicPath, $this->width_file, $this->height_file);
                 } catch (\Exception $e) {
                     Log::error('Resize error: ' . $e->getMessage());
                 }
@@ -482,8 +576,9 @@ class ProductController extends Controller
                 if ($productImage) {
                     // delete old file
                     $old = $productImage->file;
-                    if ($old && File::exists(public_path($url . $old))) {
-                        try { File::delete(public_path($url . $old)); } catch (\Exception $e) { Log::error('Error deleting old main image: '.$e->getMessage()); }
+                    $oldPath = $diskPath . DIRECTORY_SEPARATOR . $old;
+                    if ($old && File::exists($oldPath)) {
+                        try { File::delete($oldPath); } catch (\Exception $e) { Log::error('Error deleting old main image: '.$e->getMessage()); }
                         Log::info('Deleted old main image: ' . $old);
                     }
                     $productImage->update(['file' => $file_name]);
@@ -501,7 +596,7 @@ class ProductController extends Controller
                 try {
                     $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     try {
-                        $file->move(public_path($url), $imageName);
+                        $file->move($diskPath, $imageName);
                         Log::info('Secondary image moved: ' . $imageName);
                     } catch (\Exception $e) {
                         Log::error('Error moving secondary image: ' . $e->getMessage());
@@ -509,7 +604,7 @@ class ProductController extends Controller
 
                     if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
                         try {
-                            ResizeImage::dimenssion($imageName, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file);
+                            ResizeImage::dimenssion($imageName, $file->getClientOriginalExtension(), $publicPath, $this->width_file, $this->height_file);
                         } catch (\Exception $e) {
                             Log::error('Resize error secondary: ' . $e->getMessage());
                         }
@@ -529,8 +624,9 @@ class ProductController extends Controller
             if (is_array($ids) && count($ids) > 0) {
                 $items = ProductImage::whereIn('id', $ids)->get();
                 foreach ($items as $item) {
-                    if ($item->file && File::exists(public_path($url . $item->file))) {
-                        try { File::delete(public_path($url . $item->file)); } catch (\Exception $e) { Log::error('Delete file error: '.$e->getMessage()); }
+                    $itemPath = $diskPath . DIRECTORY_SEPARATOR . $item->file;
+                    if ($item->file && File::exists($itemPath)) {
+                        try { File::delete($itemPath); } catch (\Exception $e) { Log::error('Delete file error: '.$e->getMessage()); }
                     }
                 }
                 ProductImage::whereIn('id', $ids)->delete();
@@ -540,10 +636,15 @@ class ProductController extends Controller
 
     public function updateImage(Request $request)
     {
-        $url = "img/products/";
+        $diskPath = $this->getProductImageDiskPath();
+        $publicPath = $this->getProductImagePublicPath();
         $hasMain = ProductImage::where('product_id', $request->product_id)->where('main', '1')->exists();
         $fileId = null;
         $file_name = null;
+
+        if (!File::exists($diskPath)) {
+            File::makeDirectory($diskPath, 0755, true);
+        }
 
         if (!$hasMain) {
             $file = $request->file('file');
@@ -551,10 +652,10 @@ class ProductController extends Controller
                 ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
                 : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-            $file->move(public_path($url), $file_name);
+            $file->move($diskPath, $file_name);
 
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
-                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $publicPath, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
             }
 
             $detail = new ProductImage;
@@ -574,14 +675,15 @@ class ProductController extends Controller
                 ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
                 : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-            $file->move(public_path($url), $file_name);
+            $file->move($diskPath, $file_name);
 
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
-                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $publicPath, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
             }
 
-            if ($odlFile && File::exists(public_path($url . $odlFile))) {
-                File::delete(public_path($url . $odlFile));
+            $oldPath = $diskPath . DIRECTORY_SEPARATOR . $odlFile;
+            if ($odlFile && File::exists($oldPath)) {
+                File::delete($oldPath);
             }
 
             $item->file = $file_name;
@@ -592,10 +694,10 @@ class ProductController extends Controller
             $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
                 ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
                 : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path($url), $file_name);
+            $file->move($diskPath, $file_name);
 
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
-                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $publicPath, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
             }
 
             $detail = new ProductImage;
@@ -610,14 +712,15 @@ class ProductController extends Controller
             $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
                 ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
                 : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path($url), $file_name);
+            $file->move($diskPath, $file_name);
 
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
-                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $url, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
+                try { ResizeImage::dimenssion($file_name, $file->getClientOriginalExtension(), $publicPath, $this->width_file, $this->height_file); } catch (\Exception $e) { Log::error($e->getMessage()); }
             }
 
-            if ($odlFile && File::exists(public_path($url . $odlFile))) {
-                File::delete(public_path($url . $odlFile));
+            $oldPath = $diskPath . DIRECTORY_SEPARATOR . $odlFile;
+            if ($odlFile && File::exists($oldPath)) {
+                File::delete($oldPath);
             }
             $item->file = $file_name;
             $item->save();

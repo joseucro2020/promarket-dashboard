@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProductCategory extends Model {
+class ProductCategory extends Pivot
+{
+    use SoftDeletes;
+
     protected $table = "product_categories";
 
-    use SoftDeletes;
+    public $timestamps = true;
 }

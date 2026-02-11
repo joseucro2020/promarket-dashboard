@@ -170,6 +170,11 @@ class Product extends Model
                 return $file;
             }
 
+            $baseUrl = env('ECOMMERCE_IMAGE_URL');
+            if ($baseUrl) {
+                return rtrim($baseUrl, '/') . '/' . $file;
+            }
+
             return asset('img/products/' . $file);
         } else {
             return null;
@@ -230,13 +235,17 @@ class Product extends Model
     public function secondary_subcategories()
     {
         return $this->belongsToMany('App\Models\Subcategory', 'product_subcategories', 'product_id', 'subcategory_id')
-            ->whereNull('product_subcategories.deleted_at');
+            ->using(ProductSubcategory::class)
+            ->wherePivotNull('deleted_at')
+            ->withTimestamps();
     }
 
     public function secondary_categories()
     {
         return $this->belongsToMany('App\Models\Category', 'product_categories', 'product_id', 'category_id')
-            ->whereNull('product_categories.deleted_at');
+            ->using(ProductCategory::class)
+            ->wherePivotNull('deleted_at')
+            ->withTimestamps();
     }
 
     public function tags()

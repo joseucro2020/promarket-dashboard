@@ -25,7 +25,7 @@ class DiscountRequest extends FormRequest
             // Conditional fields
             'quantity_products' => 'nullable|integer|min:0|required_if:discount_mode,quantity|required_if:type,quantity_product',
             'min_amount' => 'nullable|numeric|min:0|required_if:discount_mode,amount|required_if:type,minimum_purchase',
-            'category_id' => 'nullable|exists:categories,id|required_if:discount_mode,quantity',
+            'category_id' => 'nullable|exists:categories,id',
         ];
     }
 }

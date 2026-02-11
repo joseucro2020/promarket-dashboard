@@ -42,12 +42,12 @@
                   <td data-order="{{ $fee->updated_at ? $fee->updated_at->format('Y-m-d H:i:s') : '' }}">{{ number_format($fee->amount, 2) }}</td>
                   <td>{{ $fee->type == 1 ? __('National') : __('Regional') }}</td>
                   <td>
-                    <div class="d-flex align-items-center col-actions justify-content-end" style="min-width:140px;">
+                    <div class="d-flex align-items-center" style="min-width:140px;">
                       <form action="{{ route('shipping-fees.update', $fee->id) }}" method="POST" class="m-0 d-flex align-items-center confirm-save" data-message="{{ __('Save this fee?') }}">
                         @csrf
                         @method('PUT')
                         <input type="number" step="0.01" name="amount" value="{{ $fee->amount }}" class="form-control form-control-sm d-inline-block me-1" style="width:120px;">
-                        <button class="btn btn-icon btn-flat-primary" type="submit" data-toggle="tooltip" data-placement="top" title="{{ __('Save') }}">
+                        <button class="btn btn-icon btn-flat-success" type="submit" data-toggle="tooltip" data-placement="top" title="{{ __('Save') }}">
                           <i data-feather="save"></i>
                         </button>
                       </form>

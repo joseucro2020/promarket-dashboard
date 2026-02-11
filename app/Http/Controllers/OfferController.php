@@ -248,7 +248,7 @@ class OfferController extends Controller
         foreach ($rows as $row) {
             $img = $row->image_url ? $row->image_url : url('images/placeholder.png');
             $imgHtml = '<div class="text-center"><img src="'.$img.'" style="max-height:48px" class="img-fluid"/></div>';
-            $action = '<button type="button" class="btn btn-sm btn-outline-primary add-to-offer" data-id="'.$row->id.'" data-name="'.htmlspecialchars($row->name, ENT_QUOTES).'">'.__('Add').'</button>';
+            $action = '<button type="button" class="btn btn-icon btn-flat-success add-to-offer" data-id="'.$row->id.'" data-name="'.htmlspecialchars($row->name, ENT_QUOTES).'" title="'.__('Add').'"><i data-feather="plus"></i></button>';
             $data[] = [$imgHtml, $row->name, $action];
         }
 

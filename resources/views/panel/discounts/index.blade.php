@@ -53,13 +53,10 @@
                     <td>{{ $discount->type_text ?? $discount->type }}</td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <form class="m-0 mr-1" action="{{ route('discounts.status', $discount) }}" method="POST">
-                          @csrf
-                          <div class="custom-control custom-switch custom-switch-success">
-                            <input type="checkbox" class="custom-control-input" id="discount_status_{{ $discount->id }}" {{ $discount->status === \App\Models\Discount::ACTIVE ? 'checked' : '' }} onchange="this.form.submit()" />
-                            <label class="custom-control-label" for="discount_status_{{ $discount->id }}"></label>
-                          </div>
-                        </form>
+                        <div class="custom-control custom-switch custom-switch-success mr-1">
+                          <input type="checkbox" class="custom-control-input discount-status-toggle" id="discount_status_{{ $discount->id }}" data-url="{{ route('discounts.status', $discount) }}" {{ $discount->status === \App\Models\Discount::ACTIVE ? 'checked' : '' }} />
+                          <label class="custom-control-label" for="discount_status_{{ $discount->id }}"></label>
+                        </div>
                         <a href="{{ route('discounts.edit', $discount) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
@@ -92,5 +89,62 @@
 @endsection
 
 @section('page-script')
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="{{ asset(mix('js/scripts/pages/app-module-list.js')) }}"></script>
+  <script>
+    $(function() {
+      const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+      $('body').on('change', '.discount-status-toggle', function () {
+        const checkbox = this;
+        const url = checkbox.dataset.url;
+        const previous = !checkbox.checked;
+
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              throw new Error(payload.message || '{{ __('An error occurred') }}');
+            }
+            return response.json();
+          })
+          .then(() => {
+            if (window.Swal) {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ __('Information updated successfully.') }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+              });
+            }
+          })
+          .catch((error) => {
+            checkbox.checked = previous;
+            const message = error.message || '{{ __('An error occurred') }}';
+            if (window.Swal) {
+              Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: message,
+                showConfirmButton: false,
+                timer: 4500,
+                timerProgressBar: true
+              });
+            } else {
+              alert(message);
+            }
+          });
+      });
+    });
+  </script>
 @endsection
