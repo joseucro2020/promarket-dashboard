@@ -429,290 +429,302 @@ $(window).on('load', function () {
   //----------------------------------------------
 
   // State Primary Chart
-  browserStatePrimaryChartOptions = {
-    chart: {
-      height: 30,
-      width: 30,
-      type: 'radialBar'
-    },
-    grid: {
-      show: false,
-      padding: {
-        left: -15,
-        right: -15,
-        top: -12,
-        bottom: -15
-      }
-    },
-    colors: [window.colors.solid.primary],
-    series: [54.4],
-    plotOptions: {
-      radialBar: {
-        hollow: {
-          size: '22%'
-        },
-        track: {
-          background: $trackBgColor
-        },
-        dataLabels: {
-          showOn: 'always',
-          name: {
-            show: false
+  if ($browserStateChartPrimary) {
+    browserStatePrimaryChartOptions = {
+      chart: {
+        height: 30,
+        width: 30,
+        type: 'radialBar'
+      },
+      grid: {
+        show: false,
+        padding: {
+          left: -15,
+          right: -15,
+          top: -12,
+          bottom: -15
+        }
+      },
+      colors: [window.colors.solid.primary],
+      series: [54.4],
+      plotOptions: {
+        radialBar: {
+          hollow: {
+            size: '22%'
           },
-          value: {
-            show: false
+          track: {
+            background: $trackBgColor
+          },
+          dataLabels: {
+            showOn: 'always',
+            name: {
+              show: false
+            },
+            value: {
+              show: false
+            }
           }
         }
+      },
+      stroke: {
+        lineCap: 'round'
       }
-    },
-    stroke: {
-      lineCap: 'round'
-    }
-  };
-  browserStatePrimaryChart = new ApexCharts($browserStateChartPrimary, browserStatePrimaryChartOptions);
-  browserStatePrimaryChart.render();
+    };
+    browserStatePrimaryChart = new ApexCharts($browserStateChartPrimary, browserStatePrimaryChartOptions);
+    browserStatePrimaryChart.render();
+  }
 
   // State Warning Chart
-  browserStateWarningChartOptions = {
-    chart: {
-      height: 30,
-      width: 30,
-      type: 'radialBar'
-    },
-    grid: {
-      show: false,
-      padding: {
-        left: -15,
-        right: -15,
-        top: -12,
-        bottom: -15
-      }
-    },
-    colors: [window.colors.solid.warning],
-    series: [6.1],
-    plotOptions: {
-      radialBar: {
-        hollow: {
-          size: '22%'
-        },
-        track: {
-          background: $trackBgColor
-        },
-        dataLabels: {
-          showOn: 'always',
-          name: {
-            show: false
+  if ($browserStateChartWarning) {
+    browserStateWarningChartOptions = {
+      chart: {
+        height: 30,
+        width: 30,
+        type: 'radialBar'
+      },
+      grid: {
+        show: false,
+        padding: {
+          left: -15,
+          right: -15,
+          top: -12,
+          bottom: -15
+        }
+      },
+      colors: [window.colors.solid.warning],
+      series: [6.1],
+      plotOptions: {
+        radialBar: {
+          hollow: {
+            size: '22%'
           },
-          value: {
-            show: false
+          track: {
+            background: $trackBgColor
+          },
+          dataLabels: {
+            showOn: 'always',
+            name: {
+              show: false
+            },
+            value: {
+              show: false
+            }
           }
         }
+      },
+      stroke: {
+        lineCap: 'round'
       }
-    },
-    stroke: {
-      lineCap: 'round'
-    }
-  };
-  browserStateWarningChart = new ApexCharts($browserStateChartWarning, browserStateWarningChartOptions);
-  browserStateWarningChart.render();
+    };
+    browserStateWarningChart = new ApexCharts($browserStateChartWarning, browserStateWarningChartOptions);
+    browserStateWarningChart.render();
+  }
 
   // State Secondary Chart 1
-  browserStateSecondaryChartOptions = {
-    chart: {
-      height: 30,
-      width: 30,
-      type: 'radialBar'
-    },
-    grid: {
-      show: false,
-      padding: {
-        left: -15,
-        right: -15,
-        top: -12,
-        bottom: -15
-      }
-    },
-    colors: [window.colors.solid.secondary],
-    series: [14.6],
-    plotOptions: {
-      radialBar: {
-        hollow: {
-          size: '22%'
-        },
-        track: {
-          background: $trackBgColor
-        },
-        dataLabels: {
-          showOn: 'always',
-          name: {
-            show: false
+  if ($browserStateChartSecondary) {
+    browserStateSecondaryChartOptions = {
+      chart: {
+        height: 30,
+        width: 30,
+        type: 'radialBar'
+      },
+      grid: {
+        show: false,
+        padding: {
+          left: -15,
+          right: -15,
+          top: -12,
+          bottom: -15
+        }
+      },
+      colors: [window.colors.solid.secondary],
+      series: [14.6],
+      plotOptions: {
+        radialBar: {
+          hollow: {
+            size: '22%'
           },
-          value: {
-            show: false
+          track: {
+            background: $trackBgColor
+          },
+          dataLabels: {
+            showOn: 'always',
+            name: {
+              show: false
+            },
+            value: {
+              show: false
+            }
           }
         }
+      },
+      stroke: {
+        lineCap: 'round'
       }
-    },
-    stroke: {
-      lineCap: 'round'
-    }
-  };
-  browserStateSecondaryChart = new ApexCharts($browserStateChartSecondary, browserStateSecondaryChartOptions);
-  browserStateSecondaryChart.render();
+    };
+    browserStateSecondaryChart = new ApexCharts($browserStateChartSecondary, browserStateSecondaryChartOptions);
+    browserStateSecondaryChart.render();
+  }
 
   // State Info Chart
-  browserStateInfoChartOptions = {
-    chart: {
-      height: 30,
-      width: 30,
-      type: 'radialBar'
-    },
-    grid: {
-      show: false,
-      padding: {
-        left: -15,
-        right: -15,
-        top: -12,
-        bottom: -15
-      }
-    },
-    colors: [window.colors.solid.info],
-    series: [4.2],
-    plotOptions: {
-      radialBar: {
-        hollow: {
-          size: '22%'
-        },
-        track: {
-          background: $trackBgColor
-        },
-        dataLabels: {
-          showOn: 'always',
-          name: {
-            show: false
+  if ($browserStateChartInfo) {
+    browserStateInfoChartOptions = {
+      chart: {
+        height: 30,
+        width: 30,
+        type: 'radialBar'
+      },
+      grid: {
+        show: false,
+        padding: {
+          left: -15,
+          right: -15,
+          top: -12,
+          bottom: -15
+        }
+      },
+      colors: [window.colors.solid.info],
+      series: [4.2],
+      plotOptions: {
+        radialBar: {
+          hollow: {
+            size: '22%'
           },
-          value: {
-            show: false
+          track: {
+            background: $trackBgColor
+          },
+          dataLabels: {
+            showOn: 'always',
+            name: {
+              show: false
+            },
+            value: {
+              show: false
+            }
           }
         }
+      },
+      stroke: {
+        lineCap: 'round'
       }
-    },
-    stroke: {
-      lineCap: 'round'
-    }
-  };
-  browserStateInfoChart = new ApexCharts($browserStateChartInfo, browserStateInfoChartOptions);
-  browserStateInfoChart.render();
+    };
+    browserStateInfoChart = new ApexCharts($browserStateChartInfo, browserStateInfoChartOptions);
+    browserStateInfoChart.render();
+  }
 
   // State Danger Chart
-  browserStateDangerChartOptions = {
-    chart: {
-      height: 30,
-      width: 30,
-      type: 'radialBar'
-    },
-    grid: {
-      show: false,
-      padding: {
-        left: -15,
-        right: -15,
-        top: -12,
-        bottom: -15
-      }
-    },
-    colors: [window.colors.solid.danger],
-    series: [8.4],
-    plotOptions: {
-      radialBar: {
-        hollow: {
-          size: '22%'
-        },
-        track: {
-          background: $trackBgColor
-        },
-        dataLabels: {
-          showOn: 'always',
-          name: {
-            show: false
+  if ($browserStateChartDanger) {
+    browserStateDangerChartOptions = {
+      chart: {
+        height: 30,
+        width: 30,
+        type: 'radialBar'
+      },
+      grid: {
+        show: false,
+        padding: {
+          left: -15,
+          right: -15,
+          top: -12,
+          bottom: -15
+        }
+      },
+      colors: [window.colors.solid.danger],
+      series: [8.4],
+      plotOptions: {
+        radialBar: {
+          hollow: {
+            size: '22%'
           },
-          value: {
-            show: false
+          track: {
+            background: $trackBgColor
+          },
+          dataLabels: {
+            showOn: 'always',
+            name: {
+              show: false
+            },
+            value: {
+              show: false
+            }
           }
         }
+      },
+      stroke: {
+        lineCap: 'round'
       }
-    },
-    stroke: {
-      lineCap: 'round'
-    }
-  };
-  browserStateDangerChart = new ApexCharts($browserStateChartDanger, browserStateDangerChartOptions);
-  browserStateDangerChart.render();
+    };
+    browserStateDangerChart = new ApexCharts($browserStateChartDanger, browserStateDangerChartOptions);
+    browserStateDangerChart.render();
+  }
 
   //------------ Goal Overview Chart ------------
   //---------------------------------------------
-  goalOverviewChartOptions = {
-    chart: {
-      height: 245,
-      type: 'radialBar',
-      sparkline: {
-        enabled: true
+  if ($goalOverviewChart) {
+    goalOverviewChartOptions = {
+      chart: {
+        height: 245,
+        type: 'radialBar',
+        sparkline: {
+          enabled: true
+        },
+        dropShadow: {
+          enabled: true,
+          blur: 3,
+          left: 1,
+          top: 1,
+          opacity: 0.1
+        }
       },
-      dropShadow: {
-        enabled: true,
-        blur: 3,
-        left: 1,
-        top: 1,
-        opacity: 0.1
-      }
-    },
-    colors: [$goalStrokeColor2],
-    plotOptions: {
-      radialBar: {
-        offsetY: -10,
-        startAngle: -150,
-        endAngle: 150,
-        hollow: {
-          size: '77%'
-        },
-        track: {
-          background: $strokeColor,
-          strokeWidth: '50%'
-        },
-        dataLabels: {
-          name: {
-            show: false
+      colors: [$goalStrokeColor2],
+      plotOptions: {
+        radialBar: {
+          offsetY: -10,
+          startAngle: -150,
+          endAngle: 150,
+          hollow: {
+            size: '77%'
           },
-          value: {
-            color: $textHeadingColor,
-            fontSize: '2.86rem',
-            fontWeight: '600'
+          track: {
+            background: $strokeColor,
+            strokeWidth: '50%'
+          },
+          dataLabels: {
+            name: {
+              show: false
+            },
+            value: {
+              color: $textHeadingColor,
+              fontSize: '2.86rem',
+              fontWeight: '600'
+            }
           }
         }
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shade: 'dark',
+          type: 'horizontal',
+          shadeIntensity: 0.5,
+          gradientToColors: [window.colors.solid.success],
+          inverseColors: true,
+          opacityFrom: 1,
+          opacityTo: 1,
+          stops: [0, 100]
+        }
+      },
+      series: [83],
+      stroke: {
+        lineCap: 'round'
+      },
+      grid: {
+        padding: {
+          bottom: 30
+        }
       }
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shade: 'dark',
-        type: 'horizontal',
-        shadeIntensity: 0.5,
-        gradientToColors: [window.colors.solid.success],
-        inverseColors: true,
-        opacityFrom: 1,
-        opacityTo: 1,
-        stops: [0, 100]
-      }
-    },
-    series: [83],
-    stroke: {
-      lineCap: 'round'
-    },
-    grid: {
-      padding: {
-        bottom: 30
-      }
-    }
-  };
-  goalOverviewChart = new ApexCharts($goalOverviewChart, goalOverviewChartOptions);
-  goalOverviewChart.render();
+    };
+    goalOverviewChart = new ApexCharts($goalOverviewChart, goalOverviewChartOptions);
+    goalOverviewChart.render();
+  }
 });
