@@ -247,7 +247,7 @@
               </button>
               <div class="dropdown-menu">
                 @for($y = $currentYear; $y > $currentYear - 4; $y--)
-                  <a class="dropdown-item" href="{{ request()->fullUrlWithQuery(['year' => $y]) }}">{{ $y }}</a>
+                  <a class="dropdown-item" href="{{ route('dashboard-home', ['year' => $y]) }}">{{ $y }}</a>
                 @endfor
               </div>
             </div>
