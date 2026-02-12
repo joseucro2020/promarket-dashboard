@@ -240,6 +240,7 @@ return [
   ,"Delete this sector?" => "¿Eliminar este sector?"
   ,"No sectors yet." => "No hay sectores todavía."
   ,"Banners" => "Banners"
+  ,"Discounts" => "Descuentos"
   ,"Banners List" => "Listado de banners"
   ,"No banners yet." => "No hay banners todavía."
   ,"JPG/PNG up to 5MB" => "JPG/PNG hasta 5MB"
