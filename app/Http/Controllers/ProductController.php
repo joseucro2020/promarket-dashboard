@@ -342,11 +342,37 @@ class ProductController extends Controller
         // Search
         if ($request->filled('search.value')) {
             $searchValue = $request->input('search.value');
-            $query->where(function($q) use ($searchValue) {
-                $q->where('products.name', 'like', "%{$searchValue}%")
-                  ->orWhere('products.name_english', 'like', "%{$searchValue}%")
-                  ->orWhere('products.id', 'like', "%{$searchValue}%");
-            });
+            $searchLower = Str::lower(trim($searchValue));
+            $searchValueForName = $searchValue;
+            $typeFilter = null;
+
+            if (in_array($searchLower, ['simple', 'simple product', 'producto simple'], true)) {
+                $typeFilter = 0;
+                $searchValueForName = '';
+            } elseif (in_array($searchLower, ['variable', 'variable product', 'producto variable'], true)) {
+                $typeFilter = 1;
+                $searchValueForName = '';
+            } else {
+                if (Str::contains($searchLower, ['simple product', 'producto simple'])) {
+                    $typeFilter = 0;
+                    $searchValueForName = trim(str_ireplace(['simple product', 'producto simple'], '', $searchValueForName));
+                } elseif (Str::contains($searchLower, ['variable product', 'producto variable'])) {
+                    $typeFilter = 1;
+                    $searchValueForName = trim(str_ireplace(['variable product', 'producto variable'], '', $searchValueForName));
+                }
+            }
+
+            if ($typeFilter !== null) {
+                $query->where('products.variable', $typeFilter);
+            }
+
+            if ($searchValueForName !== '') {
+                $query->where(function($q) use ($searchValueForName) {
+                    $q->where('products.name', 'like', "%{$searchValueForName}%")
+                      ->orWhere('products.name_english', 'like', "%{$searchValueForName}%")
+                      ->orWhere('products.id', 'like', "%{$searchValueForName}%");
+                });
+            }
         }
 
         // Inventory Filter
@@ -448,12 +474,25 @@ class ProductController extends Controller
                     </form>
                 </div>';
 
+            $isVariable = (int) $product->variable === 1;
+            $typeBadgeClass = $isVariable ? 'badge-light-primary' : 'badge-light-secondary';
+            $typeIcon = $isVariable ? 'layers' : 'box';
+            $typeLabel = $isVariable ? __('Variable Product') : __('Simple Product');
+            $typeHtml = '<span class="badge '.$typeBadgeClass.' d-inline-flex align-items-center">'
+                .'<i data-feather="'.$typeIcon.'" class="mr-25"></i>'
+                .'<span>'.$typeLabel.'</span>'
+                .'</span>';
+            $nameHtml = '<div class="d-flex align-items-center">'
+                .'<span class="mr-1">'.e($product->name).'</span>'
+                .$typeHtml
+                .'</div>';
+
             $data[] = [
                 'actions' => $actionsHtml,
                 'id' => $product->id,
                 'image' => $imageHtml,
                 'category' => optional($product->categories)->name ?? '-',
-                'name' => $product->name,
+                'name' => $nameHtml,
                 'stock' => $stock,
                 'threshold' => $product->threshold ?? '-',
                 'tax' => optional($product->taxe)->name ?? '-',
@@ -505,15 +544,27 @@ class ProductController extends Controller
         $product->description = $request->description;
         $product->description_english = $request->description_english;
         $product->slug = Str::slug($request->name);
-        $product->price_1 = $request->price_1;
-        $product->price_2 = $request->price_2;
         $product->category_id = $request->category_id;
         $product->subcategory_id = $request->subcategory_id;
         $product->subsubcategory_id = $request->subsubcategory_id;
         $product->taxe_id = $request->taxe_id;
-        $product->retail = $request->retail;
-        $product->wholesale = $request->wholesale;
-        $product->variable = $request->variable ?? 0;
+        $product->retail = $request->filled('retail') ? $request->retail : $product->retail;
+        $product->wholesale = $request->filled('wholesale') ? $request->wholesale : $product->wholesale;
+
+        $variable = $request->input('variable', $product->variable ?? 0);
+        $product->variable = $variable;
+
+        if ((int) $variable === 0) {
+            $product->price_1 = $request->price_1;
+            $product->price_2 = $request->price_2;
+        } else {
+            if ($request->filled('price_1')) {
+                $product->price_1 = $request->price_1;
+            }
+            if ($request->filled('price_2')) {
+                $product->price_2 = $request->price_2;
+            }
+        }
         // Map form fields to DB columns
         if ($request->has('min_stock_deactivate')) {
             $product->minexi = $request->input('min_stock_deactivate');

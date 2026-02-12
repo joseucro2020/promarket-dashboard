@@ -228,6 +228,9 @@ $(window).on('load', function () {
 
   //--------------- Earnings Chart ---------------
   //----------------------------------------------
+  var earningsSeriesData = (window.dashboardEarnings && window.dashboardEarnings.series && window.dashboardEarnings.series.length) ? window.dashboardEarnings.series : [53, 16, 31];
+  var earningsLabelsData = (window.dashboardEarnings && window.dashboardEarnings.labels && window.dashboardEarnings.labels.length) ? window.dashboardEarnings.labels : ['App', 'Service', 'Product'];
+
   earningsChartOptions = {
     chart: {
       type: 'donut',
@@ -239,10 +242,10 @@ $(window).on('load', function () {
     dataLabels: {
       enabled: false
     },
-    series: [53, 16, 31],
+    series: earningsSeriesData,
     legend: { show: false },
     comparedResult: [2, -3, 8],
-    labels: ['App', 'Service', 'Product'],
+    labels: earningsLabelsData,
     stroke: { width: 0 },
     colors: [$earningsStrokeColor2, $earningsStrokeColor3, window.colors.solid.success],
     grid: {
@@ -334,16 +337,21 @@ $(window).on('load', function () {
       distributed: true
     },
     colors: [window.colors.solid.primary, window.colors.solid.warning],
-    series: [
-      {
-        name: 'Earning',
-        data: [95, 177, 284, 256, 105, 63, 168, 218, 72]
-      },
-      {
-        name: 'Expense',
-        data: [-145, -80, -60, -180, -100, -60, -85, -75, -100]
-      }
-    ],
+    series: (window.revenueReport && window.revenueReport.labels && window.revenueReport.labels.length)
+      ? [
+          { name: (window.revenueReport.names && window.revenueReport.names[0]) || 'Earning', data: window.revenueReport.earning },
+          { name: (window.revenueReport.names && window.revenueReport.names[1]) || 'Expense', data: window.revenueReport.expense }
+        ]
+      : [
+          {
+            name: 'Earning',
+            data: [95, 177, 284, 256, 105, 63, 168, 218, 72]
+          },
+          {
+            name: 'Expense',
+            data: [-145, -80, -60, -180, -100, -60, -85, -75, -100]
+          }
+        ],
     dataLabels: {
       enabled: false
     },
@@ -360,7 +368,7 @@ $(window).on('load', function () {
       }
     },
     xaxis: {
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+      categories: (window.revenueReport && window.revenueReport.labels && window.revenueReport.labels.length) ? window.revenueReport.labels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
       labels: {
         style: {
           colors: $textMutedColor,

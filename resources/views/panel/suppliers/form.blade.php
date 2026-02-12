@@ -34,8 +34,8 @@
                   <label>{{ __('Person Type') }}</label>
                   <select name="tipo_prove" class="form-control">
                     <option value="">{{ __('Select') }}</option>
-                    <option value="natural" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'natural' ? 'selected' : '' }}>{{ __('Natural') }}</option>
-                    <option value="juridica" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'juridica' ? 'selected' : '' }}>{{ __('Legal') }}</option>
+                    <option value="NT" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'NT' ? 'selected' : '' }}>{{ __('Natural') }}</option>
+                    <option value="JR" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'JR' ? 'selected' : '' }}>{{ __('Legal') }}</option>
                   </select>
                 </div>
               </div>
@@ -59,8 +59,8 @@
                   <label>{{ __('Origin') }}</label>
                   <select name="proced_prove" class="form-control">
                     <option value="">{{ __('Select') }}</option>
-                    <option value="local" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'local' ? 'selected' : '' }}>{{ __('Local') }}</option>
-                    <option value="importado" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'importado' ? 'selected' : '' }}>{{ __('Imported') }}</option>
+                    <option value="NA" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'NA' ? 'selected' : '' }}>{{ __('Local') }}</option>
+                    <option value="EX" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'EX' ? 'selected' : '' }}>{{ __('Imported') }}</option>
                   </select>
                 </div>
               </div>

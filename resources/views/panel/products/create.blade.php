@@ -12,6 +12,26 @@
                         {{-- <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a> --}}
                     </div>
                     <div class="card-body">
+                        @if (session('success'))
+                            <div class="alert alert-success" role="alert">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                        @if (session('error'))
+                            <div class="alert alert-danger" role="alert">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                        @if ($errors->any())
+                            <div class="alert alert-danger" role="alert">
+                                <p class="mb-1">{{ __('Please check the form errors.') }}</p>
+                                <ul class="mb-0 pl-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
 
@@ -319,8 +339,13 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="tag-list" class="d-flex flex-wrap">
-                                                <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
+                                            <div class="border rounded p-2 p-md-3 bg-white shadow-sm mt-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="text-uppercase small text-muted">{{ __('Tags') }}</span>
+                                                </div>
+                                                <div id="tag-list" class="d-flex flex-wrap">
+                                                    <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
+                                                </div>
                                             </div>
                                         </div>
                                         <!-- SKU not in fillable

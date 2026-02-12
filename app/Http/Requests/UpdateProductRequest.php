@@ -16,8 +16,8 @@ class UpdateProductRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products,slug,'.$this->route('id'),
-            'price_1' => 'required|numeric',
-            'price_2' => 'required|numeric',
+            'price_1' => 'required_if:variable,0|nullable|numeric',
+            'price_2' => 'required_if:variable,0|nullable|numeric',
             'secondary_categories' => 'array',
             'secondary_categories.*' => 'distinct|exists:categories,id',
             'secondary_subcategories' => 'array',

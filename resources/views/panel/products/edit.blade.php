@@ -12,6 +12,26 @@
                         {{-- <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a> --}}
                     </div>
                     <div class="card-body">
+                        @if (session('success'))
+                            <div class="alert alert-success" role="alert">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+                        @if (session('error'))
+                            <div class="alert alert-danger" role="alert">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+                        @if ($errors->any())
+                            <div class="alert alert-danger" role="alert">
+                                <p class="mb-1">{{ __('Please check the form errors.') }}</p>
+                                <ul class="mb-0 pl-1">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         @php
                             $defaultColor = $product->colors->first();
                             $amounts = $defaultColor ? $defaultColor->amounts : collect([]);
@@ -31,7 +51,10 @@
                                     <li class="nav-item">
                                         <a class="nav-link" id="presentations-tab" data-toggle="tab" href="#presentations"
                                             aria-controls="presentations" role="tab"
-                                            aria-selected="false">{{ __('Presentations') }}</a>
+                                            aria-selected="false">
+                                            {{ __('Presentations') }}
+                                            <span class="badge badge-light-primary ml-1">{{ $amounts->count() }}</span>
+                                        </a>
                                     </li>
                                 @endif
                                 <li class="nav-item">
@@ -404,27 +427,32 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="tag-list" class="d-flex flex-wrap">
-                                                @if ($product->tags->isEmpty())
-                                                    <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
-                                                @else
-                                                    <p class="text-muted mb-0" data-empty style="display: none;">
-                                                        {{ __('No tags selected') }}</p>
-                                                    @foreach ($product->tags as $tag)
-                                                        <span
-                                                            class="badge badge-light-primary d-flex align-items-center mr-1 mb-1"
-                                                            data-id="{{ $tag->id }}">
-                                                            <span class="mr-1">{{ $tag->name }}</span>
-                                                            <input type="hidden" name="tags[]"
-                                                                value="{{ $tag->id }}">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-flat-danger p-0 ml-1"
-                                                                data-remove="tags" aria-label="{{ __('Remove') }}">
-                                                                <i data-feather="x"></i>
-                                                            </button>
-                                                        </span>
-                                                    @endforeach
-                                                @endif
+                                            <div class="border rounded p-2 p-md-3 bg-white shadow-sm mt-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="text-uppercase small text-muted">{{ __('Tags') }}</span>
+                                                </div>
+                                                <div id="tag-list" class="d-flex flex-wrap">
+                                                    @if ($product->tags->isEmpty())
+                                                        <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
+                                                    @else
+                                                        <p class="text-muted mb-0" data-empty style="display: none;">
+                                                            {{ __('No tags selected') }}</p>
+                                                        @foreach ($product->tags as $tag)
+                                                            <span
+                                                                class="badge badge-light-primary d-flex align-items-center mr-1 mb-1"
+                                                                data-id="{{ $tag->id }}">
+                                                                <span class="mr-1">{{ $tag->name }}</span>
+                                                                <input type="hidden" name="tags[]"
+                                                                    value="{{ $tag->id }}">
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-flat-danger p-0 ml-1"
+                                                                    data-remove="tags" aria-label="{{ __('Remove') }}">
+                                                                    <i data-feather="x"></i>
+                                                                </button>
+                                                            </span>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
 
@@ -445,120 +473,100 @@
 
                                             <div id="presentations-container" class="col-12">
                                                 @forelse($amounts as $index => $amount)
-                                                    <div class="card border presentation-item"
+                                                    <div class="card border presentation-item mb-3"
                                                         id="presentation_row_{{ $index }}">
-                                                        <div class="card-body position-relative">
-                                                            <button type="button" class="close position-absolute"
-                                                                style="top: 10px; right: 10px;" aria-label="Close"
-                                                                onclick="removePresentationRow({{ $index }})">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
+                                                        <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge badge-primary mr-2">#{{ $index + 1 }}</span>
+                                                                <strong>{{ __('Presentation') }} {{ $index + 1 }}</strong>
+                                                            </div>
+                                                            <div>
+                                                                <button type="button" class="btn btn-sm btn-flat-danger" aria-label="Remove"
+                                                                    onclick="removePresentationRow({{ $index }})">
+                                                                    <i data-feather="x"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
                                                             <input type="hidden"
                                                                 name="presentations[{{ $index }}][id]"
                                                                 value="{{ $amount->id }}">
 
-                                                            <div class="row">
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Unit') }}</label>
-                                                                        <select class="form-control"
-                                                                            name="presentations[{{ $index }}][unit]">
-                                                                            <option value="1"
-                                                                                {{ $amount->unit == 1 ? 'selected' : '' }}>
-                                                                                1 - Gr</option>
-                                                                            <option value="2"
-                                                                                {{ $amount->unit == 2 ? 'selected' : '' }}>
-                                                                                2 - Kg</option>
-                                                                            <option value="3"
-                                                                                {{ $amount->unit == 3 ? 'selected' : '' }}>
-                                                                                3 - Ml</option>
-                                                                            <option value="4"
-                                                                                {{ $amount->unit == 4 ? 'selected' : '' }}>
-                                                                                4 - L</option>
-                                                                            <option value="5"
-                                                                                {{ $amount->unit == 5 ? 'selected' : '' }}>
-                                                                                5 - Cm</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Presentation') }}</label>
-                                                                        <input type="number" class="form-control"
-                                                                            name="presentations[{{ $index }}][presentation]"
-                                                                            value="{{ $amount->presentation }}"
-                                                                            placeholder="250">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Quantity') }}</label>
-                                                                        <input type="number" class="form-control"
-                                                                            name="presentations[{{ $index }}][amount]"
-                                                                            value="{{ $amount->amount }}"
-                                                                            placeholder="101">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Price') }} $</label>
-                                                                        <input type="number" step="0.01"
-                                                                            class="form-control"
-                                                                            name="presentations[{{ $index }}][price]"
-                                                                            value="{{ $amount->price }}"
-                                                                            placeholder="4.99">
-                                                                    </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-2">
+                                                                    <label>{{ __('Unit') }}</label>
+                                                                    <select class="form-control"
+                                                                        name="presentations[{{ $index }}][unit]">
+                                                                        <option value="1" {{ $amount->unit == 1 ? 'selected' : '' }}>1 - Gr</option>
+                                                                        <option value="2" {{ $amount->unit == 2 ? 'selected' : '' }}>2 - Kg</option>
+                                                                        <option value="3" {{ $amount->unit == 3 ? 'selected' : '' }}>3 - Ml</option>
+                                                                        <option value="4" {{ $amount->unit == 4 ? 'selected' : '' }}>4 - L</option>
+                                                                        <option value="5" {{ $amount->unit == 5 ? 'selected' : '' }}>5 - Cm</option>
+                                                                    </select>
                                                                 </div>
 
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Cost') }}</label>
-                                                                        <input type="number" step="0.01"
-                                                                            class="form-control"
-                                                                            name="presentations[{{ $index }}][cost]"
-                                                                            value="{{ $amount->cost }}"
-                                                                            placeholder="3.99">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Min. Sale') }}</label>
-                                                                        <input type="number" class="form-control"
-                                                                            name="presentations[{{ $index }}][min]"
-                                                                            value="{{ $amount->min }}" placeholder="1">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Max. Sale') }}</label>
-                                                                        <input type="number" class="form-control"
-                                                                            name="presentations[{{ $index }}][max]"
-                                                                            value="{{ $amount->max }}" placeholder="1">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('Threshold') }}</label>
-                                                                        <input type="number" class="form-control"
-                                                                            name="presentations[{{ $index }}][umbral]"
-                                                                            value="{{ $amount->umbral }}"
-                                                                            placeholder="1">
-                                                                    </div>
+                                                                <div class="form-group col-md-2">
+                                                                    <label>{{ __('Presentation') }}</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="presentations[{{ $index }}][presentation]"
+                                                                        value="{{ $amount->presentation }}" placeholder="250">
                                                                 </div>
 
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <label>{{ __('SKU') }}</label>
-                                                                        <input type="text" class="form-control"
-                                                                            name="presentations[{{ $index }}][sku]"
-                                                                            value="{{ $amount->sku }}"
-                                                                            placeholder="4176">
-                                                                    </div>
+                                                                <div class="form-group col-md-2">
+                                                                    <label>{{ __('Quantity') }}</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="presentations[{{ $index }}][amount]"
+                                                                        value="{{ $amount->amount }}" placeholder="101">
+                                                                </div>
+
+                                                                <div class="form-group col-md-2">
+                                                                    <label>{{ __('Price') }} $</label>
+                                                                    <input type="number" step="0.01" class="form-control"
+                                                                        name="presentations[{{ $index }}][price]"
+                                                                        value="{{ $amount->price }}" placeholder="4.99">
+                                                                </div>
+
+                                                                <div class="form-group col-md-2">
+                                                                    <label>{{ __('Cost') }}</label>
+                                                                    <input type="number" step="0.01" class="form-control"
+                                                                        name="presentations[{{ $index }}][cost]"
+                                                                        value="{{ $amount->cost }}" placeholder="3.99">
+                                                                </div>
+
+                                                                <div class="form-group col-md-2">
+                                                                    <label>{{ __('SKU') }}</label>
+                                                                    <input type="text" class="form-control"
+                                                                        name="presentations[{{ $index }}][sku]"
+                                                                        value="{{ $amount->sku }}" placeholder="4176">
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-4">
+                                                                    <label>{{ __('Min. Sale') }}</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="presentations[{{ $index }}][min]"
+                                                                        value="{{ $amount->min }}" placeholder="1">
+                                                                </div>
+                                                                <div class="form-group col-md-4">
+                                                                    <label>{{ __('Max. Sale') }}</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="presentations[{{ $index }}][max]"
+                                                                        value="{{ $amount->max }}" placeholder="1">
+                                                                </div>
+                                                                <div class="form-group col-md-4">
+                                                                    <label>{{ __('Threshold') }}</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="presentations[{{ $index }}][umbral]"
+                                                                        value="{{ $amount->umbral }}" placeholder="1">
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 @empty
+                                                    <div class="text-center text-muted py-3">
+                                                        {{ __('No presentations added yet. Use "Add New" to create one.') }}
+                                                    </div>
                                                 @endforelse
                                             </div>
                                         </div>

@@ -9,7 +9,8 @@
       <h4 class="card-title">{{ __('Edit Purchase Order') }}</h4>
     </div>
     <div class="card-body">
-      <form action="{{ route('buyorders.update', $buyorder->id) }}" method="POST">
+      @php($buyorder = $order)
+      <form action="{{ route('buyorders.update', $order->id) }}" method="POST">
         @csrf
         @method('PUT')
         @include('panel.buyorder.form')

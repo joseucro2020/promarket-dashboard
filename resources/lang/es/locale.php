@@ -92,6 +92,7 @@ return [
   "SKU" => "SKU",
   "Main Image" => "Imagen Principal",
   "Choose file" => "Seleccionar archivo",
+  "Please check the form errors." => "Por favor revisa los errores del formulario.",
   "Save" => "Guardar",
   "Reset" => "Reiniciar",
   "Back" => "Volver",
@@ -361,7 +362,33 @@ return [
   // Sales report labels
   ,"Sales Report" => "Reportes de ventas"
   
-  // Orders report labels
+    ,"Sales Report (Year)" => "Reporte de ventas (Año)"
+    ,"Income" => "Ingresos"
+    ,"Expenses" => "Gastos"
+    ,"Net" => "Neto"
+    ,"View Details" => "Ver detalle"
+    ,"Sales Report Help Title" => "Cálculo y definición del reporte de ventas"
+    ,"Sales Report Help Intro" => "A continuación se describen, de forma concisa y verificable, las métricas que aparecen en este bloque."
+    ,"Sales Report Help Income Label" => "Ingresos"
+    ,"Sales Report Help Income" => "Suma del total de la orden para el año seleccionado."
+    ,"Sales Report Help Expenses Label" => "Gastos"
+    ,"Sales Report Help Expenses" => "Suma del costo de la orden para el año seleccionado."
+    ,"Sales Report Help Net Label" => "Neto"
+    ,"Sales Report Help Net" => "Ingresos menos gastos."
+    ,"Sales Report Help Chart Label" => "Gráfico"
+    ,"Sales Report Help Chart" => "Serie mensual que muestra ingresos y gastos por mes del año seleccionado."
+    ,"Sales Report Help VerificationTitle" => "Cómo verificar / auditar"
+    ,"Sales Report Help VerificationStep1" => "Verifique que los campos 'total' (total de la orden) y 'costo' (costo de la orden) en la tabla buyorder_detail contienen los importes esperados para el periodo."
+    ,"Sales Report Help VerificationStep2" => "Confirme que las fechas en 'created_at' corresponden al año seleccionado y que la zona horaria es la correcta."
+    ,"Sales Report Help VerificationStep3" => "Si no ve cambios tras editar vistas, ejecute: php artisan view:clear y recargue el dashboard."
+
+  // Dashboard top customers
+  ,"Top 10 Customers" => "Top 10 mejores clientes"
+  ,"Customer (Email - ID)" => "Cliente (correo - número)"
+  ,"Top Category" => "Categoría (más vendido)"
+  ,"Historical Orders" => "Pedidos (históricos)"
+  ,"Historical Sales" => "Ventas (históricas)"
+  ,"No data" => "Sin datos"
   ,"Orders Report" => "Reportes de pedidos"
   ,"# Orders" => "# Pedidos"
   ,"Pending" => "Pendientes"
@@ -474,6 +501,10 @@ return [
   ,"Entry" => "Entrada"
   ,"Exit" => "Salida"
   ,"Reason" => "Razón"
+  ,"Statistics" => "Estadísticas"
+  ,"Sales" => "Ventas"
+  ,"Customers" => "Clientes"
+  ,"Revenue" => "Nuevos Clientes"
 
 ];
 

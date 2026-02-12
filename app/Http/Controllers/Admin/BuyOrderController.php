@@ -19,7 +19,13 @@ class BuyOrderController extends Controller
 {
     public function index()
     {
-        return view('panel.buyorder.index');
+        $orders = BuyOrder::with('supplier')
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        return view('panel.buyorder.index', [
+            'orders' => $orders
+        ]);
     }
 
     public function create()
@@ -47,8 +53,8 @@ class BuyOrderController extends Controller
             ->get();
 
         $currencies = [
-            'PYG' => 'PYG',
-            'USD' => 'USD'
+            '$ Dolares' => '$ Dolares',
+            'Bs. Bolivares' => 'Bs. Bolivares'
         ];
 
         $payment_conditions = [
@@ -75,34 +81,53 @@ class BuyOrderController extends Controller
         $products = json_decode($request->addRows);
 
         foreach ($products as $product) {
+            $productId = $product->product_id ?? $product->id ?? null;
+            $cantidad = $product->cantidad ?? $product->modified_qty ?? $product->final_qty ?? 0;
+            $existing = $product->existing ?? $product->original_qty ?? 0;
+            $costo = $product->costo ?? $product->cost ?? 0;
+            $tneto = $product->tneto ?? $product->total_net ?? 0;
+            $porciva = $product->porciva ?? $product->tax_percent ?? 0;
+            $utilidad = $product->utilidad ?? $product->profit_percent ?? 0;
+            $pventa = $product->pventa ?? $product->sale_price ?? 0;
+
             $newBuyOrderDetail = new BuyOrderDetail();
             $newBuyOrderDetail->order_id = $order->id;
-            $newBuyOrderDetail->product_id = $product->id;
-            $newBuyOrderDetail->cantidad = $product->cantidad;
-            $newBuyOrderDetail->existing = $product->existing;
-            $newBuyOrderDetail->costo = $product->costo;
-            $newBuyOrderDetail->total = $product->tneto;
-            $newBuyOrderDetail->iva = $product->porciva;
-            $newBuyOrderDetail->utilidad = $product->utilidad;
-            $newBuyOrderDetail->precio = $product->pventa;
+            $newBuyOrderDetail->product_id = $productId;
+            $newBuyOrderDetail->cantidad = $cantidad;
+            $newBuyOrderDetail->existing = $existing;
+            $newBuyOrderDetail->costo = $costo;
+            $newBuyOrderDetail->total = $tneto;
+            $newBuyOrderDetail->iva = $porciva;
+            $newBuyOrderDetail->utilidad = $utilidad;
+            $newBuyOrderDetail->precio = $pventa;
             $newBuyOrderDetail->save();
 
-            $idproduc = $product->producto->idproduc ?? null;
+            $idproduc = null;
+            if ($productId) {
+                $amount = ProductAmount::find($productId);
+                $idproduc = $amount ? $amount->product_color_id : null;
+            }
             if ($idproduc) {
-                $proveedor = ProductProveedor::where('products_id', $idproduc)
-                    ->where('proveedor_id', $proveedor_id)
-                    ->get();
+                $productColor = DB::table('product_colors')->where('id', $idproduc)->first();
+                $productRealId = $productColor ? $productColor->product_id : null;
+                if ($productRealId) {
+                    $proveedor = ProductProveedor::where('products_id', $productRealId)
+                        ->where('proveedor_id', $proveedor_id)
+                        ->get();
 
-                if ($proveedor->isEmpty()) {
-                    $productProveedor = new ProductProveedor();
-                    $productProveedor->products_id = $idproduc;
-                    $productProveedor->proveedor_id = $proveedor_id;
-                    $productProveedor->save();
+                    if ($proveedor->isEmpty()) {
+                        $productProveedor = new ProductProveedor();
+                        $productProveedor->products_id = $productRealId;
+                        $productProveedor->proveedor_id = $proveedor_id;
+                        $productProveedor->save();
+                    }
                 }
             }
         }
 
-        return $products;
+        return redirect()
+            ->route('buyorders.index')
+            ->with('success', __('buyorder.saved_successfully'));
     }
 
     public function edit($id)
@@ -163,8 +188,8 @@ class BuyOrderController extends Controller
             ->get();
 
         $currencies = [
-            'PYG' => 'PYG',
-            'USD' => 'USD'
+            '$ Dolares' => '$ Dolares',
+            'Bs. Bolivares' => 'Bs. Bolivares'
         ];
 
         $payment_conditions = [
@@ -202,20 +227,31 @@ class BuyOrderController extends Controller
         $res = BuyOrderDetail::where('order_id', $id)->delete();
 
         foreach ($products as $product) {
+            $productId = $product->product_id ?? $product->id ?? null;
+            $cantidad = $product->cantidad ?? $product->modified_qty ?? $product->final_qty ?? 0;
+            $existing = $product->existing ?? $product->original_qty ?? 0;
+            $costo = $product->costo ?? $product->cost ?? 0;
+            $tneto = $product->tneto ?? $product->total_net ?? 0;
+            $porciva = $product->porciva ?? $product->tax_percent ?? 0;
+            $utilidad = $product->utilidad ?? $product->profit_percent ?? 0;
+            $pventa = $product->pventa ?? $product->sale_price ?? 0;
+
             $newBuyOrderDetail = new BuyOrderDetail();
             $newBuyOrderDetail->order_id = $order->id;
-            $newBuyOrderDetail->product_id = $product->id;
-            $newBuyOrderDetail->cantidad = $product->cantidad;
-            $newBuyOrderDetail->existing = $product->existing;
-            $newBuyOrderDetail->costo = $product->costo;
-            $newBuyOrderDetail->total = $product->tneto;
-            $newBuyOrderDetail->iva = $product->porciva;
-            $newBuyOrderDetail->utilidad = $product->utilidad;
-            $newBuyOrderDetail->precio = $product->pventa;
+            $newBuyOrderDetail->product_id = $productId;
+            $newBuyOrderDetail->cantidad = $cantidad;
+            $newBuyOrderDetail->existing = $existing;
+            $newBuyOrderDetail->costo = $costo;
+            $newBuyOrderDetail->total = $tneto;
+            $newBuyOrderDetail->iva = $porciva;
+            $newBuyOrderDetail->utilidad = $utilidad;
+            $newBuyOrderDetail->precio = $pventa;
             $newBuyOrderDetail->save();
         }
 
-        return $products;
+        return redirect()
+            ->route('buyorders.index')
+            ->with('success', __('buyorder.updated_successfully'));
     }
 
     public function destroy($id)

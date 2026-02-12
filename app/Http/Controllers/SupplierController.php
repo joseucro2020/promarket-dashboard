@@ -32,6 +32,9 @@ class SupplierController extends Controller
     {
         $data = $request->validated();
 
+        // Garantizar un valor por defecto para status_prove si por alguna razón falta
+        $data['status_prove'] = $data['status_prove'] ?? 1;
+
         Supplier::create($data);
 
         return redirect()->route('suppliers.index')->with('success', __('Supplier saved successfully.'));
@@ -58,7 +61,9 @@ class SupplierController extends Controller
     public function update(SupplierRequest $request, $id)
     {
         $supplier = Supplier::find($id);
-        $supplier->fill($request->validated());
+        $data = $request->validated();
+        $data['status_prove'] = $data['status_prove'] ?? $supplier->status_prove ?? 1;
+        $supplier->fill($data);
         $supplier->save();
 
         return redirect()->route('suppliers.index')->with('success', __('Supplier updated successfully.'));

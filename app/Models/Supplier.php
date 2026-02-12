@@ -10,6 +10,9 @@ class Supplier extends Model
     //
     protected $table = 'proveedor';
 
+    // The table uses the default primary key `id` (int auto-increment).
+    // `id_prove` is a supplier identification number (RIF/CI) and is NOT the primary key.
+
     protected $fillable = [
         'id_prove' ,
         'tipo_prove',
