@@ -266,6 +266,7 @@
   </div>
 
   <div class="row match-height">
+    
     <!-- Top Customers Table Card -->
     <div class="col-lg-8 col-12">
       <div class="card">
@@ -308,8 +309,82 @@
     </div>
     <!--/ Top Customers Table Card -->
 
-    <!-- Developer Meetup Card -->
+    <!-- Transaction Card -->
     <div class="col-lg-4 col-md-6 col-12">
+      <div class="card card-transaction">
+        <div class="card-header">
+          <h4 class="card-title">{{ __('Transactions') }}</h4>
+        </div>
+        <div class="card-body">
+          @forelse($paymentMethodPercentages as $item)
+            <div class="transaction-item">
+              <div class="media">
+                <div class="avatar {{ $item->bg_class }} rounded">
+                  <div class="avatar-content">
+                    <i data-feather="{{ $item->icon }}" class="avatar-icon font-medium-3"></i>
+                  </div>
+                </div>
+                <div class="media-body">
+                  <h6 class="transaction-title">{{ $item->label }}</h6>
+                  <small>{{ __('Payment Method Share') }}</small>
+                </div>
+              </div>
+              <div class="font-weight-bolder {{ $item->text_class }}">{{ $item->percent }}%</div>
+            </div>
+          @empty
+            <div class="text-center text-muted py-2">{{ __('No records found.') }}</div>
+          @endforelse
+        </div>
+      </div>
+    </div>
+    <!--/ Transaction Card -->
+
+    
+
+    <!-- Top Products Table Card -->
+    <div class="col-lg-8 col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">{{ __('Top 10 Products') }}</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover w-100 top-products-table">
+              <thead>
+                <tr>
+                  <th>{{ __('Product') }}</th>
+                  <th class="text-end">{{ __('Units Sold') }}</th>
+                  <th class="text-end">{{ __('Last Sale (MM-DD-YYYY)') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse($topProducts as $product)
+                  <tr>
+                    <td>{{ $product->name }}</td>
+                    <td class="text-end">{{ number_format($product->units_sold) }}</td>
+                    <td class="text-end">
+                      @if(!empty($product->last_sale_at))
+                        {{ \Carbon\Carbon::parse($product->last_sale_at)->format('m-d-Y') }}
+                      @else
+                        --
+                      @endif
+                    </td>
+                  </tr>
+                @empty
+                  <tr>
+                    <td colspan="3" class="text-center">{{ __('No records found.') }}</td>
+                  </tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Top Products Table Card -->
+
+    <!-- Developer Meetup Card -->
+    {{-- <div class="col-lg-4 col-md-6 col-12">
       <div class="card card-developer-meetup">
         <div class="meetup-img-wrapper rounded-top text-center">
           <img src="{{asset('images/illustration/email.svg')}}" alt="Meeting Pic" height="170" />
@@ -407,11 +482,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Developer Meetup Card -->
 
     <!-- Browser States Card -->
-    <div class="col-lg-4 col-md-6 col-12">
+    {{-- <div class="col-lg-4 col-md-6 col-12">
       <div class="card card-browser-states">
         <div class="card-header">
           <div>
@@ -500,11 +575,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Browser States Card -->
 
     <!-- Goal Overview Card -->
-    <div class="col-lg-4 col-md-6 col-12">
+    {{-- <div class="col-lg-4 col-md-6 col-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h4 class="card-title">Goal Overview</h4>
@@ -524,98 +599,10 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Goal Overview Card -->
 
-    <!-- Transaction Card -->
-    <div class="col-lg-4 col-md-6 col-12">
-      <div class="card card-transaction">
-        <div class="card-header">
-          <h4 class="card-title">Transactions</h4>
-          <div class="dropdown chart-dropdown">
-            <i data-feather="more-vertical" class="font-medium-3 cursor-pointer" data-toggle="dropdown"></i>
-            <div class="dropdown-menu dropdown-menu-right">
-              <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="transaction-item">
-            <div class="media">
-              <div class="avatar bg-light-primary rounded">
-                <div class="avatar-content">
-                  <i data-feather="pocket" class="avatar-icon font-medium-3"></i>
-                </div>
-              </div>
-              <div class="media-body">
-                <h6 class="transaction-title">Wallet</h6>
-                <small>Starbucks</small>
-              </div>
-            </div>
-            <div class="font-weight-bolder text-danger">- $74</div>
-          </div>
-          <div class="transaction-item">
-            <div class="media">
-              <div class="avatar bg-light-success rounded">
-                <div class="avatar-content">
-                  <i data-feather="check" class="avatar-icon font-medium-3"></i>
-                </div>
-              </div>
-              <div class="media-body">
-                <h6 class="transaction-title">Bank Transfer</h6>
-                <small>Add Money</small>
-              </div>
-            </div>
-            <div class="font-weight-bolder text-success">+ $480</div>
-          </div>
-          <div class="transaction-item">
-            <div class="media">
-              <div class="avatar bg-light-danger rounded">
-                <div class="avatar-content">
-                  <i data-feather="dollar-sign" class="avatar-icon font-medium-3"></i>
-                </div>
-              </div>
-              <div class="media-body">
-                <h6 class="transaction-title">Paypal</h6>
-                <small>Add Money</small>
-              </div>
-            </div>
-            <div class="font-weight-bolder text-success">+ $590</div>
-          </div>
-          <div class="transaction-item">
-            <div class="media">
-              <div class="avatar bg-light-warning rounded">
-                <div class="avatar-content">
-                  <i data-feather="credit-card" class="avatar-icon font-medium-3"></i>
-                </div>
-              </div>
-              <div class="media-body">
-                <h6 class="transaction-title">Mastercard</h6>
-                <small>Ordered Food</small>
-              </div>
-            </div>
-            <div class="font-weight-bolder text-danger">- $23</div>
-          </div>
-          <div class="transaction-item">
-            <div class="media">
-              <div class="avatar bg-light-info rounded">
-                <div class="avatar-content">
-                  <i data-feather="trending-up" class="avatar-icon font-medium-3"></i>
-                </div>
-              </div>
-              <div class="media-body">
-                <h6 class="transaction-title">Transfer</h6>
-                <small>Refund</small>
-              </div>
-            </div>
-            <div class="font-weight-bolder text-success">+ $98</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--/ Transaction Card -->
+    
   </div>
 </section>
 <!-- Dashboard Ecommerce ends -->
@@ -653,6 +640,18 @@
         responsive: true,
         dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
         order: [[3, 'desc']],
+        language: languageConfig,
+        drawCallback: function () {
+          if (feather) {
+            feather.replace({ width: 14, height: 14 });
+          }
+        }
+      });
+
+      $('.top-products-table').DataTable({
+        responsive: true,
+        dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+        order: [[1, 'desc']],
         language: languageConfig,
         drawCallback: function () {
           if (feather) {
