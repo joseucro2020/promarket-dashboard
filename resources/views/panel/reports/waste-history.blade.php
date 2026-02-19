@@ -1,30 +1,30 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Waste History Report'))
+@section('title', __('locale.Waste History Report'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Waste History Report') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Waste History Report') }}</h2>
 
   <form id="filterForm" class="row mb-3 align-items-end">
     <div class="col-md-4">
-      <label for="init">{{ __('From') }}</label>
+      <label for="init">{{ __('locale.From') }}</label>
       <input type="date" id="init" name="init" class="form-control">
     </div>
 
     <div class="col-md-4">
-      <label for="end">{{ __('To') }}</label>
+      <label for="end">{{ __('locale.To') }}</label>
       <input type="date" id="end" name="end" class="form-control">
     </div>
 
     <div class="col-md-4">
-      <label for="adjustmentType">{{ __('Adjustment Type') }}</label>
+      <label for="adjustmentType">{{ __('locale.Adjustment Type') }}</label>
       <select id="adjustmentType" class="form-control">
-        <option value="">{{ __('All') }}</option>
+        <option value="">{{ __('locale.All') }}</option>
       </select>
 
       <div class="text-right">
-        <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('Filter') }}</button>
+        <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('locale.Filter') }}</button>
       </div>
     </div>
   </form>
@@ -32,25 +32,25 @@
   <div class="card">
     <div class="card-body">
       <div class="mb-2">
-        <strong>{{ __('Total records') }}</strong> <span id="totalRecords">0</span>
+        <strong>{{ __('locale.Total records') }}</strong> <span id="totalRecords">0</span>
       </div>
 
       <div class="mb-3">
-        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
-        <button id="exportPdf" class="btn btn-danger">{{ __('Export PDF') }}</button>
+        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('locale.Export') }}</button>
+        <button id="exportPdf" class="btn btn-danger">{{ __('locale.Export PDF') }}</button>
       </div>
 
       <div class="table-responsive">
         <table class="table" id="reportTable">
           <thead>
             <tr>
-              <th>{{ __('Date') }}</th>
-              <th>{{ __('Order') }}</th>
-              <th>{{ __('Product') }}</th>
-              <th>{{ __('Cost') }}</th>
-              <th>{{ __('Adjustment') }}</th>
-              <th>{{ __('Note') }}</th>
-              <th>{{ __('User') }}</th>
+              <th>{{ __('locale.Date') }}</th>
+              <th>{{ __('locale.Order') }}</th>
+              <th>{{ __('locale.Product') }}</th>
+              <th>{{ __('locale.Cost') }}</th>
+              <th>{{ __('locale.Adjustment') }}</th>
+              <th>{{ __('locale.Note') }}</th>
+              <th>{{ __('locale.User') }}</th>
             </tr>
           </thead>
           <tbody id="reportBody"></tbody>
@@ -144,7 +144,7 @@ async function doFilter(){
   const ajuste = document.getElementById('adjustmentType').value;
 
   if(!init || !end){
-    alert('{{ __("Select date range") }}');
+    alert('{{ __('locale.Select date range') }}');
     return;
   }
 

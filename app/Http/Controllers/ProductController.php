@@ -34,10 +34,11 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $query = $this->buildIndexQuery($request);
+        if ($request->ajax() || $request->has('draw')) {
+            $baseQuery = $this->buildIndexQuery($request, false);
+            $query = $this->buildIndexQuery($request, true);
 
-            $totalRecords = Product::count();
+            $totalRecords = $baseQuery->count();
             $filteredRecords = $query->count();
 
             // Order
@@ -289,30 +290,22 @@ class ProductController extends Controller
 
     // --- Private Helper Methods ---
 
-    private function buildIndexQuery(Request $request)
+    private function buildIndexQuery(Request $request, bool $applySearch = true)
     {
+        $stockSubquery = DB::table('product_colors')
+            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+            ->whereColumn('product_colors.product_id', 'products.id')
+            ->whereNull('product_amount.deleted_at')
+            ->selectRaw('COALESCE(SUM(product_amount.amount), 0)');
+
         $query = Product::select('products.*')
+            ->selectSub($stockSubquery, 'stock_total')
             ->with([
                 'categories:id,name,name_english',
                 'subcategories:id,name,name_english',
                 'subsubcategories:id,name,name_english',
                 'images',
-                'taxe',
-                'colors' => function ($colors) {
-                    $colors->select('id', 'name', 'name_english', 'product_id')
-                        ->where('status', '1')
-                        ->with([
-                            'amounts' => function ($q) {
-                                $q->select('id as amount_id', 'amount', 'min', 'max', 'cost', 'umbral', 'price', 'unit', 'presentation', 'product_color_id', 'category_size_id', 'sku', 'utilidad')
-                                    ->with([
-                                        'category_size' => function ($c) {
-                                            $c->select('id', 'category_id', 'size_id')
-                                                ->with(['size:id,name']);
-                                        }
-                                    ]);
-                            }
-                        ]);
-                }
+                'taxe'
             ]);
 
         // Apply Filters
@@ -340,7 +333,7 @@ class ProductController extends Controller
         }
 
         // Search
-        if ($request->filled('search.value')) {
+        if ($applySearch && $request->filled('search.value')) {
             $searchValue = $request->input('search.value');
             $searchLower = Str::lower(trim($searchValue));
             $searchValueForName = $searchValue;
@@ -427,14 +420,8 @@ class ProductController extends Controller
             $percentage = $product->price_2 > 0 ? ($profit / $product->price_2) * 100 : 0;
 
             // Calculate Stock
-            $stock = 0;
-            if ($product->colors && $product->colors->count() > 0) {
-                foreach ($product->colors as $color) {
-                    foreach ($color->amounts as $amount) {
-                        $stock += $amount->amount;
-                    }
-                }
-            }
+            // Calculate Stock
+            $stock = isset($product->stock_total) ? (int) $product->stock_total : 0;
 
             // Image HTML
             $imageHtml = '<span class="avatar-content">P</span>';
@@ -510,6 +497,13 @@ class ProductController extends Controller
 
     private function loadIndexView()
     {
+        $companies = Product::query()
+            ->select('company_id')
+            ->whereNotNull('company_id')
+            ->distinct()
+            ->orderBy('company_id')
+            ->pluck('company_id');
+
         $categories = Category::select('id', 'name', 'name_english')
             ->where('status', '1')
             ->orderBy('name', 'DESC')
@@ -528,6 +522,7 @@ class ProductController extends Controller
         $supplier = Supplier::orderBy('nombre_prove', 'asc')->get();
 
         return view('panel.products.index')->with([
+            'companies' => $companies,
             'categories' => $categories,
             'collections' => $collections,
             'designs' => $designs,

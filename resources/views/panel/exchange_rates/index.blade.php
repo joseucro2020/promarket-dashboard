@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Exchange Rate'))
+@section('title', __('locale.Exchange Rate'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,17 +15,17 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Exchange Rates List') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Exchange Rates List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary mr-1">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('exchange-rates.create') }}" class="dt-button create-new btn btn-primary mr-1">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
               <form id="fetch-bcv-form" method="POST" action="{{ route('exchange-rates.fetch-now') }}" style="display:inline;">
                 @csrf
-                <button id="fetch-bcv-btn" type="button" class="btn btn-outline-info">
-                  <i data-feather="refresh-cw"></i> {{ __('Fetch Rates Now') }}
+                  <button id="fetch-bcv-btn" type="button" class="btn btn-outline-info">
+                  <i data-feather="refresh-cw"></i> {{ __('locale.Fetch Rates Now') }}
                 </button>
               </form>
             </div>
@@ -38,13 +38,13 @@
           <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover w-100 exchange-rates-table">
               <thead>
-                <tr>
-                  <th>{{ __('Date Recorded') }}</th>
-                  <th>{{ __('Currency From') }}</th>
-                  <th>{{ __('Currency To') }}</th>
-                  <th>{{ __('Rate') }}</th>
-                  <th>{{ __('Notes') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <tr>
+                  <th>{{ __('locale.Date Recorded') }}</th>
+                  <th>{{ __('locale.Currency From') }}</th>
+                  <th>{{ __('locale.Currency To') }}</th>
+                  <th>{{ __('locale.Rate') }}</th>
+                  <th>{{ __('locale.Notes') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -57,13 +57,13 @@
                     <td>{{ \Illuminate\Support\Str::limit($r->notes, 60) }}</td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <a href="{{ route('exchange-rates.edit', $r->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <a href="{{ route('exchange-rates.edit', $r->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('exchange-rates.destroy', $r->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this rate?') }}')">
+                          <form class="m-0" action="{{ route('exchange-rates.destroy', $r->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this rate?') }}')">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>
@@ -72,7 +72,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="6" class="text-center">{{ __('No exchange rates recorded yet.') }}</td>
+                    <td colspan="6" class="text-center">{{ __('locale.No exchange rates recorded yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -146,16 +146,16 @@
       if (fetchBtn && fetchForm) {
         fetchBtn.addEventListener('click', function(){
           Swal.fire({
-            title: '{{ __('Fetch Rates Now') }}',
-            text: '{{ __('This will fetch the latest rates from BCV now. Continue?') }}',
+            title: '{{ __('locale.Fetch Rates Now') }}',
+            text: '{{ __('locale.This will fetch the latest rates from BCV now. Continue?') }}',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: '{{ __('Yes, fetch') }}',
-            cancelButtonText: '{{ __('Cancel') }}'
+            confirmButtonText: '{{ __('locale.Yes, fetch') }}',
+            cancelButtonText: '{{ __('locale.Cancel') }}'
           }).then((result) => {
             if (result.isConfirmed) {
               fetchBtn.disabled = true;
-              fetchBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> {{ __('Fetching...') }}';
+              fetchBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> {{ __('locale.Fetching...') }}';
               fetchForm.submit();
             }
           });

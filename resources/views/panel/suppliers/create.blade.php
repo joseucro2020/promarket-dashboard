@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', 'Nuevo Proveedor')
+@section('title', __('locale.Nuevo Proveedor'))
 
 @section('content')
 @section('content')

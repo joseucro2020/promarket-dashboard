@@ -9,7 +9,7 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">{{ $isEdit ? __('Edit Supplier') : __('New Supplier') }}</h4>
+          <h4 class="card-title">{{ $isEdit ? __('locale.Edit Supplier') : __('locale.New Supplier') }}</h4>
         </div>
         <div class="card-body">
           @if ($errors->any())
@@ -31,23 +31,23 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Person Type') }}</label>
+                  <label>{{ __('locale.Person Type') }}</label>
                   <select name="tipo_prove" class="form-control">
-                    <option value="">{{ __('Select') }}</option>
-                    <option value="NT" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'NT' ? 'selected' : '' }}>{{ __('Natural') }}</option>
-                    <option value="JR" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'JR' ? 'selected' : '' }}>{{ __('Legal') }}</option>
+                    <option value="">{{ __('locale.Select') }}</option>
+                      <option value="NT" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'NT' ? 'selected' : '' }}>{{ __('locale.Natural') }}</option>
+                      <option value="JR" {{ old('tipo_prove', $supplier->tipo_prove ?? '') == 'JR' ? 'selected' : '' }}>{{ __('locale.Legal') }}</option>
                   </select>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('ID / RIF') }}</label>
+                  <label>{{ __('locale.ID / RIF') }}</label>
                   <input type="text" name="id_prove" class="form-control" value="{{ old('id_prove', $supplier->id_prove ?? '') }}">
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Name / Business Name') }}</label>
+                  <label>{{ __('locale.Name / Business Name') }}</label>
                   <input type="text" name="nombre_prove" class="form-control" required value="{{ old('nombre_prove', $supplier->nombre_prove ?? '') }}">
                 </div>
               </div>
@@ -56,26 +56,26 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Origin') }}</label>
+                  <label>{{ __('locale.Origin') }}</label>
                   <select name="proced_prove" class="form-control">
-                    <option value="">{{ __('Select') }}</option>
-                    <option value="NA" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'NA' ? 'selected' : '' }}>{{ __('Local') }}</option>
-                    <option value="EX" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'EX' ? 'selected' : '' }}>{{ __('Imported') }}</option>
+                    <option value="">{{ __('locale.Select') }}</option>
+                    <option value="NA" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'NA' ? 'selected' : '' }}>{{ __('locale.Local') }}</option>
+                    <option value="EX" {{ old('proced_prove', $supplier->proced_prove ?? '') == 'EX' ? 'selected' : '' }}>{{ __('locale.Imported') }}</option>
                   </select>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Contact Person') }}</label>
+                  <label>{{ __('locale.Contact Person') }}</label>
                   <input type="text" name="rsp_prove" class="form-control" value="{{ old('rsp_prove', $supplier->rsp_prove ?? '') }}">
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Status') }}</label>
+                  <label>{{ __('locale.Status') }}</label>
                   <select name="status_prove" class="form-control">
-                    <option value="1" {{ old('status_prove', $supplier->status_prove ?? '1') == '1' ? 'selected' : '' }}>{{ __('Active') }}</option>
-                    <option value="2" {{ old('status_prove', $supplier->status_prove ?? '') == '2' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                    <option value="1" {{ old('status_prove', $supplier->status_prove ?? '1') == '1' ? 'selected' : '' }}>{{ __('locale.Active') }}</option>
+                    <option value="2" {{ old('status_prove', $supplier->status_prove ?? '') == '2' ? 'selected' : '' }}>{{ __('locale.Inactive') }}</option>
                   </select>
                 </div>
               </div>
@@ -84,9 +84,9 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Country') }}</label>
+                  <label>{{ __('locale.Country') }}</label>
                   <select name="pais_prove" class="form-control">
-                    <option value="">{{ __('Select') }}</option>
+                    <option value="">{{ __('locale.Select') }}</option>
                     @if(isset($paises))
                       @foreach($paises as $pais)
                         <option value="{{ $pais->id }}" {{ old('pais_prove', $supplier->pais_prove ?? '') == $pais->id ? 'selected' : '' }}>{{ $pais->nombre ?? $pais->name ?? $pais->pais }}</option>
@@ -97,9 +97,9 @@
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('State') }}</label>
+                  <label>{{ __('locale.State') }}</label>
                   <select name="estado_prove" class="form-control">
-                    <option value="">{{ __('Select') }}</option>
+                    <option value="">{{ __('locale.Select') }}</option>
                     @if(isset($states))
                       @foreach($states as $st)
                         <option value="{{ $st->id }}" {{ old('estado_prove', $supplier->estado_prove ?? '') == $st->id ? 'selected' : '' }}>{{ $st->nombre ?? $st->name }}</option>
@@ -110,9 +110,9 @@
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Municipality') }}</label>
+                  <label>{{ __('locale.Municipality') }}</label>
                   <select name="muni_prove" class="form-control">
-                    <option value="">{{ __('Select') }}</option>
+                    <option value="">{{ __('locale.Select') }}</option>
                     @if(isset($municipalities))
                       @foreach($municipalities as $m)
                         <option value="{{ $m->id }}" {{ old('muni_prove', $supplier->muni_prove ?? '') == $m->id ? 'selected' : '' }}>{{ $m->name ?? $m->nombre }}</option>
@@ -124,51 +124,51 @@
             </div>
 
             <div class="form-group">
-              <label>{{ __('Address') }}</label>
+              <label>{{ __('locale.Address') }}</label>
               <textarea name="direcc_prove" class="form-control" rows="4">{{ old('direcc_prove', $supplier->direcc_prove ?? '') }}</textarea>
             </div>
 
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Postal Code') }}</label>
+                  <label>{{ __('locale.Postal Code') }}</label>
                   <input type="text" name="postal_prove" class="form-control" value="{{ old('postal_prove', $supplier->postal_prove ?? '') }}">
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Phone') }}</label>
+                  <label>{{ __('locale.Phone') }}</label>
                   <input type="text" name="tlf_prove" class="form-control" value="{{ old('tlf_prove', $supplier->tlf_prove ?? '') }}">
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Email') }}</label>
+                  <label>{{ __('locale.Email') }}</label>
                   <input type="email" name="email_prove" class="form-control" value="{{ old('email_prove', $supplier->email_prove ?? '') }}">
                 </div>
               </div>
             </div>
 
             <hr>
-            <h5>{{ __('Sales contact') }}</h5>
+            <h5>{{ __('locale.Sales contact') }}</h5>
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label>{{ __('Sales Contact Name') }}</label>
+                  <label>{{ __('locale.Sales Contact Name') }}</label>
                   <input type="text" name="seller_name" class="form-control" value="{{ old('seller_name', $supplier->seller_name ?? '') }}">
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label>{{ __('Sales Contact Phone') }}</label>
+                  <label>{{ __('locale.Sales Contact Phone') }}</label>
                   <input type="text" name="seller_phone" class="form-control" value="{{ old('seller_phone', $supplier->seller_phone ?? '') }}">
                 </div>
               </div>
             </div>
 
             <div class="mt-4 d-flex justify-content-end">
-              <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
-              <button type="submit" class="btn btn-primary">{{ $isEdit ? __('Update') : __('Save') }}</button>
+              <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
+              <button type="submit" class="btn btn-primary">{{ $isEdit ? __('locale.Update') : __('locale.Save') }}</button>
             </div>
           </form>
         </div>
@@ -189,32 +189,32 @@
       const selectedMunicipality = @json(old('muni_prove', $supplier->muni_prove ?? null));
 
       function loadStates(countryId, selectStateId){
-        $estado.empty().append('<option value="">{{ __('Loading...') }}</option>');
-        $muni.empty().append('<option value="">{{ __('Select') }}</option>');
-        if(!countryId){ $estado.empty().append('<option value="">{{ __('Select') }}</option>'); return; }
+        $estado.empty().append('<option value="">{{ __('locale.Loading...') }}</option>');
+        $muni.empty().append('<option value="">{{ __('locale.Select') }}</option>');
+        if(!countryId){ $estado.empty().append('<option value="">{{ __('locale.Select') }}</option>'); return; }
         $.get(baseUrl + '/paises/' + countryId + '/estados').done(function(data){
-          $estado.empty().append('<option value="">{{ __('Select') }}</option>');
+          $estado.empty().append('<option value="">{{ __('locale.Select') }}</option>');
           data.forEach(function(s){
             const selected = selectStateId && selectStateId == s.id ? 'selected' : '';
             $estado.append('<option value="'+s.id+'" '+selected+'>'+ (s.nombre || s.name || s.nombre_estado || s.estado) +'</option>');
           });
           if(selectStateId){ $estado.trigger('change'); }
         }).fail(function(){
-          $estado.empty().append('<option value="">{{ __('Select') }}</option>');
+          $estado.empty().append('<option value="">{{ __('locale.Select') }}</option>');
         });
       }
 
       function loadMunicipalities(stateId, selectMuniId){
-        $muni.empty().append('<option value="">{{ __('Loading...') }}</option>');
-        if(!stateId){ $muni.empty().append('<option value="">{{ __('Select') }}</option>'); return; }
+        $muni.empty().append('<option value="">{{ __('locale.Loading...') }}</option>');
+        if(!stateId){ $muni.empty().append('<option value="">{{ __('locale.Select') }}</option>'); return; }
         $.get(baseUrl + '/estados/' + stateId + '/municipios').done(function(data){
-          $muni.empty().append('<option value="">{{ __('Select') }}</option>');
+          $muni.empty().append('<option value="">{{ __('locale.Select') }}</option>');
           data.forEach(function(m){
             const selected = selectMuniId && selectMuniId == m.id ? 'selected' : '';
             $muni.append('<option value="'+m.id+'" '+selected+'>'+ (m.name || m.nombre) +'</option>');
           });
         }).fail(function(){
-          $muni.empty().append('<option value="">{{ __('Select') }}</option>');
+          $muni.empty().append('<option value="">{{ __('locale.Select') }}</option>');
         });
       }
 

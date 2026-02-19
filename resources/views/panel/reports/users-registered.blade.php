@@ -1,46 +1,46 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Users Registered Report'))
+@section('title', __('locale.Users Registered Report'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Users Registered Report') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Users Registered Report') }}</h2>
 
   <form id="filterForm" class="row mb-3 align-items-end">
     <div class="col-md-5">
-      <label for="init">{{ __('From') }}</label>
+      <label for="init">{{ __('locale.From') }}</label>
       <input type="date" id="init" name="init" class="form-control">
     </div>
 
     <div class="col-md-5">
-      <label for="end">{{ __('To') }}</label>
+      <label for="end">{{ __('locale.To') }}</label>
       <input type="date" id="end" name="end" class="form-control">
     </div>
 
     <div class="col-md-2 text-right">
-      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('Filter') }}</button>
+      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('locale.Filter') }}</button>
     </div>
   </form>
 
   <div class="card">
     <div class="card-body">
       <div class="mb-2">
-        <strong>{{ __('Total records') }}</strong> <span id="totalRecords">0</span>
+        <strong>{{ __('locale.Total records') }}</strong> <span id="totalRecords">0</span>
       </div>
 
       <div class="mb-3">
-        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
-        <button id="exportPdf" class="btn btn-danger">{{ __('Export PDF') }}</button>
+        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('locale.Export') }}</button>
+        <button id="exportPdf" class="btn btn-danger">{{ __('locale.Export PDF') }}</button>
       </div>
 
       <div class="table-responsive">
         <table class="table" id="reportTable">
           <thead>
             <tr>
-              <th>{{ __('Name') }}</th>
-              <th>{{ __('Email') }}</th>
-              <th>{{ __('Registration date') }}</th>
-              <th>{{ __('First order') }}</th>
+              <th>{{ __('locale.Name') }}</th>
+              <th>{{ __('locale.Email') }}</th>
+              <th>{{ __('locale.Registration date') }}</th>
+              <th>{{ __('locale.First order') }}</th>
             </tr>
           </thead>
           <tbody id="reportBody"></tbody>
@@ -90,7 +90,7 @@ async function doFilter(){
   const end = document.getElementById('end').value;
 
   if(!init || !end){
-    alert('{{ __("Select date range") }}');
+    alert('{{ __('locale.Select date range') }}');
     return;
   }
 

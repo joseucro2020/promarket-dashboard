@@ -20,19 +20,19 @@
         </div>
         <div class="card-body">
           <div class="mb-3">
-            <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
-            <button id="exportPdf" class="btn btn-danger">{{ __('Export PDF') }}</button>
+            <button id="exportCsv" class="btn btn-danger mr-2">{{ __('locale.Export') }}</button>
+            <button id="exportPdf" class="btn btn-danger">{{ __('locale.Export PDF') }}</button>
           </div>
 
           <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover w-100 affiliates-table" id="affiliatesTable">
               <thead>
                 <tr>
-                  <th>{{ __('Pro Seller') }}</th>
-                  <th>{{ __('Client') }}</th>
-                  <th>{{ __('Client Identification') }}</th>
-                  <th>{{ __('Client Identification Type') }}</th>
-                  <th>{{ __('Coupon') }}</th>
+                  <th>{{ __('locale.Pro Seller') }}</th>
+                  <th>{{ __('locale.Client') }}</th>
+                  <th>{{ __('locale.Client Identification') }}</th>
+                  <th>{{ __('locale.Client Identification Type') }}</th>
+                  <th>{{ __('locale.Coupon') }}</th>
                 </tr>
               </thead>
               <tbody id="reportBody"></tbody>

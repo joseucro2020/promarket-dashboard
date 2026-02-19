@@ -17,15 +17,89 @@ use Illuminate\Support\Facades\DB;
 
 class BuyOrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = BuyOrder::with('supplier')
-            ->orderBy('fecha', 'desc')
-            ->get();
+        // Serve JSON for DataTables server-side processing
+        if ($request->ajax() || $request->has('draw')) {
+            $columns = ['id', 'nro_doc', 'fecha', 'fecha_vto', 'cond_pago', 'supplier_name', 'almacen_id', 'status', 'created_at'];
 
-        return view('panel.buyorder.index', [
-            'orders' => $orders
-        ]);
+            $baseQuery = BuyOrder::where('status', '<>', 4);
+
+            $recordsTotal = $baseQuery->count();
+
+            $query = BuyOrder::where('status', '<>', 4);
+
+            // Global search
+            $search = $request->input('search.value');
+            if ($search) {
+                $query = $query->where(function ($q) use ($search) {
+                    $q->where('nro_doc', 'like', "%{$search}%")
+                        ->orWhere('cond_pago', 'like', "%{$search}%")
+                        ->orWhere('almacen_id', 'like', "%{$search}%");
+                })->orWhereHas('supplier', function ($q) use ($search) {
+                    $q->where('nombre_prove', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%");
+                });
+            }
+
+            $recordsFiltered = $query->count();
+
+            // Ordering
+            $orderColIndex = (int) $request->input('order.0.column', 0);
+            $orderDir = $request->input('order.0.dir', 'desc');
+            $orderColumn = $columns[$orderColIndex] ?? 'id';
+
+            if ($orderColumn === 'supplier_name') {
+                $query = $query->join('suppliers', 'buy_orders.proveedor_id', '=', 'suppliers.id')
+                    ->orderBy('suppliers.nombre_prove', $orderDir)
+                    ->select('buy_orders.*');
+            } else {
+                $query = $query->orderBy($orderColumn, $orderDir);
+            }
+
+            // Pagination
+            $start = (int) $request->input('start', 0);
+            $length = (int) $request->input('length', 10);
+
+            $orders = $query->skip($start)->take($length)->with('supplier')->get();
+
+            $data = $orders->map(function ($order) {
+                $editUrl = route('buyorders.edit', $order->id);
+                $destroyUrl = route('buyorders.destroy', $order->id);
+                $supplierName = $order->supplier->nombre_prove ?? $order->supplier->name ?? '—';
+
+                $actions = '<div class="d-flex align-items-center">';
+                $actions .= '<a href="' . $editUrl . '" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="' . __('Edit') . '">';
+                $actions .= '<i data-feather="edit"></i></a>';
+                $actions .= '<form class="m-0" action="' . $destroyUrl . '" method="POST" onsubmit="return confirm(\'' . __('Delete this order?') . '\');">';
+                $actions .= '<input type="hidden" name="_token" value="' . csrf_token() . '">';
+                $actions .= '<input type="hidden" name="_method" value="DELETE">';
+                $actions .= '<button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="' . __('Delete') . '">';
+                $actions .= '<i data-feather="trash"></i></button></form></div>';
+
+                return [
+                    'id' => $order->id,
+                    'nro_doc' => $order->nro_doc,
+                    'fecha' => $order->fecha ? Carbon::parse($order->fecha)->format('d-m-Y') : '',
+                    'fecha_vcto' => $order->fecha_vto ? Carbon::parse($order->fecha_vto)->format('d-m-Y') : '',
+                    'cond_pago' => $order->cond_pago ?? '—',
+                    'supplier' => $supplierName,
+                    'almacen' => $order->almacen_id ?? '—',
+                    'status' => $order->status ?? '—',
+                    'created_at' => $order->created_at ? $order->created_at->format('d-m-Y H:i') : '',
+                    'actions' => $actions
+                ];
+            });
+
+            return response()->json([
+                'draw' => (int) $request->input('draw'),
+                'recordsTotal' => $recordsTotal,
+                'recordsFiltered' => $recordsFiltered,
+                'data' => $data
+            ]);
+        }
+
+        // Regular page load (view will initialize DataTable and fetch via AJAX)
+        return view('panel.buyorder.index');
     }
 
     public function create()
@@ -188,8 +262,8 @@ class BuyOrderController extends Controller
             ->get();
 
         $currencies = [
-            '$ Dolares' => '$ Dolares',
-            'Bs. Bolivares' => 'Bs. Bolivares'
+            '1' => '$ Dolares',
+            '2' => 'Bs. Bolivares'
         ];
 
         $payment_conditions = [
@@ -197,6 +271,8 @@ class BuyOrderController extends Controller
             2 => 'Contado',
             3 => 'Prepagado'
         ];
+
+        // dd($orderdetails);
 
         return view('panel.buyorder.edit', [
             'order' => $order,
@@ -218,7 +294,8 @@ class BuyOrderController extends Controller
         $order->moneda = $request->input('moneda');
         $order->proveedor_id = $request->input('proveedor_id');
         $order->almacen_id = $request->input('almacen_id');
-        $order->status = $request->input('status');
+        // Preserve existing status when the request does not provide one
+        $order->status = $request->input('status', $order->status);
         $order->reason = $request->input('reason');
         $order->save();
 

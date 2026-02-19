@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Promotions'))
+@section('title', __('locale.Promotions'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -16,12 +16,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Promotions List') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Promotions List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('promotions.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('promotions.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -34,14 +34,14 @@
             <table class="table table-striped table-bordered table-hover w-100 promotions-table">
               <thead>
                 <tr>
-                  <th>{{ __('Title') }}</th>
-                  <th>{{ __('Start Date') }}</th>
-                  <th>{{ __('End Date') }}</th>
-                  <th>{{ __('Discount Percentage') }}</th>
-                  <th>{{ __('Uses per client') }}</th>
-                  <th class="text-center">{{ __('Promotion status') }}</th>
-                  <th class="text-center">{{ __('Order') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Title') }}</th>
+                  <th>{{ __('locale.Start Date') }}</th>
+                  <th>{{ __('locale.End Date') }}</th>
+                  <th>{{ __('locale.Discount Percentage') }}</th>
+                  <th>{{ __('locale.Uses per client') }}</th>
+                  <th class="text-center">{{ __('locale.Promotion status') }}</th>
+                  <th class="text-center">{{ __('locale.Order') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -81,13 +81,13 @@
                           <input type="checkbox" class="custom-control-input promotion-status-toggle" id="promotion_status_{{ $promotion->id }}" data-url="{{ route('promotions.status', $promotion) }}" {{ $isActive ? 'checked' : '' }} />
                           <label class="custom-control-label" for="promotion_status_{{ $promotion->id }}"></label>
                         </div>
-                        <a href="{{ route('promotions.edit', $promotion) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('promotions.edit', $promotion) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('promotions.destroy', $promotion) }}" method="POST" onsubmit="return confirm('{{ __('Delete this promotion?') }}');">
+                        <form class="m-0" action="{{ route('promotions.destroy', $promotion) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this promotion?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>
@@ -96,7 +96,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="8" class="text-center">{{ __('No promotions yet.') }}</td>
+                    <td colspan="8" class="text-center">{{ __('locale.No promotions yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -192,10 +192,10 @@
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-          .then(async (response) => {
+              .then(async (response) => {
             if (!response.ok) {
               const payload = await response.json().catch(() => ({}));
-              throw new Error(payload.message || '{{ __('An error occurred') }}');
+              throw new Error(payload.message || '{{ __('locale.An error occurred') }}');
             }
             return response.json();
           })
@@ -222,7 +222,7 @@
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: '{{ __('Information updated successfully.') }}',
+                title: '{{ __('locale.Information updated successfully.') }}',
                 showConfirmButton: false,
                 timer: 2500,
                 timerProgressBar: true
@@ -231,7 +231,7 @@
           })
           .catch((error) => {
             checkbox.checked = previous;
-            const message = error.message || '{{ __('An error occurred') }}';
+              const message = error.message || '{{ __('locale.An error occurred') }}';
             if (window.Swal) {
               Swal.fire({
                 toast: true,

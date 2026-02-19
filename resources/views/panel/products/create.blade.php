@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Add Product'))
+@section('title', __('locale.Add Product'))
 
 @section('content')
     <section id="multiple-column-form">
@@ -8,7 +8,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">{{ __('Add Product') }}</h4>
+                        <h4 class="card-title">{{ __('locale.Add Product') }}</h4>
                         {{-- <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a> --}}
                     </div>
                     <div class="card-body">
@@ -38,11 +38,11 @@
                             <ul class="nav nav-tabs" role="tablist">
                                 <li class="nav-item">
                                     <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info"
-                                        aria-controls="info" role="tab" aria-selected="true">{{ __('Information') }}</a>
+                                        aria-controls="info" role="tab" aria-selected="true">{{ __('locale.Information') }}</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="images-tab" data-toggle="tab" href="#images"
-                                        aria-controls="images" role="tab" aria-selected="false">{{ __('Images') }}</a>
+                                        aria-controls="images" role="tab" aria-selected="false">{{ __('locale.Images') }}</a>
                                 </li>
                             </ul>
 
@@ -52,56 +52,56 @@
 
                                     <div class="row mt-2">
                                         <div class="col-md-12 text-center mb-2">
-                                            <label>{{ __('Product Type') }}</label>
-                                            <div class="demo-inline-spacing justify-content-center">
+                                                <label class="custom-control-label"
+                                                    for="is_active_hours">{{ __('locale.Active Hours') }}</label>
                                                 <div class="custom-control custom-radio">
                                                     <input type="radio" id="typeSimple" name="type"
                                                         class="custom-control-input" value="simple" checked>
                                                     <label class="custom-control-label"
-                                                        for="typeSimple">{{ __('Simple Product') }}</label>
+                                                <label>{{ __('locale.Time From') }}</label>
                                                 </div>
                                                 <div class="custom-control custom-radio">
                                                     <input type="radio" id="typeVariable" name="type"
                                                         class="custom-control-input" value="variable">
-                                                    <label class="custom-control-label"
-                                                        for="typeVariable">{{ __('Variable Product') }}</label>
+                                                <label>{{ __('locale.Time To') }}</label>
+                                                        for="typeVariable">{{ __('locale.Variable Product') }}</label>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Mark as PRO Product?') }}</label>
+                                                <label>{{ __('locale.Mark as PRO Product?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input" id="is_pro"
                                                         name="is_pro">
                                                     <label class="custom-control-label"
-                                                        for="is_pro">{{ __('Yes') }}</label>
+                                                        for="is_pro">{{ __('locale.Yes') }}</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Auto Update?') }}</label>
+                                                <label>{{ __('locale.Auto Update?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input" id="auto_update"
                                                         name="auto_update">
                                                     <label class="custom-control-label"
-                                                        for="auto_update">{{ __('Yes') }}</label>
+                                                        for="auto_update">{{ __('locale.Yes') }}</label>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Min Stock to Deactivate') }}</label>
+                                                <label>{{ __('locale.Min Stock to Deactivate') }}</label>
                                                 <input type="number" class="form-control" name="min_stock_deactivate"
                                                     value="5">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Max Stock to Activate') }}</label>
+                                                <label>{{ __('locale.Max Stock to Activate') }}</label>
                                                 <input type="number" class="form-control" name="max_stock_activate"
                                                     value="10">
                                             </div>
@@ -109,20 +109,20 @@
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Name (Spanish)') }}</label>
+                                                <label>{{ __('locale.Name (Spanish)') }}</label>
                                                 <input type="text" class="form-control" name="name" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Name (English)') }}</label>
+                                                <label>{{ __('locale.Name (English)') }}</label>
                                                 <input type="text" class="form-control" name="name_english">
                                             </div>
                                         </div>
 
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <label>{{ __('Slug') }}</label>
+                                                <label>{{ __('locale.Slug') }}</label>
                                                 <input type="text" class="form-control" name="slug" required>
                                             </div>
                                         </div>
@@ -133,19 +133,19 @@
                                                     <input type="checkbox" class="custom-control-input"
                                                         id="is_active_hours" name="is_active_hours">
                                                     <label class="custom-control-label"
-                                                        for="is_active_hours">{{ __('Active Hours') }}</label>
+                                                        for="is_active_hours">{{ __('locale.Active Hours') }}</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Time From') }}</label>
+                                                <label>{{ __('locale.Time From') }}</label>
                                                 <input type="time" class="form-control" name="active_hours_start">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Time To') }}</label>
+                                                <label>{{ __('locale.Time To') }}</label>
                                                 <input type="time" class="form-control" name="active_hours_end">
                                             </div>
                                         </div>
@@ -153,9 +153,9 @@
                                         <!-- Categories -->
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>{{ __('Main Category') }}</label>
+                                                <label>{{ __('locale.Main Category') }}</label>
                                                 <select class="form-control" id="category_id" name="category_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                     @foreach ($categories as $category)
                                                         <option value="{{ $category->id }}">{{ $category->name }}
                                                         </option>
@@ -165,18 +165,18 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>{{ __('Sub Category') }}</label>
+                                                <label>{{ __('locale.Sub Category') }}</label>
                                                 <select class="form-control" id="subcategory_id" name="subcategory_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                     <!-- Subcategories should be loaded via AJAX based on Category -->
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>{{ __('Sub-Sub Category') }}</label>
+                                                <label>{{ __('locale.Sub-Sub Category') }}</label>
                                                 <select class="form-control" id="subsubcategory_id" name="subsubcategory_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -187,14 +187,14 @@
                                                     <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-1" style="width: 28px; height: 28px;">
                                                         <i data-feather="plus" style="width: 16px; height: 16px;"></i>
                                                     </div>
-                                                    <span style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('Add secondary category') }}</span>
+                                                    <span style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('locale.Add secondary category') }}</span>
                                                 </button>
                                             </div>
                                             <div id="secondary-category-form" class="border rounded p-2 mb-1 d-none">
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <div class="form-group">
-                                                            <label>{{ __('Secondary Category') }}</label>
+                                                            <label>{{ __('locale.Secondary Category') }}</label>
                                                             <div class="d-flex align-items-center">
                                                                 <select class="form-control" id="secondary_category_id">
                                                                     <option value="">{{ __('Select') }}</option>
@@ -202,7 +202,7 @@
                                                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                                                     @endforeach
                                                                 </select>
-                                                                <button type="button" class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1" id="add-secondary-category-item-btn" aria-label="{{ __('Add secondary category') }}">
+                                                                    <button type="button" class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1" id="add-secondary-category-item-btn" aria-label="{{ __('locale.Add secondary category') }}">
                                                                     <i data-feather="plus"></i>
                                                                 </button>
                                                             </div>
@@ -210,12 +210,12 @@
                                                     </div>
                                                     <div class="col-md-6 d-none" id="secondary_subcategory_wrap">
                                                         <div class="form-group">
-                                                            <label>{{ __('Secondary Subcategory') }}</label>
+                                                            <label>{{ __('locale.Secondary Subcategory') }}</label>
                                                             <div class="d-flex align-items-center">
                                                                 <select class="form-control" id="secondary_subcategory_id">
                                                                     <option value="">{{ __('Select') }}</option>
                                                                 </select>
-                                                                <button type="button" class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1" id="add-secondary-subcategory-btn" aria-label="{{ __('Add secondary subcategory') }}">
+                                                                    <button type="button" class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1" id="add-secondary-subcategory-btn" aria-label="{{ __('locale.Add secondary subcategory') }}">
                                                                     <i data-feather="plus"></i>
                                                                 </button>
                                                             </div>
@@ -225,36 +225,36 @@
                                             </div>
                                             <div class="border rounded p-2 p-md-3 bg-white shadow-sm mt-1">
                                                 <div class="d-flex align-items-center mb-1">
-                                                    <span class="text-uppercase small text-muted">{{ __('Secondary Subcategory') }}</span>
+                                                    <span class="text-uppercase small text-muted">{{ __('locale.Secondary Subcategory') }}</span>
                                                 </div>
                                                 <div id="secondary-subcategory-list" class="d-flex flex-wrap">
-                                                    <p class="text-muted mb-0" data-empty>{{ __('No secondary subcategories selected') }}</p>
+                                                    <p class="text-muted mb-0" data-empty>{{ __('locale.No secondary subcategories selected') }}</p>
                                                 </div>
                                                 <div class="mt-2">
-                                                    <span class="text-uppercase small text-muted">{{ __('Secondary Categories') }}</span>
+                                                    <span class="text-uppercase small text-muted">{{ __('locale.Secondary Categories') }}</span>
                                                 </div>
                                                 <div id="secondary-category-list" class="d-flex flex-wrap mt-1">
-                                                    <p class="text-muted mb-0" data-empty>{{ __('No secondary categories selected') }}</p>
+                                                    <p class="text-muted mb-0" data-empty>{{ __('locale.No secondary categories selected') }}</p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Description (Spanish)') }}</label>
+                                                <label>{{ __('locale.Description (Spanish)') }}</label>
                                                 <textarea class="form-control" name="description" rows="3"></textarea>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Description (English)') }}</label>
+                                                <label>{{ __('locale.Description (English)') }}</label>
                                                 <textarea class="form-control" name="description_english" rows="3"></textarea>
                                             </div>
                                         </div>
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>{{ __('Price') }} $</label>
+                                                <label>{{ __('locale.Price') }} $</label>
                                                 <input type="number" step="0.01" class="form-control" name="price_1"
                                                     required>
                                             </div>
@@ -269,14 +269,14 @@
                             -->
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>{{ __('Min Sale') }}</label>
+                                                <label>{{ __('locale.Min Sale') }}</label>
                                                 <input type="number" class="form-control" name="retail"
                                                     value="1">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>{{ __('Max Sale') }}</label>
+                                                <label>{{ __('locale.Max Sale') }}</label>
                                                 <input type="number" class="form-control" name="wholesale"
                                                     value="1">
                                             </div>
@@ -284,7 +284,7 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>{{ __('Cost') }}</label>
+                                                <label>{{ __('locale.Cost') }}</label>
                                                 <input type="number" step="0.01" class="form-control" name="price_2"
                                                     required>
                                             </div>
@@ -299,7 +299,7 @@
                             -->
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>{{ __('Tax') }}</label>
+                                                <label>{{ __('locale.Tax') }}</label>
                                                 <select class="form-control" name="taxe_id">
                                                     <option value="">{{ __('Select') }}</option>
                                                     @foreach ($taxes as $tax)
@@ -311,13 +311,13 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <label class="font-weight-bold">{{ __('Tags') }}</label>
+                                            <label class="font-weight-bold">{{ __('locale.Tags') }}</label>
                                             <div class="d-flex align-items-center mb-1">
                                                 <button type="button" class="btn btn-flat-primary d-flex align-items-center p-0" id="add-tag-btn">
                                                     <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-1" style="width: 28px; height: 28px;">
                                                         <i data-feather="plus" style="width: 16px; height: 16px;"></i>
                                                     </div>
-                                                    <span style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('Add Tag') }}</span>
+                                                    <span style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('locale.Add Tag') }}</span>
                                                 </button>
                                             </div>
                                             <div id="tag-form" class="row d-none">
@@ -325,14 +325,14 @@
                                                     <div class="form-group">
                                                         <div class="d-flex align-items-center">
                                                             <select class="form-control" id="tag_select">
-                                                                <option value="">{{ __('Select') }}</option>
+                                                                <option value="">{{ __('locale.Select') }}</option>
                                                                 @foreach ($tags as $tag)
                                                                     <option value="{{ $tag->id }}">{{ $tag->name }}</option>
                                                                 @endforeach
                                                             </select>
                                                             <button type="button"
                                                                 class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1"
-                                                                id="add-tag-item-btn" aria-label="{{ __('Add Tag') }}">
+                                                                    id="add-tag-item-btn" aria-label="{{ __('locale.Add Tag') }}">
                                                                 <i data-feather="plus"></i>
                                                             </button>
                                                         </div>
@@ -344,7 +344,7 @@
                                                     <span class="text-uppercase small text-muted">{{ __('Tags') }}</span>
                                                 </div>
                                                 <div id="tag-list" class="d-flex flex-wrap">
-                                                    <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
+                                                    <p class="text-muted mb-0" data-empty>{{ __('locale.No tags selected') }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -365,12 +365,12 @@
                                     <div class="row mt-2">
                                         <div class="col-12">
                                             <div class="form-group">
-                                                <label>{{ __('Main Image') }}</label>
+                                                <label>{{ __('locale.Main Image') }}</label>
                                                 <div class="custom-file">
                                                     <input type="file" class="custom-file-input" id="image"
                                                         name="image">
                                                     <label class="custom-file-label"
-                                                        for="image">{{ __('Choose file') }}</label>
+                                                        for="image">{{ __('locale.Choose file') }}</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -386,8 +386,8 @@
 
                                     <div class="mt-4 d-flex justify-content-end">
                                         <a href="{{ route('products.index') }}"
-                                            class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
-                                        <button type="submit" id="products-submit" class="btn btn-primary">{{ isset($products) ? __('Update') : __('Save') }}</button>
+                                            class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
+                                        <button type="submit" id="products-submit" class="btn btn-primary">{{ isset($products) ? __('locale.Update') : __('locale.Save') }}</button>
                                     </div>
                                 </div>
                             </div>

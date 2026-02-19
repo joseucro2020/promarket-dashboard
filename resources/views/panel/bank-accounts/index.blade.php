@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Bank Accounts'))
+@section('title', __('locale.Bank Accounts'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,12 +15,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Bank Accounts') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Bank Accounts') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <button type="button" id="btn-add-account" class="dt-button create-new btn btn-primary" data-toggle="modal" data-target="#bankAccountModal">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </button>
             </div>
           </div>
@@ -30,12 +30,12 @@
               <table id="bank-accounts-table" class="table table-striped table-bordered table-hover w-100 module-list-table bank-accounts-table">
                 <thead>
                   <tr>
-                    <th>{{ __('ID') }}</th>
-                    <th>{{ __('Account') }}</th>
-                    <th>{{ __('Bank') }}</th>
-                    <th>{{ __('Account number') }}</th>
-                    <th>{{ __('Identification') }}</th>
-                    <th class="text-end">{{ __('Actions') }}</th>
+                    <th>{{ __('locale.ID') }}</th>
+                    <th>{{ __('locale.Account') }}</th>
+                    <th>{{ __('locale.Bank') }}</th>
+                    <th>{{ __('locale.Account number') }}</th>
+                    <th>{{ __('locale.Identification') }}</th>
+                    <th class="text-end">{{ __('locale.Actions') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -61,10 +61,10 @@
                             <input type="checkbox" class="custom-control-input btn-toggle-status" id="bank_status_{{ $account->id }}" data-id="{{ $account->id }}" {{ (int)$account->status === 1 ? 'checked' : '' }} />
                             <label class="custom-control-label" for="bank_status_{{ $account->id }}"></label>
                           </div>
-                          <button type="button" class="btn btn-icon btn-flat-success mr-1 btn-edit-account" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <button type="button" class="btn btn-icon btn-flat-success mr-1 btn-edit-account" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                             <i data-feather="edit"></i>
                           </button>
-                          <button type="button" class="btn btn-icon btn-flat-danger btn-delete-account" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="button" class="btn btn-icon btn-flat-danger btn-delete-account" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </div>
@@ -85,7 +85,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="bankAccountModalTitle">{{ __('New Bank Account') }}</h5>
+        <h5 class="modal-title" id="bankAccountModalTitle">{{ __('locale.New Bank Account') }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -96,12 +96,12 @@
           <input type="hidden" id="account_id" value="" />
 
           <div class="form-group">
-            <label for="name">{{ __('Account') }}</label>
+            <label for="name">{{ __('locale.Account') }}</label>
             <input type="text" class="form-control" id="name" name="name" required />
           </div>
 
           <div class="form-group">
-            <label for="bank_id">{{ __('Bank') }}</label>
+            <label for="bank_id">{{ __('locale.Bank') }}</label>
             <select class="form-control" id="bank_id" name="bank_id" required>
               <option value="">--</option>
               @foreach($banks as $bank)
@@ -111,36 +111,36 @@
           </div>
 
           <div class="form-group">
-            <label for="number">{{ __('Account number') }}</label>
+            <label for="number">{{ __('locale.Account number') }}</label>
             <input type="text" class="form-control" id="number" name="number" />
           </div>
 
           <div class="form-group">
-            <label for="identification">{{ __('Identification') }}</label>
+            <label for="identification">{{ __('locale.Identification') }}</label>
             <input type="text" class="form-control" id="identification" name="identification" required />
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-6">
-              <label for="email">{{ __('Email') }}</label>
+              <label for="email">{{ __('locale.Email') }}</label>
               <input type="email" class="form-control" id="email" name="email" />
             </div>
             <div class="form-group col-md-6">
-              <label for="phone">{{ __('Phone') }}</label>
+              <label for="phone">{{ __('locale.Phone') }}</label>
               <input type="text" class="form-control" id="phone" name="phone" />
             </div>
           </div>
 
           <div class="form-group">
-            <label for="type">{{ __('Type') }}</label>
+            <label for="type">{{ __('locale.Type') }}</label>
             <input type="text" class="form-control" id="type" name="type" />
           </div>
 
           <div class="alert alert-danger d-none" id="bankAccountFormError"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('Cancel') }}</button>
-          <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Cancel') }}</button>
+          <button type="submit" class="btn btn-primary">{{ __('locale.Save') }}</button>
         </div>
       </form>
     </div>
@@ -162,7 +162,7 @@
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
 
     function resetModal() {
-      $('#bankAccountModalTitle').text('{{ __('New Bank Account') }}');
+      $('#bankAccountModalTitle').text('{{ __('locale.New Bank Account') }}');
       $('#account_id').val('');
       $('#bankAccountForm')[0].reset();
       $('#bankAccountFormError').addClass('d-none').text('');
@@ -178,7 +178,7 @@
       e.preventDefault();
       var $tr = $(this).closest('tr');
 
-      $('#bankAccountModalTitle').text('{{ __('Edit Bank Account') }}');
+      $('#bankAccountModalTitle').text('{{ __('locale.Edit Bank Account') }}');
       $('#account_id').val($tr.data('id'));
       $('#name').val($tr.data('name'));
       $('#bank_id').val($tr.data('bank_id'));
@@ -210,9 +210,9 @@
           window.location.reload();
         },
         error: function (xhr) {
-          var message = (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.error))
+            var message = (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.error))
             ? (xhr.responseJSON.message || xhr.responseJSON.error)
-            : '{{ __('An error occurred') }}';
+            : '{{ __('locale.An error occurred') }}';
 
           $('#bankAccountFormError').removeClass('d-none').text(message);
         }
@@ -240,7 +240,7 @@
       var $tr = $(this).closest('tr');
       var id = $tr.data('id');
 
-      if (!confirm('{{ __('Delete this bank account?') }}')) return;
+      if (!confirm('{{ __('locale.Delete this bank account?') }}')) return;
 
       $.ajax({
         url: '{{ url('panel/cuentas-bancarias') }}/' + id,

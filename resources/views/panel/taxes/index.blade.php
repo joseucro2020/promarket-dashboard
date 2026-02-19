@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Taxes'))
+@section('title', __('locale.Taxes'))
 
 @section('vendor-style')
   {{-- Page Css files --}}
@@ -22,12 +22,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Impuestos') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Impuestos') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('taxes.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('taxes.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -41,9 +41,9 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Percentage') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Percentage') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,13 +61,13 @@
                             <label class="custom-control-label" for="tax_status_{{ $tax->id }}"></label>
                           </div>
                         </form>
-                        <a href="{{ route('taxes.edit', $tax->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('taxes.edit', $tax->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('taxes.destroy', $tax->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this tax?') }}');">
+                        <form class="m-0" action="{{ route('taxes.destroy', $tax->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this tax?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>

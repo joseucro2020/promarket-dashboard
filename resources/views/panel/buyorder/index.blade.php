@@ -42,45 +42,7 @@
                   <th class="text-end">{{ __('Acciones') }}</th>
                 </tr>
               </thead>
-              <tbody>
-                @forelse($orders ?? [] as $order)
-                  <tr>
-                    <td>{{ $order->id }}</td>
-                    <td>{{ $order->nro_doc }}</td>
-                    <td data-order="{{ $order->fecha ? \Carbon\Carbon::parse($order->fecha)->format('Y-m-d') : '' }}">
-                      {{ $order->fecha ? \Carbon\Carbon::parse($order->fecha)->format('d-m-Y') : '' }}
-                    </td>
-                    <td data-order="{{ $order->fecha_vto ? \Carbon\Carbon::parse($order->fecha_vto)->format('Y-m-d') : '' }}">
-                      {{ $order->fecha_vto ? \Carbon\Carbon::parse($order->fecha_vto)->format('d-m-Y') : '' }}
-                    </td>
-                    <td>{{ $order->cond_pago ?? '—' }}</td>
-                    <td>{{ $order->supplier->nombre_prove ?? $order->supplier->name ?? $order->supplier->nombre ?? '—' }}</td>
-                    <td>{{ $order->almacen_id ?? '—' }}</td>
-                    <td>{{ $order->status ?? '—' }}</td>
-                    <td data-order="{{ $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '' }}">
-                      {{ $order->created_at ? $order->created_at->format('d-m-Y H:i') : '' }}
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <a href="{{ route('buyorders.edit', $order->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
-                          <i data-feather="edit"></i>
-                        </a>
-                        <form class="m-0" action="{{ route('buyorders.destroy', $order->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this order?') }}');">
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
-                            <i data-feather="trash"></i>
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                @empty
-                  <tr>
-                    <td colspan="10" class="text-center">{{ __('No se encontraron registros.') }}</td>
-                  </tr>
-                @endforelse
-              </tbody>
+              <tbody></tbody>
             </table>
           </div>
         </div>
@@ -101,7 +63,25 @@
   <script>
     $(function(){
       $('.buyorders-table').DataTable({
+        processing: true,
+        serverSide: true,
         responsive: true,
+        ajax: {
+          url: '{{ route("buyorders.index") }}',
+          type: 'GET'
+        },
+        columns: [
+          { data: 'id', name: 'id' },
+          { data: 'nro_doc', name: 'nro_doc' },
+          { data: 'fecha', name: 'fecha' },
+          { data: 'fecha_vcto', name: 'fecha_vto' },
+          { data: 'cond_pago', name: 'cond_pago' },
+          { data: 'supplier', name: 'supplier' },
+          { data: 'almacen', name: 'almacen_id' },
+          { data: 'status', name: 'status' },
+          { data: 'created_at', name: 'created_at' },
+          { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-end' }
+        ],
         dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
         order: [[2, 'desc']],
         language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' }

@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Contact'))
+@section('title', __('locale.Contact'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,7 +15,7 @@
         <div class="card">
           <div class="card-header border-bottom p-1">
             <div class="head-label">
-              <h4 class="mb-0">{{ __('Contact Information') }}</h4>
+              <h4 class="mb-0">{{ __('locale.Contact Information') }}</h4>
             </div>
           </div>
           <div class="card-body">
@@ -27,10 +27,10 @@
               <table id="contactTable" class="table table-striped table-bordered table-hover w-100 contact-table">
                 <thead>
                   <tr>
-                    <th>{{ __('Address') }}</th>
-                    <th>{{ __('Phone') }}</th>
-                    <th>{{ __('Email') }}</th>
-                    <th class="text-end">{{ __('Actions') }}</th>
+                    <th>{{ __('locale.Address') }}</th>
+                    <th>{{ __('locale.Phone') }}</th>
+                    <th>{{ __('locale.Email') }}</th>
+                    <th class="text-end">{{ __('locale.Actions') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -50,10 +50,10 @@
                       <td>{{ $s->email }}</td>
                       <td>
                         <div class="d-flex align-items-center">
-                          <a href="#" class="btn btn-icon btn-flat-primary mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('View') }}" onclick="window.__openContactView(this); return false;">
+                          <a href="#" class="btn btn-icon btn-flat-primary mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.View') }}" onclick="window.__openContactView(this); return false;">
                             <i data-feather="eye"></i>
                           </a>
-                          <a href="{{ route('contact.edit', $s->id) }}" class="btn btn-icon btn-flat-success" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <a href="{{ route('contact.edit', $s->id) }}" class="btn btn-icon btn-flat-success" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                             <i data-feather="edit"></i>
                           </a>
                         </div>
@@ -61,7 +61,7 @@
                     </tr>
                   @empty
                     <tr>
-                      <td colspan="4" class="text-center">{{ __('No contact information yet.') }}</td>
+                      <td colspan="4" class="text-center">{{ __('locale.No contact information yet.') }}</td>
                     </tr>
                   @endforelse
                 </tbody>
@@ -77,43 +77,43 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ __('Contact Information') }}</h5>
+          <h5 class="modal-title">{{ __('locale.Contact Information') }}</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
           <dl class="row mb-0">
-            <dt class="col-4">{{ __('Address') }}</dt>
+            <dt class="col-4">{{ __('locale.Address') }}</dt>
             <dd class="col-8" id="cv_address"></dd>
-            <dt class="col-4">{{ __('Phone') }}</dt>
+            <dt class="col-4">{{ __('locale.Phone') }}</dt>
             <dd class="col-8" id="cv_phone"></dd>
-            <dt class="col-4">{{ __('Email') }}</dt>
+            <dt class="col-4">{{ __('locale.Email') }}</dt>
             <dd class="col-8" id="cv_email"></dd>
           </dl>
 
           <hr>
 
           <dl class="row mb-0">
-            <dt class="col-4">{{ __('Facebook') }}</dt>
+            <dt class="col-4">{{ __('locale.Facebook') }}</dt>
             <dd class="col-8" id="cv_facebook"></dd>
-            <dt class="col-4">{{ __('Instagram') }}</dt>
+            <dt class="col-4">{{ __('locale.Instagram') }}</dt>
             <dd class="col-8" id="cv_instagram"></dd>
-            <dt class="col-4">{{ __('YouTube') }}</dt>
+            <dt class="col-4">{{ __('locale.YouTube') }}</dt>
             <dd class="col-8" id="cv_youtube"></dd>
           </dl>
 
           <hr>
 
           <dl class="row mb-0">
-            <dt class="col-4">{{ __('Slogan (Spanish)') }}</dt>
+            <dt class="col-4">{{ __('locale.Slogan (Spanish)') }}</dt>
             <dd class="col-8" id="cv_slogan"></dd>
-            <dt class="col-4">{{ __('Slogan (English)') }}</dt>
+            <dt class="col-4">{{ __('locale.Slogan (English)') }}</dt>
             <dd class="col-8" id="cv_slogan_en"></dd>
           </dl>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('Close') }}</button>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Close') }}</button>
         </div>
       </div>
     </div>

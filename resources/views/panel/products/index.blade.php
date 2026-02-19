@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Products'))
+@section('title', __('locale.Products'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,36 +14,71 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header border-bottom p-1">
-          <div class="head-label">
-            <h4 class="mb-0">{{ __('Products List') }}</h4>
+            <div class="head-label">
+            <h4 class="mb-0">{{ __('locale.Products List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('products.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('products.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
         </div>
         <div class="card-body">
+            <div class="row mb-1">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filter-company">{{ __('locale.Company') }}</label>
+                  <select class="form-control" id="filter-company">
+                    <option value="">{{ __('locale.All') }}</option>
+                    @foreach($companies as $companyId)
+                      <option value="{{ $companyId }}">{{ $companyId }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filter-status">{{ __('locale.Status') }}</label>
+                  <select class="form-control" id="filter-status">
+                    <option value="">{{ __('locale.All') }}</option>
+                    <option value="1">{{ __('locale.Active') }}</option>
+                    <option value="0">{{ __('locale.Inactive') }}</option>
+                    <option value="2">{{ __('locale.Deleted') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="filter-inventory">{{ __('locale.Inventory') }}</label>
+                  <select class="form-control" id="filter-inventory">
+                    <option value="">{{ __('locale.All') }}</option>
+                    <option value="1">{{ __('locale.In stock') }}</option>
+                    <option value="2">{{ __('locale.Low stock') }}</option>
+                    <option value="0">{{ __('locale.Out of stock') }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <div class="table-responsive">
                 <table class="table" id="products-table">
                     <thead>
                         <tr>
-                            <th>{{ __('Actions') }}</th>
+                            <th>{{ __('locale.Actions') }}</th>
                             <th>ID</th>
-                            <th>{{ __('Photo') }}</th>
-                            <th>{{ __('Category') }}</th>
-                            <th>{{ __('Product') }}</th>
-                            <th>{{ __('Stock') }}</th>
-                            <th>{{ __('Threshold') }}</th>
-                            <th>{{ __('Tax') }}</th>
-                            <th>{{ __('Cost') }}</th>
-                            <th>{{ __('Price') }}</th>
-                            <th>{{ __('Profit') }}</th>
-                            <th>{{ __('Percentage') }}</th>
-                            <th>{{ __('Registration') }}</th>
-                            <th>{{ __('Modification') }}</th>
+                            <th>{{ __('locale.Photo') }}</th>
+                            <th>{{ __('locale.Category') }}</th>
+                            <th>{{ __('locale.Product') }}</th>
+                            <th>{{ __('locale.Stock') }}</th>
+                            <th>{{ __('locale.Threshold') }}</th>
+                            <th>{{ __('locale.Tax') }}</th>
+                            <th>{{ __('locale.Cost') }}</th>
+                            <th>{{ __('locale.Price') }}</th>
+                            <th>{{ __('locale.Profit') }}</th>
+                            <th>{{ __('locale.Percentage') }}</th>
+                            <th>{{ __('locale.Registration') }}</th>
+                            <th>{{ __('locale.Modification') }}</th>
                             <th>PRO</th>
                         </tr>
                     </thead>
@@ -96,10 +131,17 @@
         }
       @endif
 
-      $('#products-table').DataTable({
+      var productsTable = $('#products-table').DataTable({
           processing: true,
           serverSide: true,
-          ajax: "{{ route('products.index') }}",
+          ajax: {
+            url: "{{ route('products.index') }}",
+            data: function (d) {
+              d.company = $('#filter-company').val();
+              d.status = $('#filter-status').val();
+              d.inventory = $('#filter-inventory').val();
+            }
+          },
           columns: [
               { data: 'actions', name: 'actions', orderable: false, searchable: false },
               { data: 'id', name: 'id' },
@@ -130,6 +172,10 @@
                   });
               }
           }
+      });
+
+      $('#filter-company, #filter-status, #filter-inventory').on('change', function () {
+        productsTable.ajax.reload();
       });
 
       const csrfToken = $('meta[name="csrf-token"]').attr('content');

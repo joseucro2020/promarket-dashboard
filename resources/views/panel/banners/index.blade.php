@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Banners'))
+@section('title', __('locale.Banners'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,12 +15,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Banners List') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Banners List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <button type="button" class="dt-button create-new btn btn-primary" onclick="window.__selectBannerFile(0)">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </button>
             </div>
           </div>
@@ -36,11 +36,11 @@
             <table class="table table-striped table-bordered table-hover w-100 banners-table">
               <thead>
                 <tr>
-                  <th>{{ __('ID') }}</th>
-                  <th>{{ __('Photo') }}</th>
-                  <th>{{ __('File') }}</th>
-                  <th>{{ __('Registration') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.ID') }}</th>
+                  <th>{{ __('locale.Photo') }}</th>
+                  <th>{{ __('locale.File') }}</th>
+                  <th>{{ __('locale.Registration') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,13 +58,13 @@
                     <td>{{ optional($banner->created_at)->format('Y-m-d H:i') }}</td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}" onclick="window.__selectBannerFile({{ $banner->id }})">
+                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}" onclick="window.__selectBannerFile({{ $banner->id }})">
                           <i data-feather="edit"></i>
                         </button>
-                        <form class="m-0" action="{{ route('banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this banner?') }}');">
+                        <form class="m-0" action="{{ route('banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this banner?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>
@@ -73,7 +73,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="5" class="text-center">{{ __('No banners yet.') }}</td>
+                    <td colspan="5" class="text-center">{{ __('locale.No banners yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -136,12 +136,12 @@
         const res = await fetch(uploadUrl, { method: 'POST', body: formData });
         const json = await res.json().catch(() => ({}));
         if (!res.ok || !json.result) {
-          alert(json.error || '{{ __('An error occurred') }}');
+          alert(json.error || '{{ __('locale.An error occurred') }}');
           return;
         }
         location.reload();
       } catch (e) {
-        alert('{{ __('An error occurred') }}');
+        alert('{{ __('locale.An error occurred') }}');
       } finally {
         input.value = '';
         __bannerTargetId = 0;

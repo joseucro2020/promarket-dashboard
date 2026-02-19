@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Shipping Fees'))
+@section('title', __('locale.Shipping Fees'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,7 +15,7 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Shipping Fees') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Shipping Fees') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
@@ -31,23 +31,23 @@
             <table id="shipping-fees-table" class="table table-striped table-bordered table-hover w-100 shipping-fees-table">
               <thead>
                 <tr>
-                  <th>{{ __('Amount') }}</th>
-                  <th>{{ __('Type') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Amount') }}</th>
+                  <th>{{ __('locale.Type') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
                 @forelse($shippingFees as $fee)
                 <tr>
                   <td data-order="{{ $fee->updated_at ? $fee->updated_at->format('Y-m-d H:i:s') : '' }}">{{ number_format($fee->amount, 2) }}</td>
-                  <td>{{ $fee->type == 1 ? __('National') : __('Regional') }}</td>
+                  <td>{{ $fee->type == 1 ? __('locale.National') : __('locale.Regional') }}</td>
                   <td>
                     <div class="d-flex align-items-center" style="min-width:140px;">
                       <form action="{{ route('shipping-fees.update', $fee->id) }}" method="POST" class="m-0 d-flex align-items-center confirm-save" data-message="{{ __('Save this fee?') }}">
                         @csrf
                         @method('PUT')
                         <input type="number" step="0.01" name="amount" value="{{ $fee->amount }}" class="form-control form-control-sm d-inline-block me-1" style="width:120px;">
-                        <button class="btn btn-icon btn-flat-success" type="submit" data-toggle="tooltip" data-placement="top" title="{{ __('Save') }}">
+                        <button class="btn btn-icon btn-flat-success" type="submit" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Save') }}">
                           <i data-feather="save"></i>
                         </button>
                       </form>
@@ -56,7 +56,7 @@
                 </tr>
                 @empty
                   <tr>
-                    <td colspan="3" class="text-center">{{ __('No shipping fees configured yet.') }}</td>
+                    <td colspan="3" class="text-center">{{ __('locale.No shipping fees configured yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -65,14 +65,14 @@
 
           <hr />
           <div class="mt-4">
-            <h4 class="text-center">{{ __('Minimum Purchase') }}</h4>
-            <form action="{{ route('shipping-fees.minimum') }}" method="POST" class="text-center confirm-save" data-message="{{ __('Save minimum purchase?') }}">
+            <h4 class="text-center">{{ __('locale.Minimum Purchase') }}</h4>
+            <form action="{{ route('shipping-fees.minimum') }}" method="POST" class="text-center confirm-save" data-message="{{ __('locale.Save minimum purchase?') }}">
               @csrf
               <div class="form-group">
-                <label>{{ __('Enter minimum purchase amount $') }}</label>
+                <label>{{ __('locale.Enter minimum purchase amount $') }}</label>
                 <input type="number" step="0.01" name="minimum_purchase" value="{{ $minimumPurchase }}" class="form-control d-inline-block" style="width:300px;">
               </div>
-              <button class="btn btn-warning">{{ __('Save') }}</button>
+              <button class="btn btn-warning">{{ __('locale.Save') }}</button>
             </form>
           </div>
 
@@ -114,13 +114,13 @@
       // show toast if redirected after update/create and highlight first row
       const successEl = document.getElementById('shipping-fees-success');
       if (successEl) {
-        const msg = successEl.textContent.trim();
+          const msg = successEl.textContent.trim();
         if (msg) {
           Swal.fire({
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: msg,
+              title: msg,
             showConfirmButton: false,
             timer: 5000,
             timerProgressBar: true
@@ -139,20 +139,20 @@
       document.querySelectorAll('form.confirm-save').forEach(function(form){
         form.addEventListener('submit', function(e){
           e.preventDefault();
-          const msg = form.getAttribute('data-message') || '{{ __('Are you sure?') }}';
+          const msg = form.getAttribute('data-message') || '{{ __('locale.Are you sure?') }}';
           Swal.fire({
             title: msg,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: '{{ __('Yes') }}',
-            cancelButtonText: '{{ __('Cancel') }}'
+            confirmButtonText: '{{ __('locale.Yes') }}',
+            cancelButtonText: '{{ __('locale.Cancel') }}'
           }).then((result) => {
             if (result.isConfirmed) {
               const btn = form.querySelector('button[type="submit"]');
               if (btn) {
                 btn.disabled = true;
                 const original = btn.innerHTML;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + (btn.innerText || '{{ __('Save') }}');
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + (btn.innerText || '{{ __('locale.Save') }}');
               }
               form.submit();
             }

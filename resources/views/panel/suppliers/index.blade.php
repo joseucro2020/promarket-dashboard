@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Suppliers'))
+@section('title', __('locale.Suppliers'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -20,12 +20,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Proveedores') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Proveedores') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('suppliers.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('suppliers.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -39,11 +39,11 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Country') }}</th>
-                  <th>{{ __('Phone') }}</th>
-                  <th>{{ __('Email') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Country') }}</th>
+                  <th>{{ __('locale.Phone') }}</th>
+                  <th>{{ __('locale.Email') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,13 +63,13 @@
                             <label class="custom-control-label" for="supplier_status_{{ $s->id }}"></label>
                           </div>
                         </form>
-                        <a href="{{ route('suppliers.edit', $s->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('suppliers.edit', $s->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('suppliers.destroy', $s->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this supplier?') }}');">
+                        <form class="m-0" action="{{ route('suppliers.destroy', $s->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this supplier?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>

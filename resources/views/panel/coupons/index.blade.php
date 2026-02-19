@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Coupons'))
+@section('title', __('locale.Coupons'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,9 +14,9 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header border-bottom p-1 d-flex justify-content-between align-items-center">
-          <h4 class="mb-0">{{ __('Coupons') }}</h4>
+          <h4 class="mb-0">{{ __('locale.Coupons') }}</h4>
           <a href="{{ route('coupons.create') }}" class="btn btn-primary">
-            <i data-feather="plus" class="me-50"></i>{{ __('Add New') }}
+            <i data-feather="plus" class="me-50"></i>{{ __('locale.Add New') }}
           </a>
         </div>
         <div class="card-body">
@@ -28,14 +28,14 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>{{ __('Seller PRO') }}</th>
-                  <th>{{ __('Seller Identification PRO') }}</th>
-                  <th>{{ __('Seller Type') }}</th>
-                  <th>{{ __('Coupon Code') }}</th>
-                  <th>{{ __('Uses per client') }}</th>
-                  <th>{{ __('Discount Percentage') }}</th>
-                  <th>{{ __('Coupon Status') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Seller PRO') }}</th>
+                  <th>{{ __('locale.Seller Identification PRO') }}</th>
+                  <th>{{ __('locale.Seller Type') }}</th>
+                  <th>{{ __('locale.Coupon Code') }}</th>
+                  <th>{{ __('locale.Uses per client') }}</th>
+                  <th>{{ __('locale.Discount Percentage') }}</th>
+                  <th>{{ __('locale.Coupon Status') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,13 +58,13 @@
                             <label class="custom-control-label" for="coupon_status_{{ $coupon->id }}"></label>
                           </div>
                         </form>
-                        <a href="{{ route('coupons.edit', $coupon) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('coupons.edit', $coupon) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('coupons.destroy', $coupon) }}" method="POST" onsubmit="return confirm('{{ __('Delete this coupon?') }}');">
+                        <form class="m-0" action="{{ route('coupons.destroy', $coupon) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this coupon?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>

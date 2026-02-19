@@ -1,45 +1,45 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Product Batch Changes'))
+@section('title', __('locale.Product Batch Changes'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Product Batch Changes') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Product Batch Changes') }}</h2>
 
   <div class="row">
     <div class="col-md-6">
       <fieldset class="border p-2 h-100">
-        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('Product Search by Categories') }}</legend>
+        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('locale.Product Search by Categories') }}</legend>
 
         <div class="row mt-1">
           <div class="col-md-4">
-            <label for="sCategory">{{ __('Category') }}</label>
+            <label for="sCategory">{{ __('locale.Category') }}</label>
             <select id="sCategory" class="form-control"></select>
           </div>
           <div class="col-md-4">
-            <label for="sSubcategory">{{ __('Subcategory') }}</label>
+            <label for="sSubcategory">{{ __('locale.Subcategory') }}</label>
             <select id="sSubcategory" class="form-control"></select>
           </div>
           <div class="col-md-4">
-            <label for="sSubsubcategory">{{ __('Sub Subcategory') }}</label>
+            <label for="sSubsubcategory">{{ __('locale.Sub Subcategory') }}</label>
             <select id="sSubsubcategory" class="form-control"></select>
           </div>
         </div>
 
         <div class="mt-2">
-          <button type="button" id="btnSearch" class="btn btn-danger">{{ __('Search') }}</button>
+          <button type="button" id="btnSearch" class="btn btn-danger">{{ __('locale.Search') }}</button>
         </div>
 
         <div class="table-responsive mt-2">
           <table class="table" id="productsTable">
             <thead>
               <tr>
-                <th>{{ __('ID') }}</th>
-                <th>{{ __('Name') }}</th>
+                <th>{{ __('locale.ID') }}</th>
+                <th>{{ __('locale.Name') }}</th>
               </tr>
             </thead>
             <tbody id="productsBody">
-              <tr><td colspan="2">{{ __('No records found.') }}</td></tr>
+              <tr><td colspan="2">{{ __('locale.No records found.') }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -48,25 +48,25 @@
 
     <div class="col-md-6">
       <fieldset class="border p-2 h-100">
-        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('Category Changes to Products') }}</legend>
+        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('locale.Category Changes to Products') }}</legend>
 
         <div class="row mt-1">
           <div class="col-md-4">
-            <label for="cCategory">{{ __('Category') }}</label>
+            <label for="cCategory">{{ __('locale.Category') }}</label>
             <select id="cCategory" class="form-control"></select>
           </div>
           <div class="col-md-4">
-            <label for="cSubcategory">{{ __('Subcategory') }}</label>
+            <label for="cSubcategory">{{ __('locale.Subcategory') }}</label>
             <select id="cSubcategory" class="form-control"></select>
           </div>
           <div class="col-md-4">
-            <label for="cSubsubcategory">{{ __('Sub Subcategory') }}</label>
+            <label for="cSubsubcategory">{{ __('locale.Sub Subcategory') }}</label>
             <select id="cSubsubcategory" class="form-control"></select>
           </div>
         </div>
 
         <div class="mt-2">
-          <button type="button" id="btnProcess" class="btn btn-danger">{{ __('Process Change') }}</button>
+          <button type="button" id="btnProcess" class="btn btn-danger">{{ __('locale.Process Change') }}</button>
         </div>
       </fieldset>
     </div>
@@ -107,20 +107,20 @@ function wireCascades(prefix){
   const selSubcategory = document.getElementById(prefix + 'Subcategory');
   const selSubsubcategory = document.getElementById(prefix + 'Subsubcategory');
 
-  buildSelect(selCategory, categories, '{{ __('Select') }}');
-  buildSelect(selSubcategory, [], '{{ __('Select') }}');
-  buildSelect(selSubsubcategory, [], '{{ __('Select') }}');
+  buildSelect(selCategory, categories, '{{ __('locale.Select') }}');
+  buildSelect(selSubcategory, [], '{{ __('locale.Select') }}');
+  buildSelect(selSubsubcategory, [], '{{ __('locale.Select') }}');
 
   selCategory.addEventListener('change', () => {
     const cat = getSelectedCategory(selCategory.value);
-    buildSelect(selSubcategory, cat?.subcategories ?? [], '{{ __('Select') }}');
-    buildSelect(selSubsubcategory, [], '{{ __('Select') }}');
+    buildSelect(selSubcategory, cat?.subcategories ?? [], '{{ __('locale.Select') }}');
+    buildSelect(selSubsubcategory, [], '{{ __('locale.Select') }}');
   });
 
   selSubcategory.addEventListener('change', () => {
     const cat = getSelectedCategory(selCategory.value);
     const sub = getSelectedSubcategory(cat, selSubcategory.value);
-    buildSelect(selSubsubcategory, sub?.sub_subcategories ?? [], '{{ __('Select') }}');
+    buildSelect(selSubsubcategory, sub?.sub_subcategories ?? [], '{{ __('locale.Select') }}');
   });
 }
 
@@ -128,9 +128,9 @@ function renderProducts(rows){
   const tbody = document.getElementById('productsBody');
   tbody.innerHTML = '';
 
-  if(!Array.isArray(rows) || rows.length === 0){
+    if(!Array.isArray(rows) || rows.length === 0){
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="2">{{ __('No records found.') }}</td>`;
+    tr.innerHTML = `<td colspan="2">${@json(__('locale.No records found.'))}</td>`;
     tbody.appendChild(tr);
     return;
   }
@@ -189,7 +189,7 @@ async function doProcess(){
   const csubsubcategory = document.getElementById('cSubsubcategory').value || null;
 
   if(!ccategory){
-    alert('{{ __('Select destination category') }}');
+    alert('{{ __('locale.Select destination category') }}');
     return;
   }
 

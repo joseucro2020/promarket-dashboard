@@ -1,14 +1,14 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', isset($category) ? __('Edit Category') : __('New Category'))
+@section('title', isset($category) ? __('locale.Edit Category') : __('locale.New Category'))
 
 @section('content')
 <section>
   <div class="row">
     <div class="col-12">
       <div class="card">
-        <div class="card-header">
-          <h4 class="card-title">{{ isset($category) ? __('Edit Category') : __('New Category') }}</h4>
+          <div class="card-header">
+          <h4 class="card-title">{{ isset($category) ? __('locale.Edit Category') : __('locale.New Category') }}</h4>
         </div>
         <div class="card-body">
           @if ($errors->any())
@@ -55,14 +55,14 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="name">{{ __('Category (Spanish)') }}</label>
+                  <label for="name">{{ __('locale.Category (Spanish)') }}</label>
                   <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $category->name ?? '') }}" required>
                 </div>
               </div>
 
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="name_english">{{ __('Category (English)') }}</label>
+                  <label for="name_english">{{ __('locale.Category (English)') }}</label>
                   <input type="text" id="name_english" name="name_english" class="form-control" value="{{ old('name_english', $category->name_english ?? '') }}">
                 </div>
               </div>
@@ -71,13 +71,13 @@
             <div class="row">
               <div class="col-md-10">
                 <div class="form-group">
-                  <label for="slug">{{ __('Slug') }}</label>
+                  <label for="slug">{{ __('locale.Slug') }}</label>
                   <input type="text" id="slug" name="slug" class="form-control" value="{{ old('slug', $category->slug ?? '') }}">
                 </div>
               </div>
               <div class="col-md-2">
                 <div class="form-group">
-                  <label for="order">{{ __('Order') }}</label>
+                  <label for="order">{{ __('locale.Order') }}</label>
                   <input type="number" id="order" name="order" class="form-control" min="0" value="{{ old('order', $category->order ?? 0) }}">
                 </div>
               </div>
@@ -86,45 +86,45 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Can be paid with PayPal') }}</label>
+                  <label>{{ __('locale.Can be paid with PayPal') }}</label>
                   <div class="d-flex flex-wrap align-items-center">
                     <div class="custom-control custom-radio mr-2">
                       <input type="radio" id="paypal_yes" name="paypal" class="custom-control-input" value="1" {{ old('paypal', $category->paypal ?? '1') == '1' ? 'checked' : '' }}>
-                      <label class="custom-control-label" for="paypal_yes">{{ __('Yes') }}</label>
+                      <label class="custom-control-label" for="paypal_yes">{{ __('locale.Yes') }}</label>
                     </div>
                     <div class="custom-control custom-radio">
                       <input type="radio" id="paypal_no" name="paypal" class="custom-control-input" value="0" {{ old('paypal', $category->paypal ?? '1') == '0' ? 'checked' : '' }}>
-                      <label class="custom-control-label" for="paypal_no">{{ __('No') }}</label>
+                      <label class="custom-control-label" for="paypal_no">{{ __('locale.No') }}</label>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Can be paid with Stripe') }}</label>
+                  <label>{{ __('locale.Can be paid with Stripe') }}</label>
                   <div class="d-flex flex-wrap align-items-center">
                     <div class="custom-control custom-radio mr-2">
                       <input type="radio" id="stripe_yes" name="stripe" class="custom-control-input" value="1" {{ old('stripe', $category->stripe ?? '1') == '1' ? 'checked' : '' }}>
-                      <label class="custom-control-label" for="stripe_yes">{{ __('Yes') }}</label>
+                      <label class="custom-control-label" for="stripe_yes">{{ __('locale.Yes') }}</label>
                     </div>
                     <div class="custom-control custom-radio">
                       <input type="radio" id="stripe_no" name="stripe" class="custom-control-input" value="0" {{ old('stripe', $category->stripe ?? '1') == '0' ? 'checked' : '' }}>
-                      <label class="custom-control-label" for="stripe_no">{{ __('No') }}</label>
+                      <label class="custom-control-label" for="stripe_no">{{ __('locale.No') }}</label>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Status') }}</label>
+                  <label>{{ __('locale.Status') }}</label>
                   <div class="d-flex flex-wrap align-items-center">
                     <div class="custom-control custom-radio mr-2">
                       <input type="radio" id="status_active" name="status" class="custom-control-input" value="1" {{ old('status', $category->status ?? '1') == '1' ? 'checked' : '' }}>
-                      <label class="custom-control-label" for="status_active">{{ __('Active') }}</label>
+                      <label class="custom-control-label" for="status_active">{{ __('locale.Active') }}</label>
                     </div>
                     <div class="custom-control custom-radio">
                       <input type="radio" id="status_inactive" name="status" class="custom-control-input" value="0" {{ old('status', $category->status ?? '1') == '0' ? 'checked' : '' }}>
-                      <label class="custom-control-label" for="status_inactive">{{ __('Inactive') }}</label>
+                      <label class="custom-control-label" for="status_inactive">{{ __('locale.Inactive') }}</label>
                     </div>
                   </div>
                 </div>
@@ -134,10 +134,10 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Image') }}</label>
+                  <label>{{ __('locale.Image') }}</label>
                   <div class="border rounded d-flex align-items-center justify-content-center bg-light" style="height:160px;">
                     @if(isset($category) && !empty($category->image))
-                      <img src="{{ asset($category->image) }}" alt="{{ $category->name ?? __('Image') }}" class="img-fluid" style="max-height:140px;">
+                      <img src="{{ asset($category->image) }}" alt="{{ $category->name ?? __('locale.Image') }}" class="img-fluid" style="max-height:140px;">
                     @else
                       <i data-feather="image"></i>
                     @endif
@@ -147,10 +147,10 @@
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Icon') }}</label>
+                  <label>{{ __('locale.Icon') }}</label>
                   <div class="border rounded d-flex align-items-center justify-content-center bg-light" style="height:160px;">
                     @if(isset($category) && !empty($category->icon))
-                      <img src="{{ asset($category->icon) }}" alt="{{ $category->name ?? __('Icon') }}" class="img-fluid" style="max-height:140px;">
+                      <img src="{{ asset($category->icon) }}" alt="{{ $category->name ?? __('locale.Icon') }}" class="img-fluid" style="max-height:140px;">
                     @else
                       <i data-feather="image"></i>
                     @endif
@@ -160,10 +160,10 @@
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label>{{ __('Slider') }}</label>
+                  <label>{{ __('locale.Slider') }}</label>
                   <div class="border rounded d-flex align-items-center justify-content-center bg-light" style="height:160px;">
                     @if(isset($category) && !empty($category->icon2))
-                      <img src="{{ asset($category->icon2) }}" alt="{{ $category->name ?? __('Slider') }}" class="img-fluid" style="max-height:140px;">
+                      <img src="{{ asset($category->icon2) }}" alt="{{ $category->name ?? __('locale.Slider') }}" class="img-fluid" style="max-height:140px;">
                     @else
                       <i data-feather="image"></i>
                     @endif
@@ -178,7 +178,7 @@
               <button type="button" id="add-subcategory-btn" class="btn btn-primary btn-icon rounded-circle mr-1">
                 <i data-feather="plus"></i>
               </button>
-              <span class="font-weight-bold">{{ __('Add Subcategory') }}</span>
+              <span class="font-weight-bold">{{ __('locale.Add Subcategory') }}</span>
             </div>
 
             <div id="subcategory-list">
@@ -232,7 +232,7 @@
                   <div class="border-top pt-2 mt-2">
                     <div class="d-flex align-items-center mb-1">
                       <button type="button" class="btn btn-outline-primary btn-sm subsubcategory-add">
-                        <i data-feather="plus" class="mr-50"></i>{{ __('Add Sub-Subcategory') }}
+                        <i data-feather="plus" class="mr-50"></i>{{ __('locale.Add Sub-Subcategory') }}
                       </button>
                     </div>
                     <div class="subsubcategory-list">
@@ -244,18 +244,18 @@
                             <div class="row align-items-start">
                               <div class="col-md-5">
                                 <div class="form-group">
-                                  <label>{{ __('Sub-Subcategory (Spanish)') }}</label>
+                                  <label>{{ __('locale.Sub-Subcategory (Spanish)') }}</label>
                                   <input type="text" name="subcategories[{{ $index }}][sub_subcategories][{{ $subIndex }}][name]" class="form-control" value="{{ $subSub['name'] ?? '' }}">
                                 </div>
                               </div>
                               <div class="col-md-5">
                                 <div class="form-group">
-                                  <label>{{ __('Sub-Subcategory (English)') }}</label>
+                                  <label>{{ __('locale.Sub-Subcategory (English)') }}</label>
                                   <input type="text" name="subcategories[{{ $index }}][sub_subcategories][{{ $subIndex }}][name_english]" class="form-control" value="{{ $subSub['name_english'] ?? '' }}">
                                 </div>
                               </div>
                               <div class="col-md-2 text-right">
-                                <button type="button" class="btn btn-icon btn-flat-danger subsubcategory-remove" title="{{ __('Delete') }}">
+                                <button type="button" class="btn btn-icon btn-flat-danger subsubcategory-remove" title="{{ __('locale.Delete') }}">
                                   <i data-feather="trash-2"></i>
                                 </button>
                               </div>
@@ -263,13 +263,13 @@
                             <div class="row">
                               <div class="col-md-8">
                                 <div class="form-group">
-                                  <label>{{ __('Slug') }}</label>
+                                  <label>{{ __('locale.Slug') }}</label>
                                   <input type="text" name="subcategories[{{ $index }}][sub_subcategories][{{ $subIndex }}][slug]" class="form-control" value="{{ $subSub['slug'] ?? '' }}">
                                 </div>
                               </div>
                               <div class="col-md-4">
                                 <div class="form-group">
-                                  <label>{{ __('Sub-Subcategory Slider') }}</label>
+                                  <label>{{ __('locale.Sub-Subcategory Slider') }}</label>
                                   <div class="border rounded d-flex align-items-center justify-content-center bg-light" style="height:120px;">
                                     @if(!empty($subSub['icon']))
                                       <img src="{{ asset($subSub['icon']) }}" alt="{{ $subSub['name'] ?? __('Sub-Subcategory Slider') }}" class="img-fluid" style="max-height:100px;">
@@ -287,16 +287,16 @@
                     </div>
                   </div>
                 </div>
-              @empty
-                <div class="text-muted">{{ __('No subcategories added yet.') }}</div>
+                @empty
+                <div class="text-muted">{{ __('locale.No subcategories added yet.') }}</div>
               @endforelse
             </div>
 
-            <small class="text-muted">{{ __('Sub-subcategories with products cannot be deleted.') }}</small>
+            <small class="text-muted">{{ __('locale.Sub-subcategories with products cannot be deleted.') }}</small>
 
             <div class="mt-4 d-flex justify-content-end">
-              <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
-              <button type="submit" class="btn btn-primary">{{ isset($category) ? __('Update') : __('Save') }}</button>
+              <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
+              <button type="submit" class="btn btn-primary">{{ isset($category) ? __('locale.Update') : __('locale.Save') }}</button>
             </div>
           </form>
         </div>
@@ -312,15 +312,15 @@
       const list = document.getElementById('subcategory-list');
       const addBtn = document.getElementById('add-subcategory-btn');
       const strings = {
-        subcategoryEs: @json(__('Subcategory (Spanish)')),
-        subcategoryEn: @json(__('Subcategory (English)')),
-        subSubcategoryEs: @json(__('Sub-Subcategory (Spanish)')),
-        subSubcategoryEn: @json(__('Sub-Subcategory (English)')),
-        addSubSubcategory: @json(__('Add Sub-Subcategory')),
-        slug: @json(__('Slug')),
-        slider: @json(__('Subcategory Slider')),
-        subSubSlider: @json(__('Sub-Subcategory Slider')),
-        deleteLabel: @json(__('Delete'))
+        subcategoryEs: @json(__('locale.Subcategory (Spanish)')),
+        subcategoryEn: @json(__('locale.Subcategory (English)')),
+        subSubcategoryEs: @json(__('locale.Sub-Subcategory (Spanish)')),
+        subSubcategoryEn: @json(__('locale.Sub-Subcategory (English)')),
+        addSubSubcategory: @json(__('locale.Add Sub-Subcategory')),
+        slug: @json(__('locale.Slug')),
+        slider: @json(__('locale.Subcategory Slider')),
+        subSubSlider: @json(__('locale.Sub-Subcategory Slider')),
+        deleteLabel: @json(__('locale.Delete'))
       };
 
       let subcategoryIndex = {{ count($initialSubcategories) }};

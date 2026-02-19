@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('States & Municipalities'))
+@section('title', __('locale.States & Municipalities'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,15 +14,15 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Sectors') }}: {{ $municipality->name }}</h4>
+            <h4 class="mb-0">{{ __('locale.Sectors') }}: {{ $municipality->name }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <button type="button" class="dt-button create-new btn btn-primary mr-1" data-toggle="modal" data-target="#parishModal">
-                <i data-feather="plus"></i> {{ __('Add Sector') }}
+                <button type="button" class="dt-button create-new btn btn-primary mr-1" data-toggle="modal" data-target="#parishModal">
+                <i data-feather="plus"></i> {{ __('locale.Add Sector') }}
               </button>
               <a href="{{ route('states-municipalities.show', $municipality->estado_id) }}" class="btn btn-outline-secondary">
-                <i data-feather="arrow-left"></i> {{ __('Back') }}
+                <i data-feather="arrow-left"></i> {{ __('locale.Back') }}
               </a>
             </div>
           </div>
@@ -46,9 +46,9 @@
             <table id="parishesTable" class="table table-striped table-bordered table-hover w-100">
               <thead>
                 <tr>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Registration date') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Registration date') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -70,7 +70,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="3" class="text-center">{{ __('No sectors yet.') }}</td>
+                    <td colspan="3" class="text-center">{{ __('locale.No sectors yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -87,7 +87,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ __('Add Sector') }}</h5>
+        <h5 class="modal-title">{{ __('locale.Add Sector') }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -97,13 +97,13 @@
           @csrf
 
           <div class="form-group">
-            <label for="parish_name">{{ __('Sector name') }}</label>
+            <label for="parish_name">{{ __('locale.Sector name') }}</label>
             <input type="text" class="form-control" id="parish_name" name="name" required />
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('Cancel') }}</button>
-          <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Cancel') }}</button>
+          <button type="submit" class="btn btn-primary">{{ __('locale.Save') }}</button>
         </div>
       </form>
     </div>

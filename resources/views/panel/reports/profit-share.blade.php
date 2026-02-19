@@ -1,22 +1,22 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Profit & Share Report'))
+@section('title', __('locale.Profit & Share Report'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Profit & Share Report') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Profit & Share Report') }}</h2>
 
   <div class="row">
     <div class="col-md-6">
       <fieldset class="border p-2 h-100">
-        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('Date Period') }}</legend>
+        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('locale.Date Period') }}</legend>
         <div class="row mt-1">
           <div class="col-md-6">
-            <label for="from">{{ __('From') }}</label>
+            <label for="from">{{ __('locale.From') }}</label>
             <input type="date" id="from" class="form-control" />
           </div>
           <div class="col-md-6">
-            <label for="to">{{ __('To') }}</label>
+            <label for="to">{{ __('locale.To') }}</label>
             <input type="date" id="to" class="form-control" />
           </div>
         </div>
@@ -25,14 +25,14 @@
 
     <div class="col-md-6">
       <fieldset class="border p-2 h-100">
-        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('Comparative Date Period') }}</legend>
+        <legend class="w-auto px-2 mb-0" style="font-size: 0.9rem;">{{ __('locale.Comparative Date Period') }}</legend>
         <div class="row mt-1">
           <div class="col-md-6">
-            <label for="fromcom">{{ __('From') }}</label>
+            <label for="fromcom">{{ __('locale.From') }}</label>
             <input type="date" id="fromcom" class="form-control" />
           </div>
           <div class="col-md-6">
-            <label for="tocom">{{ __('To') }}</label>
+            <label for="tocom">{{ __('locale.To') }}</label>
             <input type="date" id="tocom" class="form-control" />
           </div>
         </div>
@@ -41,7 +41,7 @@
   </div>
 
   <div class="mt-2">
-    <button type="button" id="btnFilter" class="btn btn-danger">{{ __('Filter') }}</button>
+    <button type="button" id="btnFilter" class="btn btn-danger">{{ __('locale.Filter') }}</button>
   </div>
 
   <div class="row mt-2">
@@ -52,15 +52,15 @@
             <table class="table" id="tableMain">
               <thead>
                 <tr>
-                  <th>{{ __('Type') }}</th>
-                  <th>{{ __('Units Sold') }}</th>
-                  <th>{{ __('Participation') }}</th>
-                  <th>{{ __('Amount Sold') }}</th>
-                  <th>{{ __('Profit') }}</th>
+                  <th>{{ __('locale.Type') }}</th>
+                  <th>{{ __('locale.Units Sold') }}</th>
+                  <th>{{ __('locale.Participation') }}</th>
+                  <th>{{ __('locale.Amount Sold') }}</th>
+                  <th>{{ __('locale.Profit') }}</th>
                 </tr>
               </thead>
               <tbody id="tbodyMain">
-                <tr><td colspan="5">{{ __('No records found.') }}</td></tr>
+                <tr><td colspan="5">{{ __('locale.No records found.') }}</td></tr>
               </tbody>
             </table>
           </div>

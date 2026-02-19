@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Edit Product'))
+@section('title', __('locale.Edit Product'))
 
 @section('content')
     <section id="multiple-column-form">
@@ -8,7 +8,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">{{ __('Edit Product') }}</h4>
+                        <h4 class="card-title">{{ __('locale.Edit Product') }}</h4>
                         {{-- <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">{{ __('Back') }}</a> --}}
                     </div>
                     <div class="card-body">
@@ -45,21 +45,21 @@
                             <ul class="nav nav-tabs" role="tablist">
                                 <li class="nav-item">
                                     <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info"
-                                        aria-controls="info" role="tab" aria-selected="true">{{ __('Information') }}</a>
+                                        aria-controls="info" role="tab" aria-selected="true">{{ __('locale.Information') }}</a>
                                 </li>
                                 @if ($product->variable == 1)
                                     <li class="nav-item">
                                         <a class="nav-link" id="presentations-tab" data-toggle="tab" href="#presentations"
                                             aria-controls="presentations" role="tab"
                                             aria-selected="false">
-                                            {{ __('Presentations') }}
+                                            {{ __('locale.Presentations') }}
                                             <span class="badge badge-light-primary ml-1">{{ $amounts->count() }}</span>
                                         </a>
                                     </li>
                                 @endif
                                 <li class="nav-item">
                                     <a class="nav-link" id="images-tab" data-toggle="tab" href="#images"
-                                        aria-controls="images" role="tab" aria-selected="false">{{ __('Images') }}</a>
+                                        aria-controls="images" role="tab" aria-selected="false">{{ __('locale.Images') }}</a>
                                 </li>
                             </ul>
 
@@ -69,45 +69,45 @@
 
                                     <div class="row mt-2">
                                         <div class="col-md-12 text-center mb-2">
-                                            <p class="text-muted mb-1">{{ __('Product Type') }}</p>
+                                            <p class="text-muted mb-1">{{ __('locale.Product Type') }}</p>
                                             <span class="badge badge-light-primary px-2 py-1">
-                                                {{ $product->variable == 1 ? __('Variable Product') : __('Simple Product') }}
+                                                {{ $product->variable == 1 ? __('locale.Variable Product') : __('locale.Simple Product') }}
                                             </span>
                                         </div>
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Mark as PRO Product?') }}</label>
+                                                <label>{{ __('locale.Mark as PRO Product?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input" id="is_pro"
                                                         name="is_pro" {{ $product->is_pro ? 'checked' : '' }}>
                                                     <label class="custom-control-label"
-                                                        for="is_pro">{{ __('Yes') }}</label>
+                                                        for="is_pro">{{ __('locale.Yes') }}</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Auto Update?') }}</label>
+                                                <label>{{ __('locale.Auto Update?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input" id="auto_update"
                                                         name="auto_update" {{ $product->auto_update ? 'checked' : '' }}>
                                                     <label class="custom-control-label"
-                                                        for="auto_update">{{ __('Yes') }}</label>
+                                                        for="auto_update">{{ __('locale.Yes') }}</label>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Min Stock to Deactivate') }}</label>
+                                                <label>{{ __('locale.Min Stock to Deactivate') }}</label>
                                                 <input type="number" class="form-control" name="min_stock_deactivate"
                                                     value="{{ $product->minexi }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Max Stock to Activate') }}</label>
+                                                <label>{{ __('locale.Max Stock to Activate') }}</label>
                                                 <input type="number" class="form-control" name="max_stock_activate"
                                                     value="{{ $product->maxexi }}">
                                             </div>
@@ -115,14 +115,14 @@
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Name (Spanish)') }}</label>
+                                                <label>{{ __('locale.Name (Spanish)') }}</label>
                                                 <input type="text" class="form-control" name="name"
                                                     value="{{ $product->name }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>{{ __('Name (English)') }}</label>
+                                                <label>{{ __('locale.Name (English)') }}</label>
                                                 <input type="text" class="form-control" name="name_english"
                                                     value="{{ $product->name_english }}">
                                             </div>
@@ -130,7 +130,7 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <label>{{ __('Slug') }}</label>
+                                                <label>{{ __('locale.Slug') }}</label>
                                                 <input type="text" class="form-control" name="slug"
                                                     value="{{ $product->slug }}" required>
                                             </div>
@@ -146,13 +146,13 @@
                                                                     id="is_active_hours" name="is_active_hours"
                                                                     {{ $product->is_active_hours ? 'checked' : '' }}>
                                                                 <label class="custom-control-label"
-                                                                    for="is_active_hours">{{ __('Active Hours') }}</label>
+                                                                    for="is_active_hours">{{ __('locale.Active Hours') }}</label>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="form-group">
-                                                            <label>{{ __('Time From') }}</label>
+                                                            <label>{{ __('locale.Time From') }}</label>
                                                             <input type="time" class="form-control"
                                                                 name="active_hours_start"
                                                                 value="{{ $product->active_hours_start }}">
@@ -160,7 +160,7 @@
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="form-group">
-                                                            <label>{{ __('Time To') }}</label>
+                                                            <label>{{ __('locale.Time To') }}</label>
                                                             <input type="time" class="form-control"
                                                                 name="active_hours_end"
                                                                 value="{{ $product->active_hours_end }}">

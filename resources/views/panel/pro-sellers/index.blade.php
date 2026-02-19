@@ -1,6 +1,7 @@
 @extends('layouts/contentLayoutMaster')
 
 @section('title', __('Pro Sellers'))
+@section('title', __('locale.Pro Sellers'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,6 +16,7 @@
         <div class="card-header border-bottom p-1">
             <div class="head-label">
               <h4 class="mb-0">{{ __('Pro Sellers') }}</h4>
+                <h4 class="mb-0">{{ __('locale.Pro Sellers') }}</h4>
             </div>
           {{-- <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
@@ -30,12 +32,19 @@
               <thead>
                 <tr>
                   <th>{{ __('Name') }}</th>
+                    <th>{{ __('locale.Name') }}</th>
                   <th>{{ __('Identification') }}</th>
+                    <th>{{ __('locale.Identification') }}</th>
                   <th>{{ __('Type') }}</th>
+                    <th>{{ __('locale.Type') }}</th>
                   <th>{{ __('Register Date') }}</th>
+                    <th>{{ __('locale.Register Date') }}</th>
                   <th>{{ __('Phone') }}</th>
+                    <th>{{ __('locale.Phone') }}</th>
                   <th>{{ __('Status') }}</th>
+                    <th>{{ __('locale.Status') }}</th>
                   <th class="text-end">{{ __('Actions') }}</th>
+                    <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -53,19 +62,22 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">{{ __('Register new PRO client') }}</h5>
+          <h5 class="modal-title">{{ __('locale.Register new PRO client') }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info">
-          {{ __('This will convert an existing customer into a PRO seller.') }}
+            {{ __('locale.This will convert an existing customer into a PRO seller.') }}
         </div>
 
         <div class="form-group">
           <label for="proClientId">{{ __('Customer') }}</label>
+            <label for="proClientId">{{ __('locale.Customer') }}</label>
           <select id="proClientId" class="form-control">
             <option value="">-- {{ __('Select') }} --</option>
+              <option value="">-- {{ __('locale.Select') }} --</option>
           </select>
         </div>
 
@@ -73,7 +85,9 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('Cancel') }}</button>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Cancel') }}</button>
         <button type="button" class="btn btn-primary" id="btnRegisterProClient">{{ __('Save') }}</button>
+        <button type="button" class="btn btn-primary" id="btnRegisterProClient">{{ __('locale.Save') }}</button>
       </div>
     </div>
   </div>
@@ -111,6 +125,7 @@
         } },
         { data: 'telefono' },
         { data: 'status', render: function(d){ return d == 1 ? '{{ __('Active') }}' : '{{ __('Inactive') }}'; } },
+        { data: 'status', render: function(d){ return d == 1 ? '{{ __('locale.Active') }}' : '{{ __('locale.Inactive') }}'; } },
         { data: null, orderable:false, searchable:false }
       ],
       columnDefs: [{
@@ -126,16 +141,22 @@
             + '</div>'
             + '</form>';
           html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('View') }}">'
+           html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('locale.View') }}">'
             + '<i data-feather="eye"></i></a> ';
           html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('Edit') }}">'
+           html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('locale.Edit') }}">'
             + '<i data-feather="edit"></i></a> ';
           html += '<button class="btn btn-sm btn-icon btn-flat-danger mr-1 btn-delete" data-id="'+id+'" title="{{ __('Delete') }}">'
+           html += '<button class="btn btn-sm btn-icon btn-flat-danger mr-1 btn-delete" data-id="'+id+'" title="{{ __('locale.Delete') }}">'
             + '<i data-feather="trash"></i></button> ';
           html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-balance" data-id="'+id+'" title="{{ __('Balance') }}">'
+           html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-balance" data-id="'+id+'" title="{{ __('locale.Balance') }}">'
             + '<i data-feather="dollar-sign"></i></button> ';
           html += '<button class="btn btn-sm btn-icon btn-flat-info mr-1 btn-promote" data-id="'+id+'" title="{{ __('Promote') }}">'
+           html += '<button class="btn btn-sm btn-icon btn-flat-info mr-1 btn-promote" data-id="'+id+'" title="{{ __('locale.Promote') }}">'
             + '<i data-feather="volume-2"></i></button> ';
           html += '<a class="btn btn-sm btn-icon btn-flat-secondary" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('Profile') }}">'
+           html += '<a class="btn btn-sm btn-icon btn-flat-secondary" href="{{ url('panel/pro-sellers') }}/'+id+'" title="{{ __('locale.Profile') }}">'
             + '<i data-feather="user"></i></a>';
           return '<div class="d-flex align-items-center">'+html+'</div>';
         }
@@ -145,6 +166,7 @@
 
     function resetNewProClientModal() {
       $('#proClientId').html('<option value="">-- {{ __('Select') }} --</option>');
+        $('#proClientId').html('<option value="">-- {{ __('locale.Select') }} --</option>');
       $('#newProClientError').addClass('d-none').text('');
     }
 
@@ -168,6 +190,7 @@
       var id = $('#proClientId').val();
       if (!id) {
         $('#newProClientError').removeClass('d-none').text('{{ __('Select') }}');
+        $('#newProClientError').removeClass('d-none').text('{{ __('locale.Select') }}');
         return;
       }
 
@@ -179,9 +202,9 @@
           table.ajax.reload(null, false);
           return;
         }
-        $('#newProClientError').removeClass('d-none').text('{{ __('An error occurred') }}');
+          $('#newProClientError').removeClass('d-none').text('{{ __('locale.An error occurred') }}');
       }, 'json').fail(function(){
-        $('#newProClientError').removeClass('d-none').text('{{ __('An error occurred') }}');
+          $('#newProClientError').removeClass('d-none').text('{{ __('locale.An error occurred') }}');
       });
     });
 
@@ -198,6 +221,7 @@
     $('#proSellersTable').on('click', '.btn-delete', function(){
       var id = $(this).data('id');
       if(!confirm('Are you sure?')) return;
+        if(!confirm('{{ __('locale.Are you sure?') }}')) return;
       $.post('{{ url('panel/pro-sellers') }}/'+id+'/delete', {_token:'{{ csrf_token() }}'}, function(res){
         if(res && res.result){ table.ajax.reload(null, false); }
       }, 'json');

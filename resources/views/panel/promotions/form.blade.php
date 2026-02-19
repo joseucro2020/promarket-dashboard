@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', isset($promotion) ? __('Edit Promotion') : __('New Promotion'))
+@section('title', isset($promotion) ? __('locale.Edit Promotion') : __('locale.New Promotion'))
 
 @section('content')
 @php
@@ -33,8 +33,8 @@
   <div class="row">
     <div class="col-12">
       <div class="card">
-        <div class="card-header">
-          <h4 class="card-title">{{ isset($promotion) ? __('Edit Promotion') : __('New Promotion') }}</h4>
+          <div class="card-header">
+          <h4 class="card-title">{{ isset($promotion) ? __('locale.Edit Promotion') : __('locale.New Promotion') }}</h4>
         </div>
         <div class="card-body">
           @if($errors->any())
@@ -55,13 +55,13 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="title">{{ __('Title') }}</label>
+                  <label for="title">{{ __('locale.Title') }}</label>
                   <input type="text" id="title" name="title" class="form-control" value="{{ old('title', $promotion->title ?? '') }}" required>
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="limit">{{ __('Uses per client') }}</label>
+                  <label for="limit">{{ __('locale.Uses per client') }}</label>
                   <input type="number" id="limit" name="limit" class="form-control" min="0" value="{{ old('limit', $promotion->limit ?? 0) }}" required>
                 </div>
               </div>
@@ -70,19 +70,19 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="start_date">{{ __('Start Date') }}</label>
+                  <label for="start_date">{{ __('locale.Start Date') }}</label>
                   <input type="date" id="start_date" name="start_date" class="form-control" value="{{ old('start_date', optional($promotion)->start_date?->format('Y-m-d')) }}" required>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="end_date">{{ __('End Date') }}</label>
+                  <label for="end_date">{{ __('locale.End Date') }}</label>
                   <input type="date" id="end_date" name="end_date" class="form-control" value="{{ old('end_date', optional($promotion)->end_date?->format('Y-m-d')) }}" required>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="discount_percentage">{{ __('Discount Percentage') }}</label>
+                  <label for="discount_percentage">{{ __('locale.Discount Percentage') }}</label>
                   <input type="number" step="0.01" id="discount_percentage" name="discount_percentage" class="form-control" value="{{ old('discount_percentage', $promotion->discount_percentage ?? 0) }}" required>
                 </div>
               </div>
@@ -91,13 +91,13 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="order">{{ __('Order') }}</label>
+                  <label for="order">{{ __('locale.Order') }}</label>
                   <input type="number" min="0" id="order" name="order" class="form-control" value="{{ old('order', $promotion->order ?? 0) }}">
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <label for="image">{{ __('Main Image') }}</label>
+                  <label for="image">{{ __('locale.Main Image') }}</label>
                   <input type="file" id="image" name="image" class="form-control">
                   <input type="hidden" name="current_image" value="{{ $promotion->image ?? '' }}">
                   @if(isset($promotion) && $promotion->image)
@@ -110,43 +110,43 @@
             </div>
 
             <div class="card card-body border mt-3">
-              <h5>{{ __('Product search') }}</h5>
+              <h5>{{ __('locale.Product search') }}</h5>
               <div class="row">
                 <div class="col-md-4">
-                  <label>{{ __('Select Category') }}</label>
+                  <label>{{ __('locale.Select Category') }}</label>
                   <select class="form-control" id="category-filter">
-                    <option value="">{{ __('Select') }}</option>
+                    <option value="">{{ __('locale.Select') }}</option>
                     @foreach($categories as $category)
                       <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                   </select>
                 </div>
                 <div class="col-md-4">
-                  <label>{{ __('Select Subcategory') }}</label>
+                  <label>{{ __('locale.Select Subcategory') }}</label>
                   <select class="form-control" id="subcategory-filter">
-                    <option value="">{{ __('Select Subcategory') }}</option>
+                    <option value="">{{ __('locale.Select Subcategory') }}</option>
                   </select>
                 </div>
                 <div class="col-md-4">
-                  <label>{{ __('Select Sub-Subcategory') }}</label>
+                  <label>{{ __('locale.Select Sub-Subcategory') }}</label>
                   <select class="form-control" id="subsubcategory-filter">
-                    <option value="">{{ __('Select Sub-Subcategory') }}</option>
+                    <option value="">{{ __('locale.Select Sub-Subcategory') }}</option>
                   </select>
                 </div>
               </div>
               <div class="row mt-3 align-items-end">
                 <div class="col-md-7">
-                  <label>{{ __('Select product') }}</label>
+                  <label>{{ __('locale.Select product') }}</label>
                   <select class="form-control" id="product-filter">
-                    <option value="">{{ __('Select product') }}</option>
+                    <option value="">{{ __('locale.Select product') }}</option>
                   </select>
                 </div>
                 <div class="col-md-3">
-                  <label>{{ __('Quantity') }}</label>
+                  <label>{{ __('locale.Quantity') }}</label>
                   <input type="number" class="form-control" id="product-quantity" min="1" value="1">
                 </div>
                 <div class="col-md-2">
-                  <button type="button" class="btn btn-primary w-100" id="add-product-btn">{{ __('Add Product') }}</button>
+                  <button type="button" class="btn btn-primary w-100" id="add-product-btn">{{ __('locale.Add Product') }}</button>
                 </div>
               </div>
             </div>
@@ -156,11 +156,11 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>{{ __('Product') }}</th>
-                    <th>{{ __('Presentation') }}</th>
-                    <th>{{ __('Stock') }}</th>
-                    <th>{{ __('Quantity') }}</th>
-                    <th>{{ __('Actions') }}</th>
+                    <th>{{ __('locale.Product') }}</th>
+                    <th>{{ __('locale.Presentation') }}</th>
+                    <th>{{ __('locale.Stock') }}</th>
+                    <th>{{ __('locale.Quantity') }}</th>
+                    <th>{{ __('locale.Actions') }}</th>
                   </tr>
                 </thead>
                 <tbody id="selected-products-body"></tbody>
@@ -173,8 +173,8 @@
             <input type="hidden" name="products" id="selected-products" value="{{ old('products', json_encode($initialProducts)) }}">
 
             <div class="mt-4 d-flex justify-content-end">
-              <a href="{{ route('promotions.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
-              <button type="submit" class="btn btn-primary">{{ isset($promotion) ? __('Update') : __('Save') }}</button>
+                <a href="{{ route('promotions.index') }}" class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
+                  <button type="submit" class="btn btn-primary">{{ isset($promotion) ? __('locale.Update') : __('locale.Save') }}</button>
             </div>
           </form>
         </div>

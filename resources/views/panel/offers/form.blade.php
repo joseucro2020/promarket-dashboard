@@ -16,7 +16,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">{{ isset($offer) ? __('Edit Offer') : __('New Offer') }}</h4>
+                        <h4 class="card-title">{{ isset($offer) ? __('locale.Edit Offer') : __('locale.New Offer') }}</h4>
                     </div>
                     <div class="card-body">
                         <form id="offer-form" action="{{ isset($offer) ? route('offers.update', $offer) : route('offers.store') }}"
@@ -29,21 +29,21 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="start">{{ __('Start') }}</label>
+                                        <label for="start">{{ __('locale.Start') }}</label>
                                         <input type="date" id="start" name="start" class="form-control"
                                             value="{{ old('start', optional($offer)->start?->format('Y-m-d')) }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="end">{{ __('End') }}</label>
+                                        <label for="end">{{ __('locale.End') }}</label>
                                         <input type="date" id="end" name="end" class="form-control"
                                             value="{{ old('end', optional($offer)->end?->format('Y-m-d')) }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="percentage">{{ __('Percentage') }}</label>
+                                        <label for="percentage">{{ __('locale.Percentage') }}</label>
                                         <input type="number" step="0.01" min="0" max="100" id="percentage"
                                             name="percentage" class="form-control"
                                             value="{{ old('percentage', $offer->percentage ?? 0) }}">
@@ -55,13 +55,13 @@
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h5 class="mb-0">{{ __('Products') }}</h5>
+                                            <h5 class="mb-0">{{ __('locale.Products') }}</h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="row mb-2">
                                                 <div class="col-4">
                                                     <select id="filter-category" class="form-select">
-                                                        <option value="">{{ __('All Categories') }}</option>
+                                                        <option value="">{{ __('locale.All Categories') }}</option>
                                                         @foreach ($categories as $c)
                                                             <option value="{{ $c->id }}">{{ $c->name }}
                                                             </option>
@@ -70,7 +70,7 @@
                                                 </div>
                                                 <div class="col-4">
                                                     <select id="filter-subcategory" class="form-select">
-                                                        <option value="">{{ __('All Subcategories') }}</option>
+                                                        <option value="">{{ __('locale.All Subcategories') }}</option>
                                                         @foreach ($subcategories as $s)
                                                             <option value="{{ $s->id }}"
                                                                 data-category="{{ $s->category_id }}">{{ $s->name }}
@@ -80,7 +80,7 @@
                                                 </div>
                                                 <div class="col-4">
                                                     <select id="filter-subsub" class="form-select">
-                                                        <option value="">{{ __('All Sub-Subcategories') }}</option>
+                                                        <option value="">{{ __('locale.All Sub-Subcategories') }}</option>
                                                         @foreach ($subsub as $ss)
                                                             <option value="{{ $ss->id }}"
                                                                 data-subcategory="{{ $ss->subcategory_id }}">
@@ -94,9 +94,9 @@
                                                 <table class="table table-striped table-bordered products-table w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th class="text-center">{{ __('Logo') }}</th>
-                                                            <th>{{ __('Name') }}</th>
-                                                            <th class="text-end">{{ __('Actions') }}</th>
+                                                            <th class="text-center">{{ __('locale.Logo') }}</th>
+                                                            <th>{{ __('locale.Name') }}</th>
+                                                            <th class="text-end">{{ __('locale.Actions') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -111,7 +111,7 @@
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h5 class="mb-0">{{ __('Offer Products') }}</h5>
+                                            <h5 class="mb-0">{{ __('locale.Offer Products') }}</h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
@@ -119,9 +119,9 @@
                                                     class="table table-striped table-bordered offer-products-table w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th>{{ __('ID') }}</th>
-                                                            <th>{{ __('Name') }}</th>
-                                                            <th class="text-end">{{ __('Actions') }}</th>
+                                                            <th>{{ __('locale.ID') }}</th>
+                                                            <th>{{ __('locale.Name') }}</th>
+                                                            <th class="text-end">{{ __('locale.Actions') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -156,7 +156,7 @@
                                 <a href="{{ route('offers.index') }}"
                                     class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
                                 <button type="submit"
-                                    class="btn btn-primary">{{ isset($offer) ? __('Update') : __('Save') }}</button>
+                                    class="btn btn-primary">{{ isset($offer) ? __('locale.Update') : __('locale.Save') }}</button>
                             </div>
                         </form>
                     </div>

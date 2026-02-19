@@ -1,6 +1,6 @@
-@extends('layouts/contentLayoutMaster')
+﻿@extends('layouts/contentLayoutMaster')
 
-@section('title', __('Kromi Market'))
+@section('title', __('locale.Kromi Market'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -22,7 +22,7 @@
       padding: .35rem .55rem;
       border-radius: 999px;
     }
-    /* Ajustes responsivos: reducir tamaño en pantallas muy pequeñas */
+    /* Ajustes responsivos: reducir tamaÃ±o en pantallas muy pequeÃ±as */
     @media (max-width: 575.98px) {
       #kromi-products-table thead th,
       #kromi-products-table tbody td { font-size: 0.86rem; }
@@ -56,7 +56,7 @@
       z-index: 11;
     }
     .kromi-table-loading .spinner-border { width: 2.2rem; height: 2.2rem; }
-    /* Toastr: mejorar contraste y legibilidad según UI-UX del panel */
+    /* Toastr: mejorar contraste y legibilidad segÃºn UI-UX del panel */
     .toast {
       background: #ffffff !important;
       color: #2b2b2b !important;
@@ -441,7 +441,7 @@
                         var priceStr = '';
                         try { priceStr = '$ ' + returnedPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
                         catch(e) { priceStr = '$ ' + parseFloat(returnedPrice).toFixed(2); }
-                        if (typeof toastr !== 'undefined') toastr.success('Utilidad actualizada — Precio: ' + priceStr);
+                        if (typeof toastr !== 'undefined') toastr.success('Utilidad actualizada â€” Precio: ' + priceStr);
 
                         // visually mark the row: add highlight and a temporary check icon next to SKU
                         try {
@@ -516,7 +516,7 @@
 
               // Replace category select with CSV-derived categories
               var $cat = $('#kromi-categories');
-              $cat.empty().append($('<option>').val('').text('{{ __('All') }}'));
+              $cat.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
               fathers.forEach(function(f) { $cat.append($('<option>').val(f).text(toTitleCase(f))); });
               // update counts
               $('#kromi-categories-count').text(fathers.length);
@@ -539,8 +539,8 @@
               });
 
               // clear sub and sub-sub selects and counts (CSV does not provide them)
-              $('#kromi-subcategories').empty().append($('<option>').val('').text('{{ __('All') }}'));
-              $('#kromi-sub-subcategories').empty().append($('<option>').val('').text('{{ __('All') }}'));
+              $('#kromi-subcategories').empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
+              $('#kromi-sub-subcategories').empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
               $('#kromi-subcategories-count').text('0');
               $('#kromi-sub-subcategories-count').text('0');
 
@@ -626,7 +626,7 @@
       // populate Promarket categories select on load
       (function populatePromarketCategories(){
         var $pcat = $('#promarket-categories');
-        $pcat.empty().append($('<option>').val('').text('{{ __('All') }}'));
+        $pcat.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
         kromiCategories.forEach(function(c){
           $pcat.append($('<option>').val(c.id).text(c.name));
         });
@@ -642,8 +642,8 @@
         var $sub = $('#kromi-subcategories');
         var $subsub = $('#kromi-sub-subcategories');
         var $countSub = $('#kromi-subcategories-count');
-        $sub.empty().append($('<option>').val('').text('{{ __('All') }}'));
-        $subsub.empty().append($('<option>').val('').text('{{ __('All') }}'));
+        $sub.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
+        $subsub.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
 
         // show loading indicator while filtering
         $('#kromi-subcategories-loading').show();
@@ -698,8 +698,8 @@
         var catId = $(this).val();
         var $sub = $('#promarket-subcategories');
         var $subsub = $('#promarket-sub-subcategories');
-        $sub.empty().append($('<option>').val('').text('{{ __('All') }}'));
-        $subsub.empty().append($('<option>').val('').text('{{ __('All') }}'));
+        $sub.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
+        $subsub.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
         $('#promarket-subcategories-loading').show();
         $('#promarket-subcategories-count').text('...');
 
@@ -732,7 +732,7 @@
       $('#promarket-subcategories').on('change', function(){
         var subId = $(this).val();
         var $subsub = $('#promarket-sub-subcategories');
-        $subsub.empty().append($('<option>').val('').text('{{ __('All') }}'));
+        $subsub.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
         if (!subId) {
           $('#promarket-sub-subcategories-count').text('0');
           // clear son/grandson filters
@@ -782,7 +782,7 @@
         var subId = $(this).val();
         var $subsub = $('#kromi-sub-subcategories');
         var $countSub = $('#kromi-subcategories-count');
-        $subsub.empty().append($('<option>').val('').text('{{ __('All') }}'));
+        $subsub.empty().append($('<option>').val('').text('{{ __('locale.All') }}'));
         if (!subId) {
           // if no sub selected, reset sub-sub count to 0 and clear son/grandson filters
           $countSub.text($countSub.text() || '0');
@@ -869,12 +869,12 @@
         }, 150);
       });
 
-      // Validación: al registrar, exigir que haya una categoría Promarket seleccionada
+      // ValidaciÃ³n: al registrar, exigir que haya una categorÃ­a Promarket seleccionada
       $('#promarket-mapping').on('submit', function(e) {
         e.preventDefault();
         var $form = $(this);
 
-        // 1) recopilar items marcados en la tabla Kromi (checkboxes) de TODAS las páginas
+        // 1) recopilar items marcados en la tabla Kromi (checkboxes) de TODAS las pÃ¡ginas
         var selectedItems = [];
         var allNodesForCollect = kromiTable.rows().nodes();
         $(allNodesForCollect).find('input[type="checkbox"]:checked').each(function() {
@@ -897,7 +897,7 @@
         });
 
         if (!selectedItems.length) {
-          var msgNoItems = {!! json_encode(__('Seleccione al menos un producto (checkbox) de la lista importada para registrar.')) !!};
+          var msgNoItems = {!! json_encode(__('locale.Seleccione al menos un producto (checkbox) de la lista importada para registrar.')) !!};
           if (typeof toastr !== 'undefined') {
             toastr.options = toastr.options || {};
             toastr.options.closeButton = true;
@@ -905,7 +905,7 @@
             toastr.options.positionClass = 'toast-bottom-right';
             toastr.warning(msgNoItems);
           } else if (typeof Swal !== 'undefined' && Swal.fire) {
-            Swal.fire({ icon: 'warning', title: msgNoItems, confirmButtonText: {!! json_encode(__('OK')) !!} });
+            Swal.fire({ icon: 'warning', title: msgNoItems, confirmButtonText: {!! json_encode(__('locale.OK')) !!} });
           } else { alert(msgNoItems); }
           return false;
         }
@@ -915,10 +915,10 @@
         // anexar JSON de items seleccionados como input oculto
         $('<input>').attr({ type: 'hidden', name: 'checkActive' }).val(JSON.stringify(selectedItems)).appendTo($form);
 
-        // 2) validar que exista categoría destino seleccionada
+        // 2) validar que exista categorÃ­a destino seleccionada
         var cat = $('#promarket-categories').val();
         if (!cat || String(cat) === '0') {
-          var msgCat = {!! json_encode(__('Por favor seleccione una categoría antes de registrar.')) !!};
+          var msgCat = {!! json_encode(__('locale.Por favor seleccione una categorÃ­a antes de registrar.')) !!};
           if (typeof toastr !== 'undefined') {
             toastr.options = toastr.options || {};
             toastr.options.closeButton = true;
@@ -927,30 +927,30 @@
             toastr.warning(msgCat);
             $('#promarket-categories').focus();
           } else if (typeof Swal !== 'undefined' && Swal.fire) {
-            Swal.fire({ icon: 'warning', title: msgCat, confirmButtonText: {!! json_encode(__('OK')) !!} }).then(function(){ $('#promarket-categories').focus(); });
+            Swal.fire({ icon: 'warning', title: msgCat, confirmButtonText: {!! json_encode(__('locale.OK')) !!} }).then(function(){ $('#promarket-categories').focus(); });
           } else { alert(msgCat); $('#promarket-categories').focus(); }
           return false;
         }
 
-        // 3) Mostrar modal de confirmación con recuento y resumen antes de enviar
+        // 3) Mostrar modal de confirmaciÃ³n con recuento y resumen antes de enviar
         var total = selectedItems.length;
         var previewList = '<div style="max-height:240px;overflow:auto;text-align:left;">';
         selectedItems.slice(0, 20).forEach(function(it){
           var skuEsc = $('<div>').text(it.sku).html();
           var nameEsc = $('<div>').text(it.name).html();
-          previewList += '<div style="margin-bottom:6px;"><strong>' + skuEsc + '</strong> — ' + nameEsc + ' <span class="text-muted">(' + (it.amount||0) + ')</span></div>';
+          previewList += '<div style="margin-bottom:6px;"><strong>' + skuEsc + '</strong> â€” ' + nameEsc + ' <span class="text-muted">(' + (it.amount||0) + ')</span></div>';
         });
-        if (selectedItems.length > 20) previewList += '<div class="text-muted">... + ' + (selectedItems.length - 20) + ' más</div>';
+        if (selectedItems.length > 20) previewList += '<div class="text-muted">... + ' + (selectedItems.length - 20) + ' mÃ¡s</div>';
         previewList += '</div>';
 
         if (typeof Swal !== 'undefined' && Swal.fire) {
           Swal.fire({
-            title: {!! json_encode(__('Confirma registro')) !!} + ' — ' + total + ' {{ __('items') }}',
+            title: {!! json_encode(__('locale.Confirma registro')) !!} + ' â€” ' + total + ' {{ __('locale.items') }}',
             html: previewList,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: {!! json_encode(__('Confirmar')) !!},
-            cancelButtonText: {!! json_encode(__('Cancelar')) !!},
+            confirmButtonText: {!! json_encode(__('locale.Confirmar')) !!},
+            cancelButtonText: {!! json_encode(__('locale.Cancelar')) !!},
             width: 700,
             allowOutsideClick: false
           }).then(function(result){
@@ -980,12 +980,12 @@
         <div class="row align-items-center">
           <div class="col-10">
             <div class="form-group mb-0">
-              <label class="d-block">{{ __('Select file to upload:') }}</label>
+              <label class="d-block">{{ __('locale.Select file to upload:') }}</label>
               <input type="file" name="file" class="form-control">
             </div>
           </div>
           <div class="col-2 text-right">
-            <button id="upload-csv-button" class="btn btn-warning mt-2">{{ __('Load Data') }}</button>
+            <button id="upload-csv-button" class="btn btn-warning mt-2">{{ __('locale.Load Data') }}</button>
             <span id="upload-csv-loading" class="spinner-border spinner-border-sm text-warning ml-2" role="status" aria-hidden="true" style="display:none;"></span>
           </div>
         </div>
@@ -1001,49 +1001,49 @@
     <div class="col-lg-6 col-12">
       <div class="card mb-2">
         <div class="card-header">
-          <h5 class="mb-0">{{ __('Kromi Market') }}</h5>
+          <h5 class="mb-0">{{ __('locale.Kromi Market') }}</h5>
         </div>
         <div class="card-body">
           <div class="card mb-2">
             <div class="card-body">
-              <h6>{{ __('Search filters') }}</h6>
+              <h6>{{ __('locale.Search filters') }}</h6>
               <form id="kromi-filters">
                 <div class="form-group">
                   <label>
-                    {{ __('Categories') }}
+                    {{ __('locale.Categories') }}
                     {{-- <small class="text-muted" id="kromi-categories-count">0</small> --}}
                     {{-- <div class="badge badge-light-primary" id="kromi-categories-count">0</div> --}}
                   </label>
                   <select id="kromi-categories" name="category_id" class="form-control">
-                    <option value="">{{ __('All') }}</option>                   
+                    <option value="">{{ __('locale.All') }}</option>                   
                   </select>
                 </div>
                 <div class="form-group">
                   <label>
-                    {{ __('Subcategories') }}
+                    {{ __('locale.Subcategories') }}
                     <div class="badge badge-light-primary" id="kromi-subcategories-count">0</div>
                     <span id="kromi-subcategories-loading" class="spinner-border spinner-border-sm text-warning ml-2" role="status" aria-hidden="true" style="display:none;"></span>
                   </label>
                   <select id="kromi-subcategories" name="subcategory_id" class="form-control">
-                    <option value="">{{ __('All') }}</option>
+                    <option value="">{{ __('locale.All') }}</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>
-                    {{ __('Sub-Subcategories') }}
+                    {{ __('locale.Sub-Subcategories') }}
                     <div class="badge badge-light-primary" id="kromi-sub-subcategories-count">0</div>
                     <span id="kromi-sub-subcategories-loading" class="spinner-border spinner-border-sm text-warning ml-2" role="status" aria-hidden="true" style="display:none;"></span>
                   </label>
                   <select id="kromi-sub-subcategories" name="sub_subcategory_id" class="form-control">
-                    <option value="">{{ __('All') }}</option>
+                    <option value="">{{ __('locale.All') }}</option>
                   </select>
                 </div>
                 {{-- <div class="form-group mb-0">
-                  <label>{{ __('Search products by name or SKU') }}</label>
+                  <label>{{ __('locale.Search products by name or SKU') }}</label>
                   <div class="input-group">
-                    <input type="text" class="form-control" placeholder="{{ __('Search') }}...">
+                    <input type="text" class="form-control" placeholder="{{ __('locale.Search') }}...">
                     <div class="input-group-append">
-                      <button class="btn btn-warning">{{ __('Search') }}</button>
+                      <button class="btn btn-warning">{{ __('locale.Search') }}</button>
                     </div>
                   </div>
                 </div> --}}
@@ -1054,33 +1054,33 @@
           <div class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center justify-content-between">
-                  <h6 class="mb-0">{{ __('Product list') }} <span id="kromi-active-count" class="badge badge-light-success">0</span></h6>
+                  <h6 class="mb-0">{{ __('locale.Product list') }} <span id="kromi-active-count" class="badge badge-light-success">0</span></h6>
                   <div class="d-flex align-items-center">
                     <div class="form-check form-check-inline mr-2">
                       <input class="form-check-input" type="checkbox" id="kromi-filter-active">
-                      <label class="form-check-label small mb-0" for="kromi-filter-active">{{ __('Show only active') }}</label>
+                      <label class="form-check-label small mb-0" for="kromi-filter-active">{{ __('locale.Show only active') }}</label>
                     </div>
-                    <button id="kromi-invert-selection" type="button" class="btn btn-sm btn-outline-secondary">{{ __('Invert selection') }}</button>
+                    <button id="kromi-invert-selection" type="button" class="btn btn-sm btn-outline-secondary">{{ __('locale.Invert selection') }}</button>
                   </div>
                 </div>
               </div>
             <div class="card-body p-0">
               <div class="table-responsive kromi-table-wrapper">
                 <div id="kromi-table-loading" class="kromi-table-loading" style="display:none;">
-                  <div class="spinner-border text-warning" role="status"><span class="sr-only">{{ __('Loading') }}</span></div>
+                  <div class="spinner-border text-warning" role="status"><span class="sr-only">{{ __('locale.Loading') }}</span></div>
                 </div>
                 <table class="table table-striped" id="kromi-products-table">
                   <thead>
                     <tr>
                       <th style="width:30px;"><input id="kromi-select-all" type="checkbox"></th>
-                      <th>{{ __('SKU') }}</th>
-                      <th>{{ __('Name') }}</th>
-                      <th>{{ __('Cost') }}</th>
-                      <th>{{ __('Quantity') }}</th>
+                      <th>{{ __('locale.SKU') }}</th>
+                      <th>{{ __('locale.Name') }}</th>
+                      <th>{{ __('locale.Cost') }}</th>
+                      <th>{{ __('locale.Quantity') }}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Rows cargadas dinámicamente -->
+                    <!-- Rows cargadas dinÃ¡micamente -->
                   </tbody>
                 </table>
               </div>
@@ -1094,45 +1094,45 @@
     <div class="col-lg-6 col-12">
       <div class="card mb-2">
         <div class="card-header">
-          <h5 class="mb-0">{{ __('PromarketLatino') }}</h5>
+          <h5 class="mb-0">{{ __('locale.PromarketLatino') }}</h5>
         </div>
         <div class="card-body">
           <div class="card mb-2">
             <div class="card-body">
-              <h6>{{ __('Categories to register') }}</h6>
+              <h6>{{ __('locale.Categories to register') }}</h6>
               <form id="promarket-mapping" method="POST" action="{{ route('kromi.register') }}">
                 @csrf
                 <div class="form-group">
                   <label>
-                    {{ __('Categories') }}
+                    {{ __('locale.Categories') }}
                     <div class="badge badge-light-primary" id="promarket-categories-count">0</div>
                   </label>
                   <select id="promarket-categories" name="promarket-categories" class="form-control">
-                    <option value="">{{ __('All') }}</option>
+                    <option value="">{{ __('locale.All') }}</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>
-                    {{ __('Sub Category') }}
+                    {{ __('locale.Sub Category') }}
                     <div class="badge badge-light-primary" id="promarket-subcategories-count">0</div>
                     <span id="promarket-subcategories-loading" class="spinner-border spinner-border-sm text-warning ml-2" role="status" aria-hidden="true" style="display:none;"></span>
                   </label>
                   <select id="promarket-subcategories" name="promarket-subcategories" class="form-control">
-                    <option value="">{{ __('All') }}</option>
+                    <option value="">{{ __('locale.All') }}</option>
                   </select>
                 </div>
                 <div class="form-group mb-0">
                   <label>
-                    {{ __('Sub-Sub Category') }}
+                    {{ __('locale.Sub-Sub Category') }}
                     <div class="badge badge-light-primary" id="promarket-sub-subcategories-count">0</div>
                     <span id="promarket-sub-subcategories-loading" class="spinner-border spinner-border-sm text-warning ml-2" role="status" aria-hidden="true" style="display:none;"></span>
                   </label>
                   <select id="promarket-sub-subcategories" name="promarket-sub-subcategories" class="form-control">
-                    <option value="">{{ __('All') }}</option>
+                    <option value="">{{ __('locale.All') }}</option>
                   </select>
                 </div>
                 <div class="text-center mt-3">
-                  <button class="btn btn-warning">{{ __('Register') }}</button>
+                  <button class="btn btn-warning">{{ __('locale.Register') }}</button>
                 </div>
               </form>
             </div>
@@ -1140,23 +1140,23 @@
 
           <div class="card">
             <div class="card-header">
-              <h6 class="mb-0">{{ __('Product list') }}</h6>
+              <h6 class="mb-0">{{ __('locale.Product list') }}</h6>
             </div>
             <div class="card-body p-0">
               <div class="table-responsive">
                 <table class="table table-hover" id="promarket-products-table">
                   <thead>
                     <tr>
-                      <th>{{ __('SKU') }}</th>
-                      <th>{{ __('Name') }}</th>
-                      <th>{{ __('Cost') }}</th>
-                      <th>{{ __('Profit') }}</th>
-                      <th>{{ __('Price') }}</th>
-                      <th>{{ __('Quantity') }}</th>
+                      <th>{{ __('locale.SKU') }}</th>
+                      <th>{{ __('locale.Name') }}</th>
+                      <th>{{ __('locale.Cost') }}</th>
+                      <th>{{ __('locale.Profit') }}</th>
+                      <th>{{ __('locale.Price') }}</th>
+                      <th>{{ __('locale.Quantity') }}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Rows cargadas dinámicamente -->
+                    <!-- Rows cargadas dinÃ¡micamente -->
                   </tbody>
                 </table>
               </div>
@@ -1169,3 +1169,7 @@
 </section>
 
 @endsection
+
+
+
+

@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Tags'))
+@section('title', __('locale.Tags'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -20,12 +20,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Tags') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Tags') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <button type="button" class="dt-button create-new btn btn-primary" data-toggle="modal" data-target="#tagModal" onclick="window.__openTagCreate()">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <button type="button" class="dt-button create-new btn btn-primary" data-toggle="modal" data-target="#tagModal" onclick="window.__openTagCreate()">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </button>
             </div>
           </div>
@@ -36,8 +36,8 @@
             <table class="table table-striped table-bordered table-hover w-100 module-list-table tags-table">
               <thead>
                 <tr>
-                  <th>{{ __('Name') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -51,14 +51,14 @@
                           <label class="custom-control-label" for="tag_status_{{ $t->id }}"></label>
                         </div>
 
-                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="modal" data-target="#tagModal" onclick="window.__openTagEdit({{ $t->id }})" title="{{ __('Edit') }}">
+                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="modal" data-target="#tagModal" onclick="window.__openTagEdit({{ $t->id }})" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </button>
 
-                        <form class="m-0" action="{{ url('panel/etiquetas/'.$t->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure?') }}');">
+                        <form class="m-0" action="{{ url('panel/etiquetas/'.$t->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Are you sure?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>
@@ -79,7 +79,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="tagModalTitle">{{ __('Add New') }}</h5>
+        <h5 class="modal-title" id="tagModalTitle">{{ __('locale.Add New') }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -89,14 +89,14 @@
           @csrf
           <input type="hidden" id="tag_id" value="">
           <div class="form-group">
-            <label for="tag_name">{{ __('Name') }}</label>
+            <label for="tag_name">{{ __('locale.Name') }}</label>
             <input type="text" class="form-control" id="tag_name" required>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('Cancel') }}</button>
-        <button type="button" class="btn btn-primary" onclick="window.__saveTag()">{{ __('Save') }}</button>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Cancel') }}</button>
+        <button type="button" class="btn btn-primary" onclick="window.__saveTag()">{{ __('locale.Save') }}</button>
       </div>
     </div>
   </div>
@@ -129,13 +129,13 @@
   });
 
   window.__openTagCreate = function() {
-    document.getElementById('tagModalTitle').innerText = '{{ __('Add New') }}';
+    document.getElementById('tagModalTitle').innerText = '{{ __('locale.Add New') }}';
     document.getElementById('tag_id').value = '';
     document.getElementById('tag_name').value = '';
   }
 
   window.__openTagEdit = function(id) {
-    document.getElementById('tagModalTitle').innerText = '{{ __('Edit') }}';
+    document.getElementById('tagModalTitle').innerText = '{{ __('locale.Edit') }}';
     const row = document.querySelector('tr[data-id="' + id + '"]');
     document.getElementById('tag_id').value = id;
     document.getElementById('tag_name').value = row?.dataset?.name || '';
@@ -155,7 +155,7 @@
 
     const res = await fetch(url, { method: 'POST', body: formData });
     if (!res.ok) {
-      alert('{{ __('Error') }}');
+      alert('{{ __('locale.Error') }}');
       return;
     }
 
@@ -169,7 +169,7 @@
 
     const res = await fetch(url, { method: 'POST', body: formData });
     if (!res.ok) {
-      alert('{{ __('Error') }}');
+      alert('{{ __('locale.Error') }}');
       return;
     }
   }

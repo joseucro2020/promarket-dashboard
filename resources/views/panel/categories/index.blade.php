@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Categories'))
+@section('title', __('locale.Categories'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -20,12 +20,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Categories') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Categories') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('categories.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('categories.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -43,9 +43,9 @@
             <table class="table table-striped table-bordered table-hover w-100 module-list-table categories-table">
               <thead>
                 <tr>
-                  <th>{{ __('Category (Spanish)') }}</th>
-                  <th>{{ __('Category (English)') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Category (Spanish)') }}</th>
+                  <th>{{ __('locale.Category (English)') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,18 +63,18 @@
                           </div>
                         </form>
 
-                        <a href="{{ route('categories.show', $c->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('View') }}">
+                        <a href="{{ route('categories.show', $c->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.View') }}">
                           <i data-feather="eye"></i>
                         </a>
 
-                        <a href="{{ route('categories.edit', $c->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('categories.edit', $c->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
 
-                        <form class="m-0" action="{{ route('categories.destroy', $c->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this category?') }}');">
+                        <form class="m-0" action="{{ route('categories.destroy', $c->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this category?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>

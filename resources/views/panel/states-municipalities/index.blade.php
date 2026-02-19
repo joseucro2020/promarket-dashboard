@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('States & Municipalities'))
+@section('title', __('locale.States & Municipalities'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,7 +14,7 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('States List') }}</h4>
+            <h4 class="mb-0">{{ __('locale.States List') }}</h4>
           </div>
         </div>
         <div class="card-body">
@@ -22,19 +22,19 @@
             <table id="statesTable" class="table table-striped table-bordered table-hover w-100">
               <thead>
                 <tr>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Registration date') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Registration date') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
                 @forelse($states as $state)
                   <tr data-id="{{ $state->id }}" data-nombre="{{ $state->nombre }}" data-status="{{ (int) ($state->status ?? 0) }}">
                     <td>
-                      <a href="{{ url('panel/estados-municipios') }}/{{ $state->id }}" class="text-body" style="text-decoration:none;">
-                        {{ $state->nombre }}
-                      </a>
-                    </td>
+                        <a href="{{ url('panel/estados-municipios') }}/{{ $state->id }}" class="text-body" style="text-decoration:none;">
+                          {{ $state->nombre }}
+                        </a>
+                      </td>
                     <td>
                       {{ !empty($state->created_at) ? \Carbon\Carbon::parse($state->created_at)->format('d-m-Y') : '' }}
                     </td>
@@ -44,7 +44,7 @@
                           <input type="checkbox" class="custom-control-input state-status-toggle" id="state-status-{{ $state->id }}" {{ (int)($state->status ?? 0) === 1 ? 'checked' : '' }}>
                           <label class="custom-control-label" for="state-status-{{ $state->id }}"></label>
                         </div>
-                        <a href="{{ url('panel/estados-municipios') }}/{{ $state->id }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ url('panel/estados-municipios') }}/{{ $state->id }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
                       </div>
@@ -52,7 +52,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="3" class="text-center">{{ __('No states yet.') }}</td>
+                    <td colspan="3" class="text-center">{{ __('locale.No states yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>

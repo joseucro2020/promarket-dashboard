@@ -1,26 +1,26 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Top Products Report'))
+@section('title', __('locale.Top Products Report'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Top Products Report') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Top Products Report') }}</h2>
 
   <form id="filterForm" class="row mb-3 align-items-end">
     <div class="col-md-3">
-      <label for="init">{{ __('From') }}</label>
+      <label for="init">{{ __('locale.From') }}</label>
       <input type="date" id="init" name="init" class="form-control">
     </div>
 
     <div class="col-md-3">
-      <label for="end">{{ __('To') }}</label>
+      <label for="end">{{ __('locale.To') }}</label>
       <input type="date" id="end" name="end" class="form-control">
     </div>
 
     <div class="col-md-4">
-      <label for="product_id">{{ __('Products') }}</label>
+      <label for="product_id">{{ __('locale.Products') }}</label>
       <select id="product_id" class="form-control">
-        <option value="">{{ __('Select Products') }}</option>
+        <option value="">{{ __('locale.Select Products') }}</option>
         @foreach(($productsList ?? []) as $p)
           <option value="{{ $p->id }}">{{ $p->name }}</option>
         @endforeach
@@ -28,7 +28,7 @@
     </div>
 
     <div class="col-md-2 text-right">
-      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('Filter') }}</button>
+      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('locale.Filter') }}</button>
     </div>
   </form>
 
@@ -41,17 +41,17 @@
   <div class="card">
     <div class="card-body">
       <div class="mb-3">
-        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
-        <button id="exportPdf" class="btn btn-danger">{{ __('Export PDF') }}</button>
+        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('locale.Export') }}</button>
+        <button id="exportPdf" class="btn btn-danger">{{ __('locale.Export PDF') }}</button>
       </div>
 
       <div class="table-responsive">
         <table class="table" id="reportTable">
           <thead>
             <tr>
-              <th>{{ __('Product Name') }}</th>
-              <th>{{ __('Units sold') }}</th>
-              <th>{{ __('Availability') }}</th>
+              <th>{{ __('locale.Product Name') }}</th>
+              <th>{{ __('locale.Units sold') }}</th>
+              <th>{{ __('locale.Availability') }}</th>
             </tr>
           </thead>
           <tbody id="reportBody"></tbody>
@@ -75,7 +75,7 @@ function renderChart(labels, values){
     data: {
       labels,
       datasets: [{
-        label: '{{ __("Products quantity") }}',
+        label: '{{ __('locale.Products quantity') }}',
         data: values,
         backgroundColor: 'rgba(234,84,85,0.65)',
         borderColor: 'rgba(234,84,85,1)',
@@ -128,7 +128,7 @@ async function doFilter(){
   const productId = document.getElementById('product_id').value;
 
   if(!init || !end){
-    alert('{{ __("Select date range") }}');
+    alert('{{ __('locale.Select date range') }}');
     return;
   }
 

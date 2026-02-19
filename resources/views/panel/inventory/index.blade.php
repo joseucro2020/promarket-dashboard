@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Inventory Replenishment'))
+@section('title', __('locale.Inventory Replenishment'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,12 +15,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Inventory Replenishment List') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Inventory Replenishment List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('inventory.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('inventory.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -34,12 +34,12 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>{{ __('User') }}</th>
-                  <th>{{ __('Product') }}</th>
-                  <th>{{ __('Type') }}</th>
-                  <th>{{ __('Quantity') }}</th>
-                  <th>{{ __('Date') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.User') }}</th>
+                  <th>{{ __('locale.Product') }}</th>
+                  <th>{{ __('locale.Type') }}</th>
+                  <th>{{ __('locale.Quantity') }}</th>
+                  <th>{{ __('locale.Date') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -55,7 +55,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="7" class="text-center">{{ __('No replenishments yet.') }}</td>
+                    <td colspan="7" class="text-center">{{ __('locale.No replenishments yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>

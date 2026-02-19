@@ -1,30 +1,30 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Sales Report'))
+@section('title', __('locale.Sales Report'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Sales Report') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Sales Report') }}</h2>
 
   <form id="filterForm" class="row mb-3 align-items-end">
     <div class="col-md-3">
-      <label for="type">{{ __('Type') }}</label>
+      <label for="type">{{ __('locale.Type') }}</label>
       <select id="type" class="form-control">
-        <option value="daily">{{ __('Daily') }}</option>
-        <option value="weekly">{{ __('Weekly') }}</option>
-        <option value="monthly">{{ __('Monthly') }}</option>
+        <option value="daily">{{ __('locale.Daily') }}</option>
+        <option value="weekly">{{ __('locale.Weekly') }}</option>
+        <option value="monthly">{{ __('locale.Monthly') }}</option>
       </select>
     </div>
     <div class="col-md-3">
-      <label for="init">{{ __('From') }}</label>
+      <label for="init">{{ __('locale.From') }}</label>
       <input type="date" id="init" name="init" class="form-control">
     </div>
     <div class="col-md-3">
-      <label for="end">{{ __('To') }}</label>
+      <label for="end">{{ __('locale.To') }}</label>
       <input type="date" id="end" name="end" class="form-control">
     </div>
     <div class="col-md-3 text-right">
-      <button type="button" id="btnFilter" class="btn btn-outline-danger mt-1">{{ __('Filter') }}</button>
+      <button type="button" id="btnFilter" class="btn btn-outline-danger mt-1">{{ __('locale.Filter') }}</button>
     </div>
   </form>
 
@@ -37,21 +37,21 @@
   <div class="card">
     <div class="card-body">
       <div class="mb-3">
-        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
-        <button id="exportPdf" class="btn btn-outline-danger">{{ __('Export PDF') }}</button>
+        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('locale.Export') }}</button>
+        <button id="exportPdf" class="btn btn-outline-danger">{{ __('locale.Export PDF') }}</button>
       </div>
       <div class="table-responsive">
         <table class="table table-striped" id="reportTable">
           <thead>
             <tr>
-              <th>{{ __('Date') }}</th>
-              <th>{{ __('Gross Sales $') }}</th>
-              <th>{{ __('Gross Sales bs') }}</th>
-              <th>{{ __('Gross Profit') }}</th>
-              <th>{{ __('% Profit') }}</th>
-              <th>{{ __('Net Sales $') }}</th>
-              <th>{{ __('Net Sales bs') }}</th>
-              <th>{{ __('Net Profit') }}</th>
+              <th>{{ __('locale.Date') }}</th>
+              <th>{{ __('locale.Gross Sales $') }}</th>
+              <th>{{ __('locale.Gross Sales bs') }}</th>
+              <th>{{ __('locale.Gross Profit') }}</th>
+              <th>{{ __('locale.% Profit') }}</th>
+              <th>{{ __('locale.Net Sales $') }}</th>
+              <th>{{ __('locale.Net Sales bs') }}</th>
+              <th>{{ __('locale.Net Profit') }}</th>
             </tr>
           </thead>
           <tbody id="reportBody">
@@ -83,7 +83,7 @@ function renderChart(labels, values){
     data: {
       labels: labels,
       datasets: [{
-        label: '{{ __("Sales") }}',
+        label: '{{ __('locale.Sales') }}',
         data: values,
         fill: true,
         borderColor: '#ff7043',
@@ -137,7 +137,7 @@ async function doFilter(){
   const init = document.getElementById('init').value;
   const end = document.getElementById('end').value;
   if(!init || !end){
-    alert('{{ __("Select date range") }}');
+  alert('{{ __('locale.Select date range') }}');
     return;
   }
 

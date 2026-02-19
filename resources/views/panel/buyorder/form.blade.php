@@ -2,7 +2,7 @@
   <div class="col-md-2">
     <div class="form-group">
       <label for="code">{{ __('buyorder.code') }}</label>
-      <input type="text" name="code" id="code" class="form-control" placeholder="{{ __('buyorder.code') }}" value="{{ old('code', $buyorder->code ?? '') }}" required>
+      <input type="text" name="code" id="code" class="form-control" placeholder="{{ __('buyorder.id') }}" value="{{ old('code', $buyorder->id ?? '') }}" required readonly>
     </div>
   </div>
   <div class="col-md-2">
@@ -21,7 +21,7 @@
     <div class="form-group">
       <label for="supplier_id">{{ __('buyorder.supplier') }}</label>
       <select name="proveedor_id" id="supplier_id" class="form-control" required>
-        <option value="">{{ __('Select') }}</option>
+        <option value="">{{ __('locale.Select') }}</option>
         @foreach($suppliers as $supplier)
           <option value="{{ $supplier->id }}" {{ (old('proveedor_id', $buyorder->proveedor_id ?? '') == $supplier->id) ? 'selected' : '' }}>{{ $supplier->nombre_prove ?? $supplier->name ?? $supplier->nombre ?? '—' }}</option>
         @endforeach
@@ -35,7 +35,7 @@
     <div class="form-group">
       <label for="currency">{{ __('buyorder.currency') }}</label>
       <select name="moneda" id="currency" class="form-control" required>
-        <option value="">{{ __('Select') }}</option>
+        <option value="">{{ __('locale.Select') }}</option>
         @foreach($currencies ?? [] as $key => $label)
           <option value="{{ $key }}" {{ (old('moneda', $buyorder->moneda ?? '') == $key) ? 'selected' : '' }}>{{ $label }}</option>
         @endforeach
@@ -46,7 +46,7 @@
     <div class="form-group">
       <label for="payment_condition">{{ __('buyorder.payment_condition') }}</label>
       <select name="cond_pago" id="payment_condition" class="form-control" required>
-        <option value="">{{ __('Select') }}</option>
+        <option value="">{{ __('locale.Select') }}</option>
         @foreach($payment_conditions ?? [] as $key => $label)
           <option value="{{ $key }}" {{ (old('cond_pago', $buyorder->cond_pago ?? '') == $key) ? 'selected' : '' }}>{{ $label }}</option>
         @endforeach
@@ -72,21 +72,21 @@
 
 <hr>
 
-<h5>{{ __('Items') }}</h5>
+<h5>{{ __('locale.Items') }}</h5>
 <div class="table-responsive">
   <table class="table table-striped table-bordered table-hover w-100 module-list-table buyorder-items-table" id="items-table">
     <thead>
-      <tr>
-        <th>{{ __('Product') }}</th>
-        <th>{{ __('Cantidad Original') }}</th>
-        <th>{{ __('Cantidad Modificada') }}</th>
-        <th>{{ __('Cantidad Final') }}</th>
-        <th>{{ __('Costo') }}</th>
-        <th>{{ __('Total Neto') }}</th>
-        <th>% {{ __('Iva') }}</th>
-        <th>{{ __('Iva') }}</th>
-        <th>% {{ __('Utilidad') }}</th>
-        <th>{{ __('Precio Venta') }}</th>
+        <tr>
+        <th>{{ __('locale.Product') }}</th>
+        <th>{{ __('locale.Original Quantity') }}</th>
+        <th>{{ __('locale.Modified Quantity') }}</th>
+        <th>{{ __('locale.Final Quantity') }}</th>
+        <th>{{ __('locale.Cost') }}</th>
+        <th>{{ __('locale.Net Total') }}</th>
+        <th>% {{ __('locale.VAT') }}</th>
+        <th>{{ __('locale.VAT') }}</th>
+        <th>% {{ __('locale.Profit') }}</th>
+        <th>{{ __('locale.Sale Price') }}</th>
         <th width="50"></th>
       </tr>
     </thead>
@@ -108,19 +108,33 @@
           </tr>
         @endforeach
       @elseif(isset($buyorder) && $buyorder->detalles)
+      
         @foreach($buyorder->detalles as $i => $detail)
+          @php
+          // Render filas existentes como texto (solo lectura) pero incluir inputs ocultos para envío
+          $productName = $detail->product_amount->product->name ?? ($detail->name ?? '');
+          $existing = $detail->existing ?? 0;
+          $cantidad = $detail->cantidad ?? 0;
+          $final = ($existing + $cantidad);
+          $cost = $detail->costo ?? 0;
+          $totalNet = ($cost * $cantidad);
+          $taxPercent = $detail->porciva ?? 0;
+          $taxVal = $detail->iva ?? 0;
+          $profit = $detail->utilidad ?? 0;
+          $sale = $detail->precio ?? 0;
+      @endphp
           <tr>
-            <td><input type="text" name="items[{{ $i }}][product_name]" value="{{ $detail->product_name }}" class="form-control"></td>
-            <td><input type="number" step="1" name="items[{{ $i }}][original_qty]" value="{{ $detail->original_qty ?? 0 }}" class="form-control"></td>
-            <td><input type="number" step="1" name="items[{{ $i }}][modified_qty]" value="{{ $detail->modified_qty ?? 0 }}" class="form-control"></td>
-            <td><input type="number" step="1" name="items[{{ $i }}][final_qty]" value="{{ $detail->final_qty ?? $detail->qty }}" class="form-control qty"></td>
-            <td><input type="number" step="0.01" name="items[{{ $i }}][cost]" value="{{ $detail->cost ?? 0 }}" class="form-control cost"></td>
-            <td><input type="number" step="0.01" name="items[{{ $i }}][total_net]" value="{{ $detail->total ?? 0 }}" class="form-control total" readonly></td>
-            <td><input type="number" step="0.01" name="items[{{ $i }}][tax_percent]" value="{{ $detail->tax_percent ?? 0 }}" class="form-control tax_percent" readonly></td>
-            <td><input type="number" step="0.01" name="items[{{ $i }}][tax]" value="{{ $detail->tax ?? 0 }}" class="form-control tax"></td>
-            <td><input type="number" step="0.01" name="items[{{ $i }}][profit_percent]" value="{{ $detail->profit_percent ?? 0 }}" class="form-control profit_percent"></td>
-            <td><input type="number" step="0.01" name="items[{{ $i }}][sale_price]" value="{{ $detail->unit_price ?? 0 }}" class="form-control unit_price"></td>
-            <td><button type="button" class="btn btn-sm btn-danger remove-item">-</button></td>
+            <td>{{ $productName }}<input type="hidden" name="items[{{ $i }}][product_name]" value="{{ $productName }}"></td>
+            <td>{{ $existing }}<input type="hidden" name="items[{{ $i }}][original_qty]" value="{{ $existing }}"></td>
+            <td>{{ $cantidad }}<input type="hidden" name="items[{{ $i }}][modified_qty]" value="{{ $cantidad }}"></td>
+            <td>{{ $final }}<input type="hidden" name="items[{{ $i }}][final_qty]" value="{{ $final }}" class="qty"></td>
+            <td>{{ number_format($cost, 2, '.', '') }}<input type="hidden" name="items[{{ $i }}][cost]" value="{{ number_format($cost, 2, '.', '') }}"></td>
+            <td>{{ number_format($totalNet, 2, '.', '') }}<input type="hidden" name="items[{{ $i }}][total_net]" value="{{ number_format($totalNet, 2, '.', '') }}" class="total"></td>
+            <td>{{ $taxPercent }}<input type="hidden" name="items[{{ $i }}][tax_percent]" value="{{ $taxPercent }}" class="tax_percent"></td>
+            <td>{{ number_format($taxVal, 2, '.', '') }}<input type="hidden" name="items[{{ $i }}][tax]" value="{{ number_format($taxVal, 2, '.', '') }}" class="tax"></td>
+            <td>{{ $profit }}<input type="hidden" name="items[{{ $i }}][profit_percent]" value="{{ $profit }}" class="profit_percent"></td>
+            <td>{{ number_format($sale, 2, '.', '') }}<input type="hidden" name="items[{{ $i }}][sale_price]" value="{{ number_format($sale, 2, '.', '') }}" class="unit_price"></td>
+            <td><!-- acciones ocultas en vista profesional --></td>
           </tr>
         @endforeach
       
@@ -145,7 +159,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="itemModalLabel">{{ __('Agregar Registro') }}</h5>
+        <h5 class="modal-title" id="itemModalLabel">{{ __('locale.Add Record') }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -154,52 +168,52 @@
         <div id="item-modal-form">
           <div class="form-row">
             <div class="form-group col-md-6" style="position:relative;">
-                <label>{{ __('Product') }}</label>
+                <label>{{ __('locale.Product') }}</label>
                 <input type="text" id="modal_product_name" class="form-control" autocomplete="off" />
                 <input type="hidden" id="modal_product_id" />
                 <div id="modal_product_suggestions" class="list-group" style="position:absolute;z-index:1050;left:0;right:0;display:none;max-height:220px;overflow:auto;"></div>
               </div>
             <div class="form-group col-md-2">
-              <label>{{ __('Existencia') }}</label>
+              <label>{{ __('locale.Stock') }}</label>
               <input type="number" id="modal_existencia" class="form-control" value="0" />
             </div>
             <div class="form-group col-md-2">
-              <label>{{ __('Cantidad') }}</label>
+              <label>{{ __('locale.Quantity') }}</label>
               <input type="number" id="modal_qty" class="form-control" value="0" />
             </div>
             <div class="form-group col-md-2">
-              <label>{{ __('Costo') }}</label>
+              <label>{{ __('locale.Costo') }}</label>
               <input type="number" step="0.01" id="modal_cost" class="form-control" value="0.00" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-3">
-              <label>{{ __('Total Neto') }}</label>
+              <label>{{ __('locale.Net Total') }}</label>
               <input type="number" step="0.01" id="modal_total_net" class="form-control" readonly />
             </div>
             <div class="form-group col-md-2">
-              <label>% IVA</label>
+              <label>% {{ __('locale.VAT') }}</label>
               <input type="number" step="0.01" id="modal_tax_percent" class="form-control" value="0" readonly />
             </div>
             <div class="form-group col-md-2">
-              <label>{{ __('IVA') }}</label>
+              <label>{{ __('locale.VAT') }}</label>
               <input type="number" step="0.01" id="modal_tax" class="form-control" readonly />
             </div>
             <div class="form-group col-md-2">
-              <label>% Utilidad</label>
+              <label>% {{ __('locale.Profit') }}</label>
               <input type="number" step="0.01" id="modal_profit_percent" class="form-control" value="0" />
             </div>
             <div class="form-group col-md-3">
-              <label>{{ __('Precio Venta') }}</label>
+              <label>{{ __('locale.Sale Price') }}</label>
               <input type="number" step="0.01" id="modal_sale_price" class="form-control" value="0.00" />
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Close') }}</button>
-        <button type="button" class="btn btn-primary" id="modal-add-confirm">{{ __('Continuar') }}</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('locale.Close') }}</button>
+        <button type="button" class="btn btn-primary" id="modal-add-confirm">{{ __('locale.Continue') }}</button>
       </div>
     </div>
   </div>
@@ -328,7 +342,7 @@
       if(q.length < 2){ $('#modal_product_suggestions').hide(); return; }
       var matches = buyProducts.filter(function(p){
         var name = (p.name || '').toString().toLowerCase();
-        return name.indexOf(q) !== -1 && getExistence(p) > 0;
+        return name.indexOf(q) !== -1;
       }).slice(0, 15);
       renderProductSuggestions(matches);
     });
@@ -433,11 +447,11 @@
       var sale_price = parseFloat($('#modal_sale_price').val()) || 0;
 
       // Validación: no permitir cantidad mayor a existencia
-      if(modified_qty > original_qty){
-        showToast('La cantidad no puede ser mayor a la existencia.');
-        $('#modal_qty').focus();
-        return;
-      }
+      // if(modified_qty > original_qty){
+      //   showToast('La cantidad no puede ser mayor a la existencia.');
+      //   $('#modal_qty').focus();
+      //   return;
+      // }
 
       // Construir fila con texto visible y campos ocultos para envío
       var row = '<tr>'+

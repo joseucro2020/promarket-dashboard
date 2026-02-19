@@ -1,7 +1,7 @@
-
+﻿
 @extends('layouts/contentLayoutMaster')
 
-@section('title', 'Dashboard Ecommerce')
+@section('title', __('locale.Dashboard Ecommerce'))
 
 @section('vendor-style')
   {{-- vendor css files --}}
@@ -25,12 +25,12 @@
     <div class="col-xl-4 col-md-6 col-12">
       <div class="card card-congratulation-medal">
         <div class="card-body">
-          <h5>Congratulations 🎉 John!</h5>
-          <p class="card-text font-small-3">You have won gold medal</p>
+          <h5>{{ __('locale.Congratulations 🎉 John!') }}</h5>
+          <p class="card-text font-small-3">{{ __('locale.You have won gold medal') }}</p>
           <h3 class="mb-75 mt-2 pt-50">
             <a href="javascript:void(0);">$48.9k</a>
           </h3>
-          <button type="button" class="btn btn-primary">View Sales</button>
+          <button type="button" class="btn btn-primary">{{ __('locale.View Sales') }}</button>
           <img src="{{asset('images/illustration/badge.svg')}}" class="congratulation-medal" alt="Medal Pic" />
         </div>
       </div>
@@ -40,29 +40,29 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="salesReportHelpLabel">Cálculo y definición del reporte de ventas</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+              <h5 class="modal-title" id="salesReportHelpLabel">{{ __('locale.Sales Report Help Title') }}</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="{{ __('locale.Close') }}">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              <p class="mb-2">{{ __('Sales Report Help Intro') }}</p>
+              <p class="mb-2">{{ __('locale.Sales Report Help Intro') }}</p>
               <ul class="pl-3 mb-2">
-                <li><strong>{{ __('Sales Report Help Income Label') }}:</strong> {{ __('Sales Report Help Income') }}</li>
-                <li><strong>{{ __('Sales Report Help Expenses Label') }}:</strong> {{ __('Sales Report Help Expenses') }}</li>
-                <li><strong>{{ __('Sales Report Help Net Label') }}:</strong> {{ __('Sales Report Help Net') }}</li>
-                <li><strong>{{ __('Sales Report Help Chart Label') }}:</strong> {{ __('Sales Report Help Chart') }}</li>
+                <li><strong>{{ __('locale.Sales Report Help Income Label') }}:</strong> {{ __('locale.Sales Report Help Income') }}</li>
+                <li><strong>{{ __('locale.Sales Report Help Expenses Label') }}:</strong> {{ __('locale.Sales Report Help Expenses') }}</li>
+                <li><strong>{{ __('locale.Sales Report Help Net Label') }}:</strong> {{ __('locale.Sales Report Help Net') }}</li>
+                <li><strong>{{ __('locale.Sales Report Help Chart Label') }}:</strong> {{ __('locale.Sales Report Help Chart') }}</li>
               </ul>
 
-              <h6 class="mt-2">{{ __('Sales Report Help VerificationTitle') }}</h6>
+              <h6 class="mt-2">{{ __('locale.Sales Report Help VerificationTitle') }}</h6>
               <ol class="pl-3 mb-0 small text-muted">
-                <li>{{ __('Sales Report Help VerificationStep1') }}</li>
-                <li>{{ __('Sales Report Help VerificationStep2') }}</li>
-                <li>{{ __('Sales Report Help VerificationStep3') }}</li>
+                <li>{{ __('locale.Sales Report Help VerificationStep1') }}</li>
+                <li>{{ __('locale.Sales Report Help VerificationStep2') }}</li>
+                <li>{{ __('locale.Sales Report Help VerificationStep3') }}</li>
               </ol>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Close') }}</button>
             </div>
           </div>
         </div>
@@ -74,9 +74,9 @@
     <div class="col-xl-8 col-md-6 col-12">
       <div class="card card-statistics">
         <div class="card-header">
-          <h4 class="card-title">{{ __("Statistics") }}</h4>
+          <h4 class="card-title">{{ __("locale.Statistics") }}</h4>
           <div class="d-flex align-items-center">
-            <p class="card-text font-small-2 mr-25 mb-0">Updated 1 month ago</p>
+            <p class="card-text font-small-2 mr-25 mb-0">{{ __('locale.Updated 1 month ago') }}</p>
           </div>
         </div>
         <div class="card-body statistics-body">
@@ -90,7 +90,7 @@
                 </div>
                 <div class="media-body my-auto">
                   <h4 class="font-weight-bolder mb-0">{{ number_format($sales) }}</h4>
-                  <p class="card-text font-small-3 mb-0">{{ __("Sales") }}</p>
+                  <p class="card-text font-small-3 mb-0">{{ __("locale.Sales") }}</p>
                 </div>
               </div>
             </div>
@@ -103,7 +103,7 @@
                 </div>
                 <div class="media-body my-auto">
                   <h4 class="font-weight-bolder mb-0">{{ number_format($customers) }}</h4>
-                  <p class="card-text font-small-3 mb-0">{{ __("Customers") }}</p>
+                  <p class="card-text font-small-3 mb-0">{{ __("locale.Customers") }}</p>
                 </div>
               </div>
             </div>
@@ -116,7 +116,7 @@
                 </div>
                 <div class="media-body my-auto">
                   <h4 class="font-weight-bolder mb-0">{{ number_format($products) }}</h4>
-                  <p class="card-text font-small-3 mb-0">{{ __("Products") }}</p>
+                  <p class="card-text font-small-3 mb-0">{{ __("locale.Products") }}</p>
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@
                 </div>
                 <div class="media-body my-auto">
                   <h4 class="font-weight-bolder mb-0">{{ number_format($revenue) }}</h4>
-                  <p class="card-text font-small-3 mb-0">{{ __("Revenue") }}</p>
+                  <p class="card-text font-small-3 mb-0">{{ __("locale.Revenue") }}</p>
                 </div>
               </div>
             </div>
@@ -147,7 +147,7 @@
         <div class="col-lg-6 col-md-3 col-6">
           <div class="card">
             <div class="card-body pb-50">
-              <h6>{{ __("Orders") }}</h6>
+              <h6>{{ __("locale.Orders") }}</h6>
               <h2 class="font-weight-bolder mb-1">{{ number_format($sales) }}</h2>
               <div id="statistics-order-chart"></div>
             </div>
@@ -159,7 +159,7 @@
         <div class="col-lg-6 col-md-3 col-6">
               <div class="card card-tiny-line-stats">
             <div class="card-body pb-50">
-              <h6>{{ __("Profit") }}</h6>
+              <h6>{{ __("locale.Profit") }}</h6>
               <h2 class="font-weight-bolder mb-1" title="{{ number_format($profit, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($profit) }}</h2>
               <div id="statistics-profit-chart"></div>
             </div>
@@ -173,15 +173,15 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-6">
-                  <h4 class="card-title mb-1">{{ __("Earnings") }}</h4>
-                  <div class="font-small-2">{{ __("This Month") }}</div>
+                  <h4 class="card-title mb-1">{{ __('locale.Earnings') }}</h4>
+                  <div class="font-small-2">{{ __('locale.This Month') }}</div>
                   <h5 class="mb-1" title="{{ number_format($earningsCurrent, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($earningsCurrent) }}</h5>
                   <p class="card-text text-muted font-small-2">
                     @if(is_null($earningsPercent))
-                      <span class="font-weight-bolder">--</span><span> {{ __('No data for previous month') }}.</span>
+                      <span class="font-weight-bolder">--</span><span> {{ __('locale.No data for previous month') }}.</span>
                     @else
                       <span class="font-weight-bolder {{ $earningsPercent >= 0 ? 'text-success' : 'text-danger' }}">{{ abs($earningsPercent) }}%</span>
-                      <span>{{ $earningsPercent >= 0 ? __(' more earnings than last month.') : __(' less earnings than last month.') }}</span>
+                      <span>{{ $earningsPercent >= 0 ? __('locale.more earnings than last month.') : __('locale.less earnings than last month.') }}</span>
                       @if($earningsDirection == 'up')
                         <i data-feather="trending-up" class="ml-50 text-success"></i>
                       @else
@@ -212,23 +212,23 @@
             @endphp
             
             <div class="d-sm-flex justify-content-between align-items-center mb-3">
-              <h4 class="card-title mb-50 mb-sm-0">{{ __('Sales Report (Year)') }}</h4>
+              <h4 class="card-title mb-50 mb-sm-0">{{ __('locale.Sales Report (Year)') }}</h4>
               <i
                 data-feather="help-circle"
                 class="font-medium-3 text-muted cursor-pointer"
                 data-toggle="modal"
                 data-target="#sales-report-help-modal"
-                aria-label="Cómo se calcula este reporte"
-                title="Cómo se calcula este reporte"
+                aria-label="{{ __('locale.Sales Report Help Title') }}"
+                title="{{ __('locale.Sales Report Help Title') }}"
               ></i>
               <div class="d-flex align-items-center">
                 <div class="d-flex align-items-center mr-2">
                   <span class="bullet bullet-primary font-small-3 mr-50 cursor-pointer"></span>
-                  <span>{{ __('Income') }}</span>
+                  <span>{{ __('locale.Income') }}</span>
                 </div>
                 <div class="d-flex align-items-center ml-75">
                   <span class="bullet bullet-warning font-small-3 mr-50 cursor-pointer"></span>
-                  <span>{{ __('Expenses') }}</span>
+                  <span>{{ __('locale.Expenses') }}</span>
                 </div>
               </div>
             </div>
@@ -253,11 +253,11 @@
             </div>
             <h2 class="mb-25" title="{{ number_format($revenueReportTotalEarning, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($revenueReportTotalEarning) }}</h2>
             <div class="d-flex justify-content-center">
-              <span class="font-weight-bolder mr-25">{{ __('Net') }}:</span>
+              <span class="font-weight-bolder mr-25">{{ __('locale.Net') }}:</span>
               <span title="{{ number_format($revenueReportNet, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($revenueReportNet) }}</span>
             </div>
             <div id="budget-chart"></div>
-            <button type="button" class="btn btn-primary">{{ __('View Details') }}</button>
+            <button type="button" class="btn btn-primary">{{ __('locale.View Details') }}</button>
           </div>
         </div>
       </div>
@@ -271,17 +271,17 @@
     <div class="col-lg-8 col-12">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">{{ __('Top 10 Customers') }}</h4>
+          <h4 class="card-title">{{ __('locale.Top 10 Customers') }}</h4>
         </div>
         <div class="card-body">
           <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover w-100 top-customers-table">
               <thead>
                 <tr>
-                  <th>{{ __('Customer (Email - ID)') }}</th>
-                  <th>{{ __('Top Category') }}</th>
-                  <th class="text-end">{{ __('Historical Orders') }}</th>
-                  <th class="text-end">{{ __('Historical Sales') }}</th>
+                  <th>{{ __('locale.Customer (Email - ID)') }}</th>
+                  <th>{{ __('locale.Top Category') }}</th>
+                  <th class="text-end">{{ __('locale.Historical Orders') }}</th>
+                  <th class="text-end">{{ __('locale.Historical Sales') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -290,7 +290,7 @@
                     <td>
                       {{ $customer->email }}@if($customer->identificacion) - {{ $customer->identificacion }}@endif
                     </td>
-                    <td>{{ $customer->top_category ?? __('No data') }}</td>
+                    <td>{{ $customer->top_category ?? __('locale.No data') }}</td>
                     <td class="text-end">{{ number_format($customer->orders_count) }}</td>
                     <td class="text-end" title="{{ number_format($customer->total_sales, 2) }}">
                       {{ \App\Helpers\Helper::abbreviateNumber($customer->total_sales) }}
@@ -298,7 +298,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="4" class="text-center">{{ __('No records found.') }}</td>
+                    <td colspan="4" class="text-center">{{ __('locale.No records found.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -313,7 +313,7 @@
     <div class="col-lg-4 col-md-6 col-12">
       <div class="card card-transaction">
         <div class="card-header">
-          <h4 class="card-title">{{ __('Transactions') }}</h4>
+          <h4 class="card-title">{{ __('locale.Transactions') }}</h4>
         </div>
         <div class="card-body">
           @forelse($paymentMethodPercentages as $item)
@@ -326,13 +326,13 @@
                 </div>
                 <div class="media-body">
                   <h6 class="transaction-title">{{ $item->label }}</h6>
-                  <small>{{ __('Payment Method Share') }}</small>
+                  <small>{{ __('locale.Payment Method Share') }}</small>
                 </div>
               </div>
               <div class="font-weight-bolder {{ $item->text_class }}">{{ $item->percent }}%</div>
             </div>
           @empty
-            <div class="text-center text-muted py-2">{{ __('No records found.') }}</div>
+            <div class="text-center text-muted py-2">{{ __('locale.No records found.') }}</div>
           @endforelse
         </div>
       </div>
@@ -345,16 +345,16 @@
     <div class="col-lg-8 col-12">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">{{ __('Top 10 Products') }}</h4>
+          <h4 class="card-title">{{ __('locale.Top 10 Products') }}</h4>
         </div>
         <div class="card-body">
           <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover w-100 top-products-table">
               <thead>
                 <tr>
-                  <th>{{ __('Product') }}</th>
-                  <th class="text-end">{{ __('Units Sold') }}</th>
-                  <th class="text-end">{{ __('Last Sale (MM-DD-YYYY)') }}</th>
+                  <th>{{ __('locale.Product') }}</th>
+                  <th class="text-end">{{ __('locale.Units Sold') }}</th>
+                  <th class="text-end">{{ __('locale.Last Sale (MM-DD-YYYY)') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -372,7 +372,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="3" class="text-center">{{ __('No records found.') }}</td>
+                    <td colspan="3" class="text-center">{{ __('locale.No records found.') }}</td>
                   </tr>
                 @endforelse
               </tbody>
@@ -625,7 +625,7 @@
       'labels' => $revenueReportLabels ?? [],
       'earning' => $revenueReportEarning ?? [],
       'expense' => $revenueReportExpense ?? [],
-      'names' => [__('Income'), __('Expenses')]
+      'names' => [__('locale.Income'), __('locale.Expenses')]
     ]) !!};
   </script>
   <script>
@@ -663,3 +663,4 @@
   </script>
   <script src="{{ asset(mix('js/scripts/pages/dashboard-ecommerce.js')) }}"></script>
 @endsection
+

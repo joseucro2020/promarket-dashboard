@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Special Categories'))
+@section('title', __('locale.Special Categories'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -20,12 +20,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Special Categories') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Special Categories') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <button type="button" class="dt-button create-new btn btn-primary" data-toggle="modal" data-target="#specialCategoryModal" onclick="window.__openSpecialCategoryCreate()">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </button>
             </div>
           </div>
@@ -36,10 +36,10 @@
         <table class="table table-striped table-bordered table-hover w-100 module-list-table special-categories-table" id="specialCategoriesTable">
           <thead>
             <tr>
-              <th>{{ __('Name') }}</th>
-              <th>{{ __('Order') }}</th>
-              <th>{{ __('Products to Show') }}</th>
-              <th>{{ __('Actions') }}</th>
+              <th>{{ __('locale.Name') }}</th>
+              <th>{{ __('locale.Order') }}</th>
+              <th>{{ __('locale.Products to Show') }}</th>
+              <th>{{ __('locale.Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -61,14 +61,14 @@
                       <label class="custom-control-label" for="sc_status_{{ $cat->id }}"></label>
                     </div>
 
-                    <button type="button" class="btn btn-icon btn-flat-success" data-toggle="modal" data-target="#specialCategoryModal" onclick="window.__openSpecialCategoryEdit({{ $cat->id }})" title="{{ __('Edit') }}">
+                    <button type="button" class="btn btn-icon btn-flat-success" data-toggle="modal" data-target="#specialCategoryModal" onclick="window.__openSpecialCategoryEdit({{ $cat->id }})" title="{{ __('locale.Edit') }}">
                       <i data-feather="edit"></i>
                     </button>
 
-                    <form action="{{ url('panel/categorias-especiales/'.$cat->id) }}" method="POST" class="ml-25" onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                    <form action="{{ url('panel/categorias-especiales/'.$cat->id) }}" method="POST" class="ml-25" onsubmit="return confirm('{{ __('locale.Are you sure?') }}')">
                       @csrf
                       @method('DELETE')
-                      <button type="submit" class="btn btn-icon btn-flat-danger" title="{{ __('Delete') }}">
+                      <button type="submit" class="btn btn-icon btn-flat-danger" title="{{ __('locale.Delete') }}">
                         <i data-feather="trash"></i>
                       </button>
                     </form>
@@ -90,7 +90,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="specialCategoryModalTitle">{{ __('Add New') }}</h5>
+        <h5 class="modal-title" id="specialCategoryModalTitle">{{ __('locale.Add New') }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -102,43 +102,43 @@
 
           <div class="form-row">
             <div class="form-group col-md-6">
-              <label for="sc_name">{{ __('Name') }}</label>
+              <label for="sc_name">{{ __('locale.Name') }}</label>
               <input type="text" class="form-control" id="sc_name" required>
             </div>
             <div class="form-group col-md-3">
-              <label for="sc_order">{{ __('Order') }}</label>
+              <label for="sc_order">{{ __('locale.Order') }}</label>
               <input type="number" class="form-control" id="sc_order" min="1">
             </div>
             <div class="form-group col-md-3">
-              <label for="sc_slider_quantity">{{ __('Products to Show') }}</label>
+              <label for="sc_slider_quantity">{{ __('locale.Products to Show') }}</label>
               <input type="number" class="form-control" id="sc_slider_quantity" min="1">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group col-md-4">
-              <label for="sc_status">{{ __('Status') }}</label>
+              <label for="sc_status">{{ __('locale.Status') }}</label>
               <select class="form-control" id="sc_status">
-                <option value="1">{{ __('Active') }}</option>
-                <option value="0">{{ __('Inactive') }}</option>
+                <option value="1">{{ __('locale.Active') }}</option>
+                <option value="0">{{ __('locale.Inactive') }}</option>
               </select>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="sc_products">{{ __('Products') }}</label>
+            <label for="sc_products">{{ __('locale.Products') }}</label>
             <select multiple class="form-control" id="sc_products" style="min-height: 180px;">
               @foreach($products as $p)
                 <option value="{{ $p->id }}">{{ $p->id }} - {{ $p->name }}</option>
               @endforeach
             </select>
-            <small class="form-text text-muted">{{ __('Select Products') }}</small>
+            <small class="form-text text-muted">{{ __('locale.Select Products') }}</small>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('Cancel') }}</button>
-        <button type="button" class="btn btn-primary" onclick="window.__saveSpecialCategory()">{{ __('Save') }}</button>
+        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">{{ __('locale.Cancel') }}</button>
+        <button type="button" class="btn btn-primary" onclick="window.__saveSpecialCategory()">{{ __('locale.Save') }}</button>
       </div>
     </div>
   </div>
@@ -240,7 +240,7 @@
 
     const res = await fetch(url, { method, body: formData });
     if (!res.ok) {
-      alert('{{ __('Error') }}');
+      alert('{{ __('locale.Error') }}');
       return;
     }
 
@@ -254,7 +254,7 @@
 
     const res = await fetch(url, { method: 'POST', body: formData });
     if (!res.ok) {
-      alert('{{ __('Error') }}');
+      alert('{{ __('locale.Error') }}');
       return;
     }
   }

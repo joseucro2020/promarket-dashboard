@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Customers'))
+@section('title', __('locale.Customers'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,12 +14,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
             <div class="head-label">
-              <h4 class="mb-0">{{ __('Customers') }}</h4>
+              <h4 class="mb-0">{{ __('locale.Customers') }}</h4>
             </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <a href="#" class="dt-button btn btn-outline-primary" id="btn-export">
-                <i data-feather="download"></i> {{ __('Export') }}
+                <i data-feather="download"></i> {{ __('locale.Export') }}
               </a>
             </div>
           </div>
@@ -29,13 +29,13 @@
             <table class="table table-striped table-bordered table-hover w-100 clients-table" id="clientsTable">
               <thead>
                 <tr>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Identification') }}</th>
-                  <th>{{ __('Type') }}</th>
-                  <th>{{ __('Register Date') }}</th>
-                  <th>{{ __('Phone') }}</th>
-                  <th>{{ __('Status') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Identification') }}</th>
+                  <th>{{ __('locale.Type') }}</th>
+                  <th>{{ __('locale.Register Date') }}</th>
+                  <th>{{ __('locale.Phone') }}</th>
+                  <th>{{ __('locale.Status') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -81,7 +81,7 @@
           return day + '-' + month + '-' + year;
         } },
         { data: 'telefono' },
-        { data: 'status', render: function(d){ return d == 1 ? '{{ __('Active') }}' : '{{ __('Inactive') }}'; } },
+        { data: 'status', render: function(d){ return d == 1 ? '{{ __('locale.Active') }}' : '{{ __('locale.Inactive') }}'; } },
         { data: null, orderable:false, searchable:false }
       ],
       columnDefs: [{
@@ -98,19 +98,19 @@
             + '</div>'
             + '</form>';
           // view/profile
-          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('View') }}">'
+          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('locale.View') }}">'
             + '<i data-feather="eye"></i></a> ';
           // edit (link to profile/edit if exists)
-          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('Edit') }}">'
+          html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'" title="{{ __('locale.Edit') }}">'
             + '<i data-feather="edit"></i></a> ';
           // invoice/details
-          html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-invoice" data-id="'+id+'" title="{{ __('Details') }}">'
+          html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-invoice" data-id="'+id+'" title="{{ __('locale.Details') }}">'
             + '<i data-feather="file-text"></i></button> ';
           // convert to pro
-          html += '<button class="btn btn-sm btn-icon btn-flat-info mr-1 btn-convert" data-id="'+id+'" title="{{ __('Convert to Pro') }}">'
+          html += '<button class="btn btn-sm btn-icon btn-flat-info mr-1 btn-convert" data-id="'+id+'" title="{{ __('locale.Convert to Pro') }}">'
             + '<i data-feather="user"></i></button> ';
           // delete
-          html += '<button class="btn btn-sm btn-icon btn-flat-danger btn-delete" data-id="'+id+'" title="{{ __('Delete') }}">'
+          html += '<button class="btn btn-sm btn-icon btn-flat-danger btn-delete" data-id="'+id+'" title="{{ __('locale.Delete') }}">'
             + '<i data-feather="trash"></i></button>';
           return '<div class="d-flex align-items-center">'+html+'</div>';
         }
@@ -122,7 +122,7 @@
     $('#btn-export').on('click', function(e){
       e.preventDefault();
       var form = $('<form method="POST" action="{{ route('clients.export') }}" style="display:none;"></form>');
-      form.append('<input name="_token" value="{{ csrf_token() }}">');
+        form.append('<input name="_token" value="{{ csrf_token() }}">');
       $('body').append(form);
       form.submit();
     });
@@ -139,7 +139,7 @@
     // convert to pro
     $('#clientsTable').on('click', '.btn-convert', function(){
       var id = $(this).data('id');
-      if(!confirm('Convertir a Pro?')) return;
+      if(!confirm('{{ __('locale.Convertir a Pro?') }}')) return;
       $.post('{{ url('panel/clientes') }}/'+id+'/convert-to-pro', {_token:'{{ csrf_token() }}'}, function(res){
         if(res && res.result){ table.ajax.reload(null, false); }
       }, 'json');
@@ -148,7 +148,7 @@
     // delete
     $('#clientsTable').on('click', '.btn-delete', function(){
       var id = $(this).data('id');
-      if(!confirm('Are you sure to delete?')) return;
+      if(!confirm('{{ __('locale.Are you sure to delete?') }}')) return;
       $.post('{{ url('panel/clientes') }}/'+id+'/delete', {_token:'{{ csrf_token() }}', status: 2}, function(res){
         if(res && res.result){ table.ajax.reload(null, false); }
       }, 'json');

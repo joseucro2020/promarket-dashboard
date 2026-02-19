@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Discounts'))
+@section('title', __('locale.Discounts'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -15,12 +15,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Discounts') }}</h4>
+            <h4 class="mb-0">{{ __('locale.Discounts') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('discounts.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('discounts.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -34,12 +34,12 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Start') }}</th>
-                  <th>{{ __('End') }}</th>
-                  <th>{{ __('Percentage') }}</th>
-                  <th>{{ __('Type') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Start') }}</th>
+                  <th>{{ __('locale.End') }}</th>
+                  <th>{{ __('locale.Percentage') }}</th>
+                  <th>{{ __('locale.Type') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -57,13 +57,13 @@
                           <input type="checkbox" class="custom-control-input discount-status-toggle" id="discount_status_{{ $discount->id }}" data-url="{{ route('discounts.status', $discount) }}" {{ $discount->status === \App\Models\Discount::ACTIVE ? 'checked' : '' }} />
                           <label class="custom-control-label" for="discount_status_{{ $discount->id }}"></label>
                         </div>
-                        <a href="{{ route('discounts.edit', $discount) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                        <a href="{{ route('discounts.edit', $discount) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
-                        <form class="m-0" action="{{ route('discounts.destroy', $discount) }}" method="POST" onsubmit="return confirm('{{ __('Delete this discount?') }}');">
+                        <form class="m-0" action="{{ route('discounts.destroy', $discount) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this discount?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>
@@ -108,9 +108,9 @@
           }
         })
           .then(async (response) => {
-            if (!response.ok) {
+              if (!response.ok) {
               const payload = await response.json().catch(() => ({}));
-              throw new Error(payload.message || '{{ __('An error occurred') }}');
+              throw new Error(payload.message || '{{ __('locale.An error occurred') }}');
             }
             return response.json();
           })
@@ -120,7 +120,7 @@
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: '{{ __('Information updated successfully.') }}',
+                title: '{{ __('locale.Information updated successfully.') }}',
                 showConfirmButton: false,
                 timer: 2500,
                 timerProgressBar: true
@@ -129,7 +129,7 @@
           })
           .catch((error) => {
             checkbox.checked = previous;
-            const message = error.message || '{{ __('An error occurred') }}';
+            const message = error.message || '{{ __('locale.An error occurred') }}';
             if (window.Swal) {
               Swal.fire({
                 toast: true,

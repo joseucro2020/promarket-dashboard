@@ -1,22 +1,22 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Orders Report'))
+@section('title', __('locale.Orders Report'))
 
 @section('content')
 <div class="container">
-  <h2 class="text-center mb-3">{{ __('Orders Report') }}</h2>
+  <h2 class="text-center mb-3">{{ __('locale.Orders Report') }}</h2>
 
   <form id="filterForm" class="row mb-3 align-items-end">
     <div class="col-md-5">
-      <label for="init">{{ __('From') }}</label>
+      <label for="init">{{ __('locale.From') }}</label>
       <input type="date" id="init" name="init" class="form-control">
     </div>
     <div class="col-md-5">
-      <label for="end">{{ __('To') }}</label>
+      <label for="end">{{ __('locale.To') }}</label>
       <input type="date" id="end" name="end" class="form-control">
     </div>
     <div class="col-md-2 text-right">
-      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('Filter') }}</button>
+      <button type="button" id="btnFilter" class="btn btn-danger mt-1">{{ __('locale.Filter') }}</button>
     </div>
   </form>
 
@@ -29,18 +29,18 @@
   <div class="card">
     <div class="card-body">
       <div class="mb-3">
-        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('Export') }}</button>
-        <button id="exportPdf" class="btn btn-danger">{{ __('Export PDF') }}</button>
+        <button id="exportCsv" class="btn btn-danger mr-2">{{ __('locale.Export') }}</button>
+        <button id="exportPdf" class="btn btn-danger">{{ __('locale.Export PDF') }}</button>
       </div>
       <div class="table-responsive">
         <table class="table" id="reportTable">
           <thead>
             <tr>
-              <th>{{ __('Date') }}</th>
-              <th>{{ __('# Orders') }}</th>
-              <th>{{ __('Pending') }}</th>
-              <th>{{ __('Approved') }}</th>
-              <th>{{ __('Completed') }}</th>
+              <th>{{ __('locale.Date') }}</th>
+              <th>{{ __('locale.# Orders') }}</th>
+              <th>{{ __('locale.Pending') }}</th>
+              <th>{{ __('locale.Approved') }}</th>
+              <th>{{ __('locale.Completed') }}</th>
             </tr>
           </thead>
           <tbody id="reportBody"></tbody>
@@ -63,7 +63,7 @@ function renderChart(labels, values){
     data: {
       labels,
       datasets: [{
-        label: '{{ __("Orders") }}',
+        label: '{{ __('locale.Orders') }}',
         data: values,
         backgroundColor: 'rgba(234,84,85,0.65)',
         borderColor: 'rgba(234,84,85,1)',
@@ -110,7 +110,7 @@ async function doFilter(){
   const init = document.getElementById('init').value;
   const end = document.getElementById('end').value;
   if(!init || !end){
-    alert('{{ __("Select date range") }}');
+    alert('{{ __('locale.Select date range') }}');
     return;
   }
 

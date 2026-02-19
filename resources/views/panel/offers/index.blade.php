@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Offers'))
+@section('title', __('locale.Offers'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,13 +14,13 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header border-bottom p-1">
-          <div class="head-label">
-            <h4 class="mb-0">{{ __('Offers') }}</h4>
+            <div class="head-label">
+            <h4 class="mb-0">{{ __('locale.Offers') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('offers.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('offers.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -34,10 +34,10 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>{{ __('Start') }}</th>
-                  <th>{{ __('End') }}</th>
-                  <th>{{ __('Percentage') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Start') }}</th>
+                  <th>{{ __('locale.End') }}</th>
+                  <th>{{ __('locale.Percentage') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -54,13 +54,13 @@
                           <input type="checkbox" class="custom-control-input offer-status-toggle" id="offer_status_{{ $offer->id }}" data-url="{{ route('offers.status', $offer) }}" {{ $offer->status === \App\Models\Offer::ACTIVE ? 'checked' : '' }} />
                           <label class="custom-control-label" for="offer_status_{{ $offer->id }}"></label>
                         </div>
-                        <a href="{{ route('offers.edit', $offer) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Edit') }}">
+                          <a href="{{ route('offers.edit', $offer) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
                         <form class="m-0" action="{{ route('offers.destroy', $offer) }}" method="POST" onsubmit="return confirm('{{ __('Delete this offer?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>

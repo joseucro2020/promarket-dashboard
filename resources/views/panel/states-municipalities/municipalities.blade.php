@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('States & Municipalities'))
+@section('title', __('locale.States & Municipalities'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,12 +14,12 @@
       <div class="card">
         <div class="card-header border-bottom p-1">
           <div class="head-label">
-            <h4 class="mb-0">{{ __('Municipalities') }}: {{ $state->nombre }}</h4>
+            <h4 class="mb-0">{{ __('locale.Municipalities') }}: {{ $state->nombre }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <a href="{{ url('panel/estados-municipios') }}" class="btn btn-outline-secondary">
-                <i data-feather="arrow-left"></i> {{ __('Back') }}
+                <i data-feather="arrow-left"></i> {{ __('locale.Back') }}
               </a>
             </div>
           </div>
@@ -29,9 +29,9 @@
             <table id="municipalitiesTable" class="table table-striped table-bordered table-hover w-100">
               <thead>
                 <tr>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Parishes') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Parishes') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -45,7 +45,7 @@
                           <input type="checkbox" class="custom-control-input municipality-status-toggle" id="municipality-status-{{ $m->id }}" {{ (int)($m->status ?? 0) === 1 ? 'checked' : '' }}>
                           <label class="custom-control-label" for="municipality-status-{{ $m->id }}"></label>
                         </div>
-                        <a href="{{ route('states-municipalities.municipalities.parishes', $m->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('Sectors') }}">
+                        <a href="{{ route('states-municipalities.municipalities.parishes', $m->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Sectors') }}">
                           <i data-feather="edit"></i>
                         </a>
                       </div>
@@ -53,7 +53,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="3" class="text-center">{{ __('No municipalities yet.') }}</td>
+                    <td colspan="3" class="text-center">{{ __('locale.No municipalities yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>

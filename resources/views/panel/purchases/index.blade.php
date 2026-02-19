@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Orders'))
+@section('title', __('locale.Orders'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,13 +14,13 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header border-bottom p-1">
-            <div class="head-label">
-              <h4 class="mb-0">{{ __('Orders') }}</h4>
+              <div class="head-label">
+              <h4 class="mb-0">{{ __('locale.Orders') }}</h4>
             </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
               <a href="#" class="dt-button btn btn-outline-primary" id="btn-export">
-                <i data-feather="download"></i> {{ __('Export') }}
+                <i data-feather="download"></i> {{ __('locale.Export') }}
               </a>
             </div>
           </div>
@@ -29,25 +29,25 @@
           <div class="mb-2">
             <div class="row">
               <div class="col-md-3 mb-1">
-                <input type="date" id="date_from" class="form-control" placeholder="From" value="{{ request('date_from', '') }}">
+                <input type="date" id="date_from" class="form-control" placeholder="{{ __('locale.From') }}" value="{{ request('date_from', '') }}">
               </div>
               <div class="col-md-3 mb-1">
-                <input type="date" id="date_to" class="form-control" placeholder="To" value="{{ request('date_to', '') }}">
+                <input type="date" id="date_to" class="form-control" placeholder="{{ __('locale.To') }}" value="{{ request('date_to', '') }}">
               </div>
               <div class="col-md-2 mb-1">
                 <select id="filter_type" class="form-control">
-                  <option value="">{{ __('All') }}</option>
-                  <option value="pending">{{ __('Pending') }}</option>
-                  <option value="processing">{{ __('Processing') }}</option>
-                  <option value="completed">{{ __('Completed') }}</option>
-                  <option value="rejected">{{ __('Rejected') }}</option>
+                  <option value="">{{ __('locale.All') }}</option>
+                  <option value="pending">{{ __('locale.Pending') }}</option>
+                  <option value="processing">{{ __('locale.Processing') }}</option>
+                  <option value="completed">{{ __('locale.Completed') }}</option>
+                  <option value="rejected">{{ __('locale.Rejected') }}</option>
                 </select>
               </div>
               <div class="col-md-2 mb-1">
-                <input type="text" id="search_q" class="form-control" placeholder="{{ __('Search') }}" value="{{ request('q','') }}">
+                <input type="text" id="search_q" class="form-control" placeholder="{{ __('locale.Search') }}" value="{{ request('q','') }}">
               </div>
               <div class="col-md-2 mb-1">
-                <button id="btn-consult" class="btn btn-primary">{{ __('Consult') }}</button>
+                <button id="btn-consult" class="btn btn-primary">{{ __('locale.Consult') }}</button>
               </div>
             </div>
           </div>
@@ -55,16 +55,16 @@
             <table class="table table-striped table-bordered table-hover w-100 purchases-table">
               <thead>
                   <tr>
-                    <th>{{ __('ID') }}</th>
-                    <th>{{ __('Date - Time') }}</th>
-                    <th>{{ __('Client') }}</th>
-                    <th>{{ __('Tip') }}</th>
-                    <th>{{ __('Amount') }}</th>
-                    <th>{{ __('Payment Type') }}</th>
-                    <th>{{ __('Payment Method') }}</th>
-                    <th>{{ __('Delivery Type') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-end">{{ __('Actions') }}</th>
+                    <th>{{ __('locale.ID') }}</th>
+                    <th>{{ __('locale.Date - Time') }}</th>
+                    <th>{{ __('locale.Client') }}</th>
+                    <th>{{ __('locale.Tip') }}</th>
+                    <th>{{ __('locale.Amount') }}</th>
+                    <th>{{ __('locale.Payment Type') }}</th>
+                    <th>{{ __('locale.Payment Method') }}</th>
+                    <th>{{ __('locale.Delivery Type') }}</th>
+                    <th>{{ __('locale.Status') }}</th>
+                    <th class="text-end">{{ __('locale.Actions') }}</th>
                   </tr>
                 </thead>
               <tbody>
@@ -134,14 +134,14 @@
     loadData();
 
     // view button
-    $(document).on('click', '.purchases-table .view', function(){
+          $(document).on('click', '.purchases-table .view', function(){
       var id = $(this).data('id');
       $.post("{{ route('purchases.getDetails') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
         if(res){
-          $('#purchaseDetailsModal .modal-body').html('{{ __('Loading') }}...');
+          $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
           var html = '<p><strong>ID:</strong> '+res.id+'</p>';
-          html += '<p><strong>Cliente:</strong> '+(res.user?res.user.name:'-')+'</p>';
-          html += '<p><strong>Monto:</strong> '+res.total+'</p>';
+          html += '<p><strong>{{ __('locale.Client') }}:</strong> '+(res.user?res.user.name:'-')+'</p>';
+          html += '<p><strong>{{ __('locale.Amount') }}:</strong> '+res.total+'</p>';
           // Detalles de items
           if(res.details && res.details.length){
             html += '<hr><h6>Items</h6><ul>';

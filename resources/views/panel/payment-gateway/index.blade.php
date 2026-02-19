@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('Payment Gateway'))
+@section('title', __('locale.Payment Gateway'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -14,13 +14,13 @@
     <div class="col-12">
       <div class="card">
         <div class="card-header border-bottom p-1">
-          <div class="head-label">
-            <h4 class="mb-0">{{ __('Payment Gateways List') }}</h4>
+            <div class="head-label">
+            <h4 class="mb-0">{{ __('locale.Payment Gateways List') }}</h4>
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
-              <a href="{{ route('payment-gateway.create') }}" class="dt-button create-new btn btn-primary">
-                <i data-feather="plus"></i> {{ __('Add New') }}
+                <a href="{{ route('payment-gateway.create') }}" class="dt-button create-new btn btn-primary">
+                <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
             </div>
           </div>
@@ -35,16 +35,16 @@
             <table class="table table-striped table-bordered table-hover w-100 payment-gateways-table">
               <thead>
                 <tr>
-                  <th>{{ __('ID') }}</th>
-                  <th>{{ __('Name') }}</th>
-                  <th>{{ __('Provider') }}</th>
-                  <th>{{ __('Type') }}</th>
-                  <th>{{ __('Currency') }}</th>
-                  <th>{{ __('Icon') }}</th>
-                  <th>{{ __('Description') }}</th>
-                  <th class="text-center">{{ __('Order') }}</th>
-                  <th class="text-center">{{ __('Status') }}</th>
-                  <th class="text-end">{{ __('Actions') }}</th>
+                  <th>{{ __('locale.ID') }}</th>
+                  <th>{{ __('locale.Name') }}</th>
+                  <th>{{ __('locale.Provider') }}</th>
+                  <th>{{ __('locale.Type') }}</th>
+                  <th>{{ __('locale.Currency') }}</th>
+                  <th>{{ __('locale.Icon') }}</th>
+                  <th>{{ __('locale.Description') }}</th>
+                  <th class="text-center">{{ __('locale.Order') }}</th>
+                  <th class="text-center">{{ __('locale.Status') }}</th>
+                  <th class="text-end">{{ __('locale.Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -62,16 +62,16 @@
                     <td>{{ $computedType }}</td>
                     <td>{{ $g->currency }}</td>
                     <td>
-                      @if(!empty($g->icon))
+                        @if(!empty($g->icon))
                         <img class="img-fluid rounded" style="width:28px;height:28px;object-fit:contain;border:1px solid rgba(0,0,0,.08);background:#fff;padding:3px;" src="{{ asset($g->icon) }}" alt="{{ $g->name }}">
                       @else
-                        <span class="text-muted">{{ __('No icon') }}</span>
+                        <span class="text-muted">{{ __('locale.No icon') }}</span>
                       @endif
                     </td>
                     <td>{{ $g->description }}</td>
                     <td class="text-center">{{ $g->order }}</td>
-                    <td class="text-center">
-                      <span class="{{ $statusBadge }}">{{ $isActive ? __('Active') : __('Inactive') }}</span>
+                      <td class="text-center">
+                      <span class="{{ $statusBadge }}">{{ $isActive ? __('locale.Active') : __('locale.Inactive') }}</span>
                     </td>
                     <td>
                       <div class="d-flex align-items-center">
@@ -83,14 +83,14 @@
                           </div>
                         </form>
 
-                        <a href="{{ route('payment-gateway.edit', $g->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" title="{{ __('Edit') }}">
+                        <a href="{{ route('payment-gateway.edit', $g->id) }}" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" title="{{ __('locale.Edit') }}">
                           <i data-feather="edit"></i>
                         </a>
 
-                        <form class="m-0" action="{{ route('payment-gateway.destroy', $g->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure?') }}');">
+                        <form class="m-0" action="{{ route('payment-gateway.destroy', $g->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Are you sure?') }}');">
                           @csrf
                           @method('DELETE')
-                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" title="{{ __('Delete') }}">
+                          <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" title="{{ __('locale.Delete') }}">
                             <i data-feather="trash"></i>
                           </button>
                         </form>
@@ -99,7 +99,7 @@
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="10" class="text-center">{{ __('No payment gateways yet.') }}</td>
+                    <td colspan="10" class="text-center">{{ __('locale.No payment gateways yet.') }}</td>
                   </tr>
                 @endforelse
               </tbody>

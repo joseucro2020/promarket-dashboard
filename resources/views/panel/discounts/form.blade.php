@@ -1,6 +1,6 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', isset($discount) ? __('Edit Discount') : __('New Discount'))
+@section('title', isset($discount) ? __('locale.Edit Discount') : __('locale.New Discount'))
 
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
@@ -42,8 +42,8 @@
     <div class="col-12">
       <div class="card">
           <div class="card-header text-center">
-          <h4 class="card-title">{{ isset($discount) ? __('Edit Discount') : __('Create new discount') }}</h4>
-          <p class="mb-0 text-muted"><small>{{ __('Required fields') }} <span class="badge badge-danger align-text-top ml-1" aria-hidden="true">*</span></small></p>
+          <h4 class="card-title">{{ isset($discount) ? __('locale.Edit Discount') : __('locale.Create new discount') }}</h4>
+          <p class="mb-0 text-muted"><small>{{ __('locale.Required fields') }} <span class="badge badge-danger align-text-top ml-1" aria-hidden="true">*</span></small></p>
         </div>
         <div class="card-body">
           <form id="discount-form" action="{{ isset($discount) ? route('discounts.update', $discount) : route('discounts.store') }}" method="POST">
@@ -52,13 +52,13 @@
             <div class="row">
               <div class="col-md-8">
                 <div class="form-group">
-                  <label for="name">{{ __('Discount name') }} <span class="text-danger">*</span></label>
+                  <label for="name">{{ __('locale.Discount name') }} <span class="text-danger">*</span></label>
                   <input type="text" id="name" name="name" class="form-control" value="{{ $value_name }}">
                 </div>
               </div>
               <div id="group-limit" class="col-md-4">
                 <div class="form-group">
-                  <label for="limit">{{ __('Limit uses per client') }}</label>
+                  <label for="limit">{{ __('locale.Limit uses per client') }}</label>
                   <input type="number" id="limit" name="limit" class="form-control" min="0" value="{{ $value_limit }}">
                 </div>
               </div>
@@ -67,19 +67,19 @@
             <div class="row mt-3">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="start">{{ __('Start date') }} <span class="text-danger">*</span></label>
+                  <label for="start">{{ __('locale.Start date') }} <span class="text-danger">*</span></label>
                   <input type="date" id="start" name="start" class="form-control" value="{{ $value_start }}">
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="end">{{ __('End date') }} <span class="text-danger">*</span></label>
+                  <label for="end">{{ __('locale.End date') }} <span class="text-danger">*</span></label>
                   <input type="date" id="end" name="end" class="form-control" value="{{ $value_end }}">
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="percentage">{{ __('Discount percentage') }} <span class="text-danger">*</span></label>
+                  <label for="percentage">{{ __('locale.Discount percentage') }} <span class="text-danger">*</span></label>
                   <input type="number" step="0.01" min="0" max="100" id="percentage" name="percentage" class="form-control" value="{{ $value_percentage }}">
                 </div>
               </div>
@@ -91,19 +91,19 @@
               <div class="col-4 d-flex align-items-center">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="discount_mode" id="mode_qty" value="quantity" {{ ($selectedMode=='quantity') ? 'checked' : '' }}>
-                  <label class="form-check-label" for="mode_qty">{{ __('Discount by product quantity') }}</label>
+                  <label class="form-check-label" for="mode_qty">{{ __('locale.Discount by product quantity') }}</label>
                 </div>
               </div>
               <div class="col-4 d-flex align-items-center">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="discount_mode" id="mode_amount" value="amount" {{ ($selectedMode=='amount') ? 'checked' : '' }}>
-                  <label class="form-check-label" for="mode_amount">{{ __('Discount by purchase amount') }}</label>
+                  <label class="form-check-label" for="mode_amount">{{ __('locale.Discount by purchase amount') }}</label>
                 </div>
               </div>
               <div class="col-4 d-flex align-items-center">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="discount_mode" id="mode_count" value="count" {{ ($selectedMode=='count') ? 'checked' : '' }}>
-                  <label class="form-check-label" for="mode_count">{{ __('Discount by number of purchases') }}</label>
+                  <label class="form-check-label" for="mode_count">{{ __('locale.Discount by number of purchases') }}</label>
                 </div>
               </div>
             </div>
@@ -112,20 +112,20 @@
               <div id="col-quantity" class="col-md-6">
                 <div class="form-group">
                   <div id="group-quantity">
-                    <label id="label-quantity" for="quantity_products" data-count-label="{{ __('Number of purchases required to apply discount') }}">{{ __('Quantity of products to apply discount') }} <span class="text-danger">*</span></label>
+                    <label id="label-quantity" for="quantity_products" data-count-label="{{ __('locale.Number of purchases required to apply discount') }}">{{ __('locale.Quantity of products to apply discount') }} <span class="text-danger">*</span></label>
                     <input type="number" id="quantity_products" name="quantity_products" class="form-control" min="0" value="{{ $value_quantity }}">
                   </div>
                   <div id="group-min-amount" style="display:none;">
-                    <label for="min_amount">{{ __('Minimum amount to apply discount') }} <span class="text-danger">*</span></label>
+                    <label for="min_amount">{{ __('locale.Minimum amount to apply discount') }} <span class="text-danger">*</span></label>
                     <input type="number" step="0.01" id="min_amount" name="min_amount" class="form-control" min="0" value="{{ $value_min_amount }}">
                   </div>
                 </div>
               </div>
               <div id="group-category" class="col-md-6">
                 <div class="form-group">
-                  <label for="categories_products">{{ __('Select categories/products') }} <span class="text-danger">*</span></label>
-                  <select id="categories_products" name="category_id" class="form-control select2" data-placeholder="{{ __('Select categories/products') }}">
-                    <option value="">{{ __('Select') }}</option>
+                  <label for="categories_products">{{ __('locale.Select categories/products') }} <span class="text-danger">*</span></label>
+                  <select id="categories_products" name="category_id" class="form-control select2" data-placeholder="{{ __('locale.Select categories/products') }}">
+                    <option value="">{{ __('locale.Select') }}</option>
                     @if(isset($categories))
                       @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" {{ ($value_category == $cat->id) ? 'selected' : '' }}>{{ e($cat->name) }}</option>
@@ -141,15 +141,15 @@
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="card-title mb-0">{{ __('Select products') }}</h5>
+                    <h5 class="card-title mb-0">{{ __('locale.Select products') }}</h5>
                   </div>
                   <div class="card-body">
                     <div class="row mb-2">
                       <div class="col-md-12">
                         <div class="form-row">
                           <div class="col-md-6 mb-2">
-                            <select id="filter-category" class="form-control select2" data-placeholder="{{ __('Category') }}">
-                              <option value="">{{ __('All categories') }}</option>
+                            <select id="filter-category" class="form-control select2" data-placeholder="{{ __('locale.Category') }}">
+                              <option value="">{{ __('locale.All categories') }}</option>
                               @if(isset($categories))
                                 @foreach($categories as $cat)
                                   <option value="{{ $cat->id }}">{{ e($cat->name) }}</option>
@@ -158,8 +158,8 @@
                             </select>
                           </div>
                           <div class="col-md-6 mb-2">
-                            <select id="filter-subcategory" class="form-control select2" data-placeholder="{{ __('Subcategory') }}">
-                              <option value="">{{ __('All subcategories') }}</option>
+                            <select id="filter-subcategory" class="form-control select2" data-placeholder="{{ __('locale.Subcategory') }}">
+                              <option value="">{{ __('locale.All subcategories') }}</option>
                               @if(isset($subcategories))
                                 @foreach($subcategories as $sub)
                                   <option value="{{ $sub->id }}" data-category="{{ $sub->category_id }}">{{ e($sub->name) }}</option>
@@ -170,8 +170,8 @@
                         </div>
                         <div class="form-row">
                           <div class="col-md-12 mb-2">
-                            <select id="filter-subsubcategory" class="form-control select2" data-placeholder="{{ __('Sub-subcategory') }}">
-                              <option value="">{{ __('All sub-subcategories') }}</option>
+                            <select id="filter-subsubcategory" class="form-control select2" data-placeholder="{{ __('locale.Sub-subcategory') }}">
+                              <option value="">{{ __('locale.All sub-subcategories') }}</option>
                               @if(isset($subsub))
                                 @foreach($subsub as $ss)
                                   <option value="{{ $ss->id }}" data-subcategory="{{ $ss->subcategory_id }}">{{ e($ss->name) }}</option>
@@ -186,23 +186,23 @@
                     <table id="discounts-products-table" class="table table-striped table-bordered" style="width:100%">
                       <thead>
                         <tr>
-                          <th class="text-center">{{ __('Logo') }}</th>
-                          <th>{{ __('Product') }}</th>
-                          <th>{{ __('Category') }}</th>
-                          <th class="text-end">{{ __('Actions') }}</th>
+                          <th class="text-center">{{ __('locale.Logo') }}</th>
+                          <th>{{ __('locale.Product') }}</th>
+                          <th>{{ __('locale.Category') }}</th>
+                          <th class="text-end">{{ __('locale.Actions') }}</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
                     </table>
 
-                    <small class="text-muted">{{ __('Select products to include in this discount. Click Add to move products to the right column.') }}</small>
+                    <small class="text-muted">{{ __('locale.Select products to include in this discount. Click Add to move products to the right column.') }}</small>
                   </div>
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="card-title mb-0">{{ __('Selected products for discount') }}</h5>
+                    <h5 class="card-title mb-0">{{ __('locale.Selected products for discount') }}</h5>
                   </div>
                   <div class="card-body">
                     <div class="table-responsive">
@@ -219,7 +219,7 @@
                               <tr class="selected-product-row" data-id="{{ $p->id }}">
                                 <td>{{ e($p->name) }}</td>
                                 <td class="text-end">
-                                  <button type="button" class="btn btn-icon btn-flat-danger remove-product" data-id="{{ $p->id }}" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}">
+                                  <button type="button" class="btn btn-icon btn-flat-danger remove-product" data-id="{{ $p->id }}" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Remove') }}">
                                     <i data-feather="trash"></i>
                                   </button>
                                   <input type="hidden" name="products_id[]" value="{{ $p->id }}">
@@ -238,8 +238,8 @@
 
 
             <div class="mt-4 d-flex justify-content-end">
-              <a href="{{ route('discounts.index') }}" class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
-              <button type="submit" id="discount-submit" class="btn btn-primary" disabled>{{ isset($discount) ? __('Update') : __('Save') }}</button>
+              <a href="{{ route('discounts.index') }}" class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
+              <button type="submit" id="discount-submit" class="btn btn-primary" disabled>{{ isset($discount) ? __('locale.Update') : __('locale.Save') }}</button>
             </div>
           </form>
         </div>
@@ -265,7 +265,7 @@
     $(function() {
       // Init Select2
       $('#categories_products').select2({
-        placeholder: '{{ __('Select categories/products') }}',
+        placeholder: '{{ __('locale.Select categories/products') }}',
         allowClear: true,
         width: '100%',
         closeOnSelect: false
@@ -296,7 +296,7 @@
           { data: 'category' },
           { data: 'select', orderable: false, searchable: false }
         ],
-        language: {
+          language: {
           url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
         },
         drawCallback: function() {
@@ -499,7 +499,7 @@
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || $form.find('input[name="_token"]').val()
           },
           success: function(response) {
-                        var msg = (response && response.message) ? response.message : '{{ __('Saved successfully') }}';
+                        var msg = (response && response.message) ? response.message : '{{ __('locale.Saved successfully') }}';
             Swal.fire({
               toast: true,
               position: 'top-end',
