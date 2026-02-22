@@ -686,5 +686,11 @@ return [
   "Exit" => "Exit",
   "Reason" => "Reason",
   "Revenue" => "New Customers",
+  "Approve Purchase Order" => "Approve Purchase Order",
+  "Cancel Purchase Order" => "Cancel Purchase Order",
+  "Approved" => "Approved",
+  "Canceled" => "Canceled",
+  "Pending" => "Pending",
+  "Edit Purchase Order" => "Edit Purchase Order"
 
 ];

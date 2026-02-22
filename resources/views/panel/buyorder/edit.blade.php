@@ -8,7 +8,7 @@
     <div class="card-header">
       <h4 class="card-title">{{ __('locale.Edit Purchase Order') }}</h4>
       <div style="position:absolute;right:16px;top:18px;">
-        <span id="order-status" class="badge {{ $order->status==3 ? 'badge-success' : ($order->status==2 ? 'badge-danger' : 'badge-secondary') }}">{{ $order->status==3 ? __('locale.Aprobada') : ($order->status==2 ? __('locale.Anulada') : __('locale.Pendiente')) }}</span>
+        <span id="order-status" class="badge {{ $order->status==3 ? 'badge-success' : ($order->status==2 ? 'badge-danger' : 'badge-secondary') }}">{{ $order->status==3 ? __('locale.Approved') : ($order->status==2 ? __('locale.Canceled') : __('locale.Pending')) }}</span>
       </div>
     </div>
     <div class="card-body">
@@ -25,8 +25,8 @@
 
       @if(isset($order) && $order->status == 1)
         <div class="text-right" style="margin-top:8px;">
-          <button id="btn-approve" data-url="{{ route('buyorders.aprobar', [$order->id, 0]) }}" class="btn btn-warning" type="button">{{ __('locale.Aprobar Orden De Compra') }}</button>
-          <button id="btn-cancel" data-url="{{ route('buyorders.anular', $order->id) }}" class="btn btn-danger" type="button">{{ __('locale.Anular Orden De Compra') }}</button>
+          <button id="btn-approve" data-url="{{ route('buyorders.aprobar', [$order->id, 0]) }}" class="btn btn-warning" type="button">{{ __('locale.Approve Purchase Order') }}</button>
+          <button id="btn-cancel" data-url="{{ route('buyorders.anular', $order->id) }}" class="btn btn-danger" type="button">{{ __('locale.Cancel Purchase Order') }}</button>
         </div>
       @endif
     
@@ -35,76 +35,121 @@
 </section>
 @endsection
 
-@push('scripts')
+@section('page-script')
+@parent
 <script>
+console.log('buyorder edit: page-script loaded');
 document.addEventListener('DOMContentLoaded', function() {
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
   const statusEl = document.getElementById('order-status');
   const approveBtn = document.getElementById('btn-approve');
   const cancelBtn = document.getElementById('btn-cancel');
 
+  const messages = {!! json_encode([
+    'confirmApprove' => __('locale.Are you sure you want to approve this order?'),
+    'confirmCancel' => __('locale.Are you sure you want to cancel this order?'),
+    'processing' => __('locale.Processing'),
+    'errorApproving' => __('locale.Error approving order'),
+    'errorCancelling' => __('locale.Error cancelling order'),
+    'approved' => __('locale.Aprobada'),
+    'canceled' => __('locale.Anulada')
+  ]) !!};
+
   async function postAction(url) {
+    // Use FormData/URLSearchParams to avoid forcing JSON content-type
+    const params = new URLSearchParams();
+    params.append('_token', csrf);
+
     const options = {
       method: 'POST',
       headers: {
         'X-CSRF-TOKEN': csrf,
         'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Accept': 'application/json'
       },
-      body: JSON.stringify({})
+      body: params,
+      credentials: 'same-origin'
     };
+    console.log('POST', url, params.toString());
     return fetch(url, options);
   }
 
-  if(approveBtn){
-    approveBtn.addEventListener('click', async function(){
-      if(!confirm('{{ __('locale.Are you sure you want to approve this order?') }}')) return;
+  function submitForm(url) {
+    console.warn('Falling back to form submit for', url);
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.style.display = 'none';
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = '_token';
+    tokenInput.value = csrf;
+    form.appendChild(tokenInput);
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  if (approveBtn) {
+    approveBtn.addEventListener('click', async function() {
+      console.log('btn-approve clicked', { url: this.dataset.url });
+      if (!confirm(messages.confirmApprove)) return;
       const url = this.dataset.url;
       this.disabled = true;
       const orig = this.innerHTML;
-      this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ __('locale.Processing') }}';
-      try{
+      this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + messages.processing;
+      try {
         const res = await postAction(url);
-        if(res.ok){
-          statusEl.textContent = '{{ __('locale.Aprobada') }}';
-          statusEl.className = 'badge badge-success';
+        if (res.ok) {
+          if (statusEl) {
+            statusEl.textContent = messages.approved;
+            statusEl.className = 'badge badge-success';
+          }
           this.style.display = 'none';
-          if(cancelBtn) cancelBtn.style.display = 'none';
+          if (cancelBtn) cancelBtn.style.display = 'none';
         } else {
           let msg = await res.text();
-          alert('{{ __('locale.Error approving order') }}: ' + msg);
+          console.error('Approve failed', res.status, msg);
+          alert(messages.errorApproving + ': ' + msg);
         }
-      } catch(err){
-        alert('{{ __('locale.Error approving order') }}: ' + err.message);
-      } finally{
+      } catch (err) {
+        console.error('Fetch error approving', err);
+        // Fallback to form submit for environments where fetch is blocked
+        submitForm(url);
+        return;
+      } finally {
         this.disabled = false;
         this.innerHTML = orig;
       }
     });
   }
 
-  if(cancelBtn){
-    cancelBtn.addEventListener('click', async function(){
-      if(!confirm('{{ __('locale.Are you sure you want to cancel this order?') }}')) return;
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', async function() {
+      if (!confirm(messages.confirmCancel)) return;
       const url = this.dataset.url;
       this.disabled = true;
       const orig = this.innerHTML;
-      this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ __('locale.Processing') }}';
-      try{
+      this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + messages.processing;
+      try {
         const res = await postAction(url);
-        if(res.ok){
-          statusEl.textContent = '{{ __('locale.Anulada') }}';
-          statusEl.className = 'badge badge-danger';
+        if (res.ok) {
+          if (statusEl) {
+            statusEl.textContent = messages.canceled;
+            statusEl.className = 'badge badge-danger';
+          }
           this.style.display = 'none';
-          if(approveBtn) approveBtn.style.display = 'none';
+          if (approveBtn) approveBtn.style.display = 'none';
         } else {
           let msg = await res.text();
-          alert('{{ __('locale.Error cancelling order') }}: ' + msg);
+          console.error('Cancel failed', res.status, msg);
+          alert(messages.errorCancelling + ': ' + msg);
         }
-      } catch(err){
-        alert('{{ __('locale.Error cancelling order') }}: ' + err.message);
-      } finally{
+      } catch (err) {
+        console.error('Fetch error cancelling', err);
+        // Fallback to form submit
+        submitForm(url);
+        return;
+      } finally {
         this.disabled = false;
         this.innerHTML = orig;
       }
@@ -113,4 +158,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 </script>
-@endpush
+@endsection

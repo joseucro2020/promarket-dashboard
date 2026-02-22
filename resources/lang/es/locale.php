@@ -746,7 +746,13 @@ return [
   "Statistics" => "Estadísticas",
   "Sales" => "Ventas",
   "Customers" => "Clientes",
-  "Revenue" => "Nuevos Clientes"
+  "Revenue" => "Nuevos Clientes",
+  "Approve Purchase Order" => "Aprobar orden de compra",
+  "Cancel Purchase Order" => "Cancelar orden de compra",
+  "Approved" => "Aprobada",
+  "Canceled" => "Anulada",
+  "Pending" => "Pendiente",
+  "Edit Purchase Order" => "Editar orden de compra"
 
 ];
 
