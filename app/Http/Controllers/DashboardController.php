@@ -18,21 +18,21 @@ class DashboardController extends Controller
 {
   public function index()
   {
-    $slowQueryThresholdMs = 200;
-    if (app()->environment('local')) {
-      DB::listen(function ($query) use ($slowQueryThresholdMs) {
-        if ($query->time < $slowQueryThresholdMs) {
-          return;
-        }
+    // $slowQueryThresholdMs = 200;
+    // if (app()->environment('local')) {
+    //   DB::listen(function ($query) use ($slowQueryThresholdMs) {
+    //     if ($query->time < $slowQueryThresholdMs) {
+    //       return;
+    //     }
 
-        Log::info('Slow query on dashboard', [
-          'time_ms' => $query->time,
-          'sql' => $query->sql,
-          'bindings' => $query->bindings,
-          'path' => request()->path(),
-        ]);
-      });
-    }
+    //     Log::info('Slow query on dashboard', [
+    //       'time_ms' => $query->time,
+    //       'sql' => $query->sql,
+    //       'bindings' => $query->bindings,
+    //       'path' => request()->path(),
+    //     ]);
+    //   });
+    // }
 
     // Obtener datos reales para el dashboard
     $sales = BuyOrder::count(); // Número de órdenes de compra
