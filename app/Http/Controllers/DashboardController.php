@@ -18,21 +18,22 @@ class DashboardController extends Controller
 {
   public function index()
   {
-    // $slowQueryThresholdMs = 200;
-    // if (app()->environment('local')) {
-    //   DB::listen(function ($query) use ($slowQueryThresholdMs) {
-    //     if ($query->time < $slowQueryThresholdMs) {
-    //       return;
-    //     }
+    $enableSlowQueryLog = (bool) env('DASHBOARD_SLOW_QUERY_LOG', false);
+    $slowQueryThresholdMs = (int) env('DASHBOARD_SLOW_QUERY_THRESHOLD_MS', 200);
+    if ($enableSlowQueryLog) {
+      DB::listen(function ($query) use ($slowQueryThresholdMs) {
+        if ($query->time < $slowQueryThresholdMs) {
+          return;
+        }
 
-    //     Log::info('Slow query on dashboard', [
-    //       'time_ms' => $query->time,
-    //       'sql' => $query->sql,
-    //       'bindings' => $query->bindings,
-    //       'path' => request()->path(),
-    //     ]);
-    //   });
-    // }
+        Log::info('Slow query on dashboard', [
+          'time_ms' => $query->time,
+          'sql' => $query->sql,
+          'bindings' => $query->bindings,
+          'path' => request()->path(),
+        ]);
+      });
+    }
 
     // Obtener datos reales para el dashboard
     $sales = BuyOrder::count(); // Número de órdenes de compra
@@ -81,21 +82,30 @@ class DashboardController extends Controller
     $revenueReportExpense = [];
     $revenueReportTotalEarning = 0.0;
     $revenueReportTotalExpense = 0.0;
+
+    $reportStart = Carbon::createFromDate($reportYear, 1, 1)->startOfDay();
+    $reportEnd = Carbon::createFromDate($reportYear, 12, 31)->endOfDay();
+    $monthlyRows = BuyOrderDetail::query()
+      ->select(
+        DB::raw('MONTH(created_at) as month'),
+        DB::raw('SUM(total) as earning'),
+        DB::raw('SUM(costo) as expense')
+      )
+      ->whereBetween('created_at', [$reportStart, $reportEnd])
+      ->groupBy(DB::raw('MONTH(created_at)'))
+      ->get()
+      ->keyBy('month');
+
     for ($m = 1; $m <= 12; $m++) {
       $date = Carbon::createFromDate($reportYear, $m, 1);
-      // etiqueta mes traducida corto
       $revenueReportLabels[] = $date->translatedFormat('M');
-      $earning = BuyOrderDetail::whereYear('created_at', $reportYear)
-        ->whereMonth('created_at', $m)
-        ->sum('total');
-      $expense = BuyOrderDetail::whereYear('created_at', $reportYear)
-        ->whereMonth('created_at', $m)
-        ->sum('costo');
-      $revenueReportEarning[] = (float) $earning;
-      // usar valores negativos para expense para que el chart muestre barras por debajo
-      $revenueReportExpense[] = -1 * (float) $expense;
-      $revenueReportTotalEarning += (float) $earning;
-      $revenueReportTotalExpense += (float) $expense;
+      $row = $monthlyRows->get($m);
+      $earning = $row ? (float) $row->earning : 0.0;
+      $expense = $row ? (float) $row->expense : 0.0;
+      $revenueReportEarning[] = $earning;
+      $revenueReportExpense[] = -1 * $expense;
+      $revenueReportTotalEarning += $earning;
+      $revenueReportTotalExpense += $expense;
     }
     $revenueReportNet = $revenueReportTotalEarning - $revenueReportTotalExpense;
 
@@ -138,27 +148,29 @@ class DashboardController extends Controller
     $topCustomerIds = $topCustomersBase->pluck('id')->all();
     $categoryRows = [];
     if (!empty($topCustomerIds)) {
-      $categoryQuery = DB::table('purchases')
-        ->join('purchase_details', 'purchase_details.purchase_id', '=', 'purchases.id')
-        ->join('product_amount', 'product_amount.id', '=', 'purchase_details.product_amount_id')
-        ->join('product_colors', 'product_colors.id', '=', 'product_amount.product_color_id')
-        ->join('products', 'products.id', '=', 'product_colors.product_id')
-        ->join('categories', 'categories.id', '=', 'products.category_id')
-        ->whereIn('purchases.user_id', $topCustomerIds)
-        ->groupBy('purchases.user_id', 'categories.name')
+      $categoryAggregated = DB::table('purchases as p')
+        ->join('purchase_details as pd', 'pd.purchase_id', '=', 'p.id')
+        ->join('product_amount as pa', 'pa.id', '=', 'pd.product_amount_id')
+        ->join('product_colors as pc', 'pc.id', '=', 'pa.product_color_id')
+        ->join('products as pr', 'pr.id', '=', 'pc.product_id')
         ->select(
-          'purchases.user_id',
-          'categories.name as category_name',
-          DB::raw('SUM(purchase_details.quantity) as total_qty')
+          'p.user_id',
+          'pr.category_id',
+          DB::raw('SUM(pd.quantity) as total_qty')
         )
-        ->orderByDesc('total_qty')
-        ->orderByDesc('total_qty');
+        ->whereIn('p.user_id', $topCustomerIds)
+        ->when(!is_null($topCustomersStatus), function ($query) use ($topCustomersStatus) {
+          $query->where('p.status', $topCustomersStatus);
+        })
+        ->groupBy('p.user_id', 'pr.category_id');
 
-      if (!is_null($topCustomersStatus)) {
-        $categoryQuery->where('purchases.status', $topCustomersStatus);
-      }
-
-      $categoryRows = $categoryQuery->get();
+      $categoryRows = DB::table('categories as c')
+        ->joinSub($categoryAggregated, 't', function ($join) {
+          $join->on('t.category_id', '=', 'c.id');
+        })
+        ->select('t.user_id', 'c.name as category_name', 't.total_qty')
+        ->orderByDesc('t.total_qty')
+        ->get();
     }
 
     $categoryByCustomer = collect($categoryRows)
