@@ -22,7 +22,7 @@
 <section id="dashboard-ecommerce">
   <div class="row match-height">
     <!-- Medal Card -->
-    <div class="col-xl-4 col-md-6 col-12">
+    {{-- <div class="col-xl-4 col-md-6 col-12">
       <div class="card card-congratulation-medal">
         <div class="card-body">
           <h5>{{ __('locale.Congratulations 🎉 John!') }}</h5>
@@ -67,11 +67,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> --}}
     <!--/ Medal Card -->
 
     <!-- Statistics Card -->
-    <div class="col-xl-8 col-md-6 col-12">
+    <div class="col-xl-12 col-md-12 col-12">
       <div class="card card-statistics">
         <div class="card-header">
           <h4 class="card-title">{{ __("locale.Statistics") }}</h4>
@@ -205,7 +205,7 @@
     <div class="col-lg-8 col-12">
       <div class="card card-revenue-budget">
         <div class="row mx-0">
-          <div class="col-md-8 col-12 revenue-report-wrapper">
+          <div class="col-md-8 col-12 revenue-report-wrapper position-relative">
             @php
               $currentYear = date('Y');
               $selectedYear = request('year', $currentYear);
@@ -232,13 +232,20 @@
                 </div>
               </div>
             </div>
-            <div id="revenue-report-chart"></div>
+            <div id="revenue-report-loader" class="d-none" style="position:absolute; inset:0; background:rgba(255,255,255,0.6); display:flex; align-items:center; justify-content:center; z-index:2;">
+              <div class="text-center">
+                <div class="spinner-border spinner-border-sm text-primary" role="status" aria-label="{{ __('locale.Loading') }}"></div>
+                <div class="small text-muted mt-50">{{ __('locale.Loading') }}</div>
+              </div>
+            </div>
+            <div id="revenue-report-chart" data-endpoint="{{ route('dashboard.revenue-report') }}"></div>
           </div>
           <div class="col-md-4 col-12 budget-wrapper">
             <div class="btn-group">
               <button
                 type="button"
                 class="btn btn-outline-primary btn-sm dropdown-toggle budget-dropdown"
+                id="revenue-report-year-button"
                 data-toggle="dropdown"
                 aria-haspopup="true"
                 aria-expanded="false"
@@ -247,14 +254,14 @@
               </button>
               <div class="dropdown-menu">
                 @for($y = $currentYear; $y > $currentYear - 4; $y--)
-                  <a class="dropdown-item" href="{{ route('dashboard-home', ['year' => $y]) }}">{{ $y }}</a>
+                  <a class="dropdown-item js-dashboard-year" data-year="{{ $y }}" href="{{ route('dashboard-home', ['year' => $y]) }}">{{ $y }}</a>
                 @endfor
               </div>
             </div>
-            <h2 class="mb-25" title="{{ number_format($revenueReportTotalEarning, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($revenueReportTotalEarning) }}</h2>
+            <h2 id="revenue-report-total" class="mb-25" title="{{ number_format($revenueReportTotalEarning, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($revenueReportTotalEarning) }}</h2>
             <div class="d-flex justify-content-center">
               <span class="font-weight-bolder mr-25">{{ __('locale.Net') }}:</span>
-              <span title="{{ number_format($revenueReportNet, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($revenueReportNet) }}</span>
+              <span id="revenue-report-net" title="{{ number_format($revenueReportNet, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($revenueReportNet) }}</span>
             </div>
             <div id="budget-chart"></div>
             <button type="button" class="btn btn-primary">{{ __('locale.View Details') }}</button>
@@ -625,7 +632,12 @@
       'labels' => $revenueReportLabels ?? [],
       'earning' => $revenueReportEarning ?? [],
       'expense' => $revenueReportExpense ?? [],
-      'names' => [__('locale.Income'), __('locale.Expenses')]
+      'names' => [__('locale.Income'), __('locale.Expenses')],
+      'total_earning_full' => number_format($revenueReportTotalEarning ?? 0, 2),
+      'net_full' => number_format($revenueReportNet ?? 0, 2),
+      'total_earning_display' => \App\Helpers\Helper::abbreviateNumber($revenueReportTotalEarning ?? 0),
+      'net_display' => \App\Helpers\Helper::abbreviateNumber($revenueReportNet ?? 0),
+      'year' => $reportYear ?? null
     ]) !!};
   </script>
   <script>
@@ -662,5 +674,110 @@
     });
   </script>
   <script src="{{ asset(mix('js/scripts/pages/dashboard-ecommerce.js')) }}"></script>
+  <script>
+    (function () {
+      var $chart = $('#revenue-report-chart');
+      if (!$chart.length) {
+        return;
+      }
+
+      var endpoint = $chart.data('endpoint');
+      var $yearButton = $('#revenue-report-year-button');
+      var $total = $('#revenue-report-total');
+      var $net = $('#revenue-report-net');
+      var $loader = $('#revenue-report-loader');
+      var networkErrorMessage = "{{ __('locale.Network error. Please try again.') }}";
+
+      var updateTotals = function (payload) {
+        if ($total.length) {
+          $total.text(payload.total_earning_display);
+          $total.attr('title', payload.total_earning_full);
+        }
+        if ($net.length) {
+          $net.text(payload.net_display);
+          $net.attr('title', payload.net_full);
+        }
+      };
+
+      var updateChart = function (payload) {
+        if (!window.dashboardCharts || !window.dashboardCharts.revenueReportChart) {
+          window.dashboardPendingReport = payload;
+          return;
+        }
+
+        var updatedSeries = [
+          { name: (payload.names && payload.names[0]) || 'Earning', data: payload.earning },
+          { name: (payload.names && payload.names[1]) || 'Expense', data: payload.expense }
+        ];
+
+        window.dashboardCharts.revenueReportChart.updateOptions({
+          xaxis: { categories: payload.labels },
+          series: updatedSeries
+        }, true, true);
+      };
+
+      var updateBudgetChart = function (payload) {
+        if (!window.dashboardCharts || !window.dashboardCharts.budgetChart) {
+          window.dashboardPendingReport = payload;
+          return;
+        }
+
+        var primarySeries = payload.earning || [];
+        var secondarySeries = (payload.expense || []).map(function (value) {
+          return Math.abs(value);
+        });
+
+        window.dashboardCharts.budgetChart.updateSeries([
+          { data: primarySeries },
+          { data: secondarySeries }
+        ], true);
+      };
+
+      $(document).on('click', '.js-dashboard-year', function (event) {
+        event.preventDefault();
+        var year = $(this).data('year');
+        if (!endpoint || !year) {
+          return;
+        }
+
+        if ($loader.length) {
+          $loader.removeClass('d-none');
+        }
+        if ($yearButton.length) {
+          $yearButton.prop('disabled', true).attr('aria-disabled', 'true').addClass('disabled');
+        }
+
+        $.getJSON(endpoint, { year: year })
+          .done(function (payload) {
+            if (!payload) {
+              return;
+            }
+
+            updateChart(payload);
+            updateTotals(payload);
+            updateBudgetChart(payload);
+            if ($yearButton.length && payload.year) {
+              $yearButton.text(payload.year);
+            }
+          })
+          .fail(function () {
+            if (window.toastr) {
+              toastr['error'](networkErrorMessage, "{{ __('locale.Error') }}", {
+                closeButton: true,
+                tapToDismiss: true
+              });
+            }
+          })
+          .always(function () {
+            if ($loader.length) {
+              $loader.addClass('d-none');
+            }
+            if ($yearButton.length) {
+              $yearButton.prop('disabled', false).attr('aria-disabled', 'false').removeClass('disabled');
+            }
+          });
+      });
+    })();
+  </script>
 @endsection
 

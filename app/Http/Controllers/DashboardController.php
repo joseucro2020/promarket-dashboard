@@ -73,41 +73,14 @@ class DashboardController extends Controller
 
     // Revenue report: ingresos (total) y gastos (costo) por mes para el año actual
     $requestedYear = (int) request()->get('year', now()->year);
-    $currentYear = now()->year;
-    $reportYear = ($requestedYear >= ($currentYear - 10) && $requestedYear <= $currentYear)
-      ? $requestedYear
-      : $currentYear;
-    $revenueReportLabels = [];
-    $revenueReportEarning = [];
-    $revenueReportExpense = [];
-    $revenueReportTotalEarning = 0.0;
-    $revenueReportTotalExpense = 0.0;
-
-    $reportStart = Carbon::createFromDate($reportYear, 1, 1)->startOfDay();
-    $reportEnd = Carbon::createFromDate($reportYear, 12, 31)->endOfDay();
-    $monthlyRows = BuyOrderDetail::query()
-      ->select(
-        DB::raw('MONTH(created_at) as month'),
-        DB::raw('SUM(total) as earning'),
-        DB::raw('SUM(costo) as expense')
-      )
-      ->whereBetween('created_at', [$reportStart, $reportEnd])
-      ->groupBy(DB::raw('MONTH(created_at)'))
-      ->get()
-      ->keyBy('month');
-
-    for ($m = 1; $m <= 12; $m++) {
-      $date = Carbon::createFromDate($reportYear, $m, 1);
-      $revenueReportLabels[] = $date->translatedFormat('M');
-      $row = $monthlyRows->get($m);
-      $earning = $row ? (float) $row->earning : 0.0;
-      $expense = $row ? (float) $row->expense : 0.0;
-      $revenueReportEarning[] = $earning;
-      $revenueReportExpense[] = -1 * $expense;
-      $revenueReportTotalEarning += $earning;
-      $revenueReportTotalExpense += $expense;
-    }
-    $revenueReportNet = $revenueReportTotalEarning - $revenueReportTotalExpense;
+    $reportYear = $this->resolveReportYear($requestedYear);
+    $revenueReportData = $this->buildRevenueReport($reportYear);
+    $revenueReportLabels = $revenueReportData['labels'];
+    $revenueReportEarning = $revenueReportData['earning'];
+    $revenueReportExpense = $revenueReportData['expense'];
+    $revenueReportTotalEarning = $revenueReportData['total_earning'];
+    $revenueReportTotalExpense = $revenueReportData['total_expense'];
+    $revenueReportNet = $revenueReportData['net'];
 
     // Top 10 mejores clientes (por ventas historicas)
     $buildTopCustomersBase = function ($status = null) {
@@ -339,10 +312,22 @@ class DashboardController extends Controller
       'revenueReportTotalEarning',
       'revenueReportTotalExpense',
       'revenueReportNet',
+      'reportYear',
       'topCustomers',
       'paymentMethodPercentages',
       'topProducts'
     ));
+  }
+
+  public function revenueReport(Request $request)
+  {
+    $requestedYear = (int) $request->get('year', now()->year);
+    $reportYear = $this->resolveReportYear($requestedYear);
+    $revenueReportData = $this->buildRevenueReport($reportYear);
+
+    return response()->json(array_merge($revenueReportData, [
+      'year' => $reportYear
+    ]));
   }
 
   // Dashboard - Analytics
@@ -359,5 +344,65 @@ class DashboardController extends Controller
     $pageConfigs = ['pageHeader' => false];
 
     return view('/content/dashboard/dashboard-ecommerce', ['pageConfigs' => $pageConfigs]);
+  }
+
+  private function resolveReportYear(int $requestedYear): int
+  {
+    $currentYear = now()->year;
+
+    if ($requestedYear < ($currentYear - 10) || $requestedYear > $currentYear) {
+      return $currentYear;
+    }
+
+    return $requestedYear;
+  }
+
+  private function buildRevenueReport(int $reportYear): array
+  {
+    $labels = [];
+    $earning = [];
+    $expense = [];
+    $totalEarning = 0.0;
+    $totalExpense = 0.0;
+
+    $reportStart = Carbon::createFromDate($reportYear, 1, 1)->startOfDay();
+    $reportEnd = Carbon::createFromDate($reportYear, 12, 31)->endOfDay();
+    $monthlyRows = BuyOrderDetail::query()
+      ->select(
+        DB::raw('MONTH(created_at) as month'),
+        DB::raw('SUM(total) as earning'),
+        DB::raw('SUM(costo) as expense')
+      )
+      ->whereBetween('created_at', [$reportStart, $reportEnd])
+      ->groupBy(DB::raw('MONTH(created_at)'))
+      ->get()
+      ->keyBy('month');
+
+    for ($m = 1; $m <= 12; $m++) {
+      $date = Carbon::createFromDate($reportYear, $m, 1);
+      $labels[] = $date->translatedFormat('M');
+      $row = $monthlyRows->get($m);
+      $earningValue = $row ? (float) $row->earning : 0.0;
+      $expenseValue = $row ? (float) $row->expense : 0.0;
+      $earning[] = $earningValue;
+      $expense[] = -1 * $expenseValue;
+      $totalEarning += $earningValue;
+      $totalExpense += $expenseValue;
+    }
+
+    $net = $totalEarning - $totalExpense;
+
+    return [
+      'labels' => $labels,
+      'earning' => $earning,
+      'expense' => $expense,
+      'total_earning' => $totalEarning,
+      'total_expense' => $totalExpense,
+      'net' => $net,
+      'total_earning_full' => number_format($totalEarning, 2),
+      'net_full' => number_format($net, 2),
+      'total_earning_display' => \App\Helpers\Helper::abbreviateNumber($totalEarning),
+      'net_display' => \App\Helpers\Helper::abbreviateNumber($net)
+    ];
   }
 }

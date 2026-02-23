@@ -60,6 +60,7 @@ Route::get('/panel/test', function () {
 // Main Page Route
 // Route::get('/', [DashboardController::class,'dashboardEcommerce'])->name('dashboard-ecommerce')->middleware('verified');
 Route::get('/panel', [DashboardController::class,'index'])->name('dashboard-home');
+Route::get('/panel/revenue-report', [DashboardController::class, 'revenueReport'])->name('dashboard.revenue-report');
 
 // Routes para el módulo de Tasa de cambio
 Route::group(['prefix' => 'panel'], function () {

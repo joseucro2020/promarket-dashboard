@@ -399,6 +399,7 @@ return [
   "Delivery Type" => "Tipo de Entrega",
   "Order Details" => "Detalle del pedido",
   "Loading" => "Cargando",
+  "Network error. Please try again." => "Error de red. Intenta de nuevo.",
   "Close" => "Cerrar",
   "Customer Details" => "Datos del cliente",
   "Delivery Details" => "Datos de entrega",

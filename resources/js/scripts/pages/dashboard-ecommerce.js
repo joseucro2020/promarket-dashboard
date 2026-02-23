@@ -396,6 +396,13 @@ $(window).on('load', function () {
 
   //---------------- Budget Chart ----------------
   //----------------------------------------------
+  var budgetSeriesPrimary = (window.revenueReport && window.revenueReport.earning && window.revenueReport.earning.length)
+    ? window.revenueReport.earning
+    : [61, 48, 69, 52, 60, 40, 79, 60, 59, 43, 62];
+  var budgetSeriesSecondary = (window.revenueReport && window.revenueReport.expense && window.revenueReport.expense.length)
+    ? window.revenueReport.expense.map(function (value) { return Math.abs(value); })
+    : [20, 10, 30, 15, 23, 0, 25, 15, 20, 5, 27];
+
   budgetChartOptions = {
     chart: {
       height: 80,
@@ -411,12 +418,8 @@ $(window).on('load', function () {
     },
     colors: [window.colors.solid.primary, $budgetStrokeColor2],
     series: [
-      {
-        data: [61, 48, 69, 52, 60, 40, 79, 60, 59, 43, 62]
-      },
-      {
-        data: [20, 10, 30, 15, 23, 0, 25, 15, 20, 5, 27]
-      }
+      { data: budgetSeriesPrimary },
+      { data: budgetSeriesSecondary }
     ],
     tooltip: {
       enabled: false
@@ -424,6 +427,32 @@ $(window).on('load', function () {
   };
   budgetChart = new ApexCharts($budgetChart, budgetChartOptions);
   budgetChart.render();
+
+  if (typeof window !== 'undefined') {
+    window.dashboardCharts = window.dashboardCharts || {};
+    window.dashboardCharts.revenueReportChart = revenueReportChart;
+    window.dashboardCharts.budgetChart = budgetChart;
+
+    if (window.dashboardPendingReport) {
+      var pending = window.dashboardPendingReport;
+      if (pending && pending.labels && pending.earning && pending.expense) {
+        revenueReportChart.updateOptions({
+          xaxis: { categories: pending.labels }
+        }, false, true);
+        revenueReportChart.updateSeries([
+          { name: (pending.names && pending.names[0]) || 'Earning', data: pending.earning },
+          { name: (pending.names && pending.names[1]) || 'Expense', data: pending.expense }
+        ], true);
+
+        budgetChart.updateSeries([
+          { data: pending.earning },
+          { data: pending.expense.map(function (value) { return Math.abs(value); }) }
+        ], true);
+      }
+
+      window.dashboardPendingReport = null;
+    }
+  }
 
   //------------ Browser State Charts ------------
   //----------------------------------------------

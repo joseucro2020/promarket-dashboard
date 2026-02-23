@@ -388,6 +388,7 @@ return [
   "Delivery Type" => "Delivery Type",
   "Order Details" => "Order Details",
   "Loading" => "Loading",
+  "Network error. Please try again." => "Network error. Please try again.",
   "Close" => "Close",
   "Customer Details" => "Customer Details",
   "Delivery Details" => "Delivery Details",
