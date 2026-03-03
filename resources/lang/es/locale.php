@@ -398,6 +398,7 @@ return [
   "Payment Method" => "Medio de pago",
   "Delivery Type" => "Tipo de Entrega",
   "Order Details" => "Detalle del pedido",
+  "Consult" => "Consultar",
   "Loading" => "Cargando",
   "Network error. Please try again." => "Error de red. Intenta de nuevo.",
   "Close" => "Cerrar",

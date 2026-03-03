@@ -387,6 +387,7 @@ return [
   "Payment Method" => "Payment Method",
   "Delivery Type" => "Delivery Type",
   "Order Details" => "Order Details",
+  "Consult" => "Consult",
   "Loading" => "Loading",
   "Network error. Please try again." => "Network error. Please try again.",
   "Close" => "Close",

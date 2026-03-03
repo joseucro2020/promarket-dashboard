@@ -13,7 +13,7 @@ use App\Models\Social;
 use App\Models\Category;
 use App\Models\PromotionUser;
 use App\Models\PushMessage;
-use App\User;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -31,9 +31,29 @@ class PurchaseController extends Controller
 
     public function date(Request $request)
     {
+        $dateFromValue = $request->input('date_from', $request->input('init'));
+        $dateToValue = $request->input('date_to', $request->input('end'));
+        $statusValue = $request->input('type', $request->input('status'));
+        $searchValue = $request->input('q', $request->input('search'));
 
-        $init = $request->init ? new Carbon($request->init) : null;
-        $end = $request->end ? new Carbon($request->end) : null;
+        $today = Carbon::today();
+        $init = $dateFromValue ? Carbon::parse($dateFromValue) : $today->copy();
+        $end = $dateToValue ? Carbon::parse($dateToValue) : $today->copy();
+
+        $statusMap = [
+            'pending' => Purchase::STATUS_ONHOLD,
+            'processing' => Purchase::STATUS_PROCESSING,
+            'completed' => Purchase::STATUS_COMPLETED,
+            'rejected' => Purchase::STATUS_REJECTED,
+        ];
+
+        if (is_string($statusValue)) {
+            $statusValue = trim($statusValue);
+            if ($statusValue !== '' && array_key_exists(strtolower($statusValue), $statusMap)) {
+                $statusValue = $statusMap[strtolower($statusValue)];
+            }
+        }
+
         $purchases = Purchase::select('purchases.*')
             ->join('users', 'purchases.user_id', '=', 'users.id')
             ->with([
@@ -41,93 +61,89 @@ class PurchaseController extends Controller
                 'details',
                 'user',
                 'exchange',
-                'exchange',
                 'transfer.bankAccount.bank',
                 'deposits',
                 'delivery' => function ($query) {
                     $query->with(['state', 'municipality', 'parish']);
                 }
             ])
-            ->when(!is_null($request->status), function ($query) use ($request) {
-                $query->where('purchases.status', $request->status);
-            })
-            ->when(is_null($init) && is_null($end), function ($query) {
-                $query->whereBetween("purchases.created_at", ['date(now()-interval 30 day)', 'date(now())']);
+            ->when($statusValue !== null && $statusValue !== '', function ($query) use ($statusValue) {
+                $query->where('purchases.status', $statusValue);
             })
             ->when($init && $end, function ($query) use ($init, $end) {
                 $query->whereBetween('purchases.created_at', [$init->format('Y-m-d 00:00:00'), $end->format('Y-m-d 23:59:59')]);
             })
-            ->when(isset($request->search), function ($query) use ($request) {
-                $query->where('users.name', 'like', '%' . $request->search . '%')
-                    ->orWhere('purchases.id', 'like', '%' . $request->search . '%');
+            ->when(filled($searchValue), function ($query) use ($searchValue) {
+                $query->where(function ($innerQuery) use ($searchValue) {
+                    $innerQuery->where('users.name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('purchases.id', 'like', '%' . $searchValue . '%');
+                });
             })
-                ->orderBy('id', 'DESC')
-                ->paginate(10);
+            ->orderBy('id', 'DESC')
+            ->paginate(10);
 
-            // Map collection items to include helper fields for the frontend
-            $purchases->getCollection()->transform(function ($item) {
-                $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']);
-                $item['createdAt'] = Carbon::parse($item['created_at'])->format('d-m-Y h:i A');
-                $item['clientName'] = data_get($item, 'user.name', '—');
-                $item['paymentType'] = $this->getTypePayment($item['payment_type'], $item['use_balance']);
-                $item['deliveryDay'] = data_get($item, 'delivery.date') ? Carbon::parse($item['delivery']['date'])->format('d-m-Y') : '—';
-                $item['typeTurn'] = $this->getTurn(data_get($item, 'delivery.turn'));
-                $item['stateName'] = data_get($item, 'delivery.state.nombre', '—');
-                $item['municipalityName'] = data_get($item, 'delivery.municipality.name', '—');
-                $item['parishName'] = data_get($item, 'delivery.parish.name', '—');
+        // Map collection items to include helper fields for the frontend
+        $purchases->getCollection()->transform(function ($item) {
+            $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']);
+            $item['createdAt'] = Carbon::parse($item['created_at'])->format('d-m-Y h:i A');
+            $item['clientName'] = data_get($item, 'user.name', '—');
+            $item['paymentType'] = $this->getTypePayment($item['payment_type'], $item['use_balance']);
+            $item['deliveryDay'] = data_get($item, 'delivery.date') ? Carbon::parse($item['delivery']['date'])->format('d-m-Y') : '—';
+            $item['typeTurn'] = $this->getTurn(data_get($item, 'delivery.turn'));
+            $item['stateName'] = data_get($item, 'delivery.state.nombre', '—');
+            $item['municipalityName'] = data_get($item, 'delivery.municipality.name', '—');
+            $item['parishName'] = data_get($item, 'delivery.parish.name', '—');
 
-                $item['code'] = $item['payment_type'] == 5
-                    ? ''
-                    : ($item['payment_type'] == 4
-                        ? $item['transaction_code']
-                        : data_get($item, 'transfer.number', ''));
+            $item['code'] = $item['payment_type'] == 5
+                ? ''
+                : ($item['payment_type'] == 4
+                    ? $item['transaction_code']
+                    : data_get($item, 'transfer.number', ''));
 
-                $item['payName'] = data_get($item, 'transfer.name', '');
+            $item['payName'] = data_get($item, 'transfer.name', '');
 
-                $type = (int) data_get($item, 'delivery.type');
-                switch ($type) {
-                    case 1:
-                        $item['deliveryType'] = 'Nacional (Cobro a Destino)';
-                        break;
-                    case 2:
-                        $item['deliveryType'] = 'Nacional (Envio a Tienda)';
-                        break;
-                    default:
-                        $item['deliveryType'] = 'Envío Regional';
-                        break;
-                }
+            $type = (int) data_get($item, 'delivery.type');
+            switch ($type) {
+                case 1:
+                    $item['deliveryType'] = 'Nacional (Cobro a Destino)';
+                    break;
+                case 2:
+                    $item['deliveryType'] = 'Nacional (Envio a Tienda)';
+                    break;
+                default:
+                    $item['deliveryType'] = 'Envío Regional';
+                    break;
+            }
 
-                $status = (int) data_get($item, 'status');
-                switch ($status) {
-                    case 0:
-                        $item['statusType'] = 'En Espera';
-                        break;
-                    case 1:
-                        $item['statusType'] = 'Procesando';
-                        break;
-                    case 2:
-                        $item['statusType'] = 'Cancelado';
-                        break;
-                    default:
-                        $item['statusType'] = 'Completado';
-                        break;
-                }
+            $status = (int) data_get($item, 'status');
+            switch ($status) {
+                case 0:
+                    $item['statusType'] = 'En Espera';
+                    break;
+                case 1:
+                    $item['statusType'] = 'Procesando';
+                    break;
+                case 2:
+                    $item['statusType'] = 'Cancelado';
+                    break;
+                default:
+                    $item['statusType'] = 'Completado';
+                    break;
+            }
 
-                // Tip / propina fallback
-                $item['tip'] = data_get($item, 'tip', data_get($item, 'propina', 0));
+            // Tip / propina fallback
+            $item['tip'] = data_get($item, 'tip', data_get($item, 'propina', 0));
 
-                return $item;
-            });
+            return $item;
+        });
 
-            return $purchases;
-
-            return $purchases;
+        return $purchases;
     }
 
     public function getDetails(Request $request)
     {
         return Purchase::where('id', $request->id)
-            ->with(['details','transfer','deposits'])
+            ->with(['details', 'transfer', 'deposits'])
             ->first();
     }
 

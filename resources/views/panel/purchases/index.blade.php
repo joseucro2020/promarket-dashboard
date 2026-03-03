@@ -29,10 +29,10 @@
           <div class="mb-2">
             <div class="row">
               <div class="col-md-3 mb-1">
-                <input type="date" id="date_from" class="form-control" placeholder="{{ __('locale.From') }}" value="{{ request('date_from', '') }}">
+                <input type="date" id="date_from" class="form-control" placeholder="{{ __('locale.From') }}" value="{{ request('date_from', now()->toDateString()) }}">
               </div>
               <div class="col-md-3 mb-1">
-                <input type="date" id="date_to" class="form-control" placeholder="{{ __('locale.To') }}" value="{{ request('date_to', '') }}">
+                <input type="date" id="date_to" class="form-control" placeholder="{{ __('locale.To') }}" value="{{ request('date_to', now()->toDateString()) }}">
               </div>
               <div class="col-md-2 mb-1">
                 <select id="filter_type" class="form-control">
@@ -109,8 +109,8 @@
       columnDefs: [{
         targets: -1,
         render: function(data){
-          var viewBtn = '<button class="btn btn-sm btn-outline-primary view" data-id="'+data.id+'" title="Ver"><i data-feather="eye"></i></button>';
-          var printBtn = '<a class="btn btn-sm btn-outline-secondary" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print" target="_blank" title="'+"{{ __('Print') }}"+'"><i data-feather="printer"></i></a>';
+          var viewBtn = '<button class="btn btn-sm btn-outline-primary view" data-id="'+data.id+'" title="'+"{{ __('locale.View') }}"+'"><i data-feather="eye"></i></button>';
+          var printBtn = '<a class="btn btn-sm btn-outline-secondary" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print" target="_blank" title="'+"{{ __('locale.Print') }}"+'"><i data-feather="printer"></i></a>';
           return '<div class="btn-group" role="group">' + viewBtn + printBtn + '</div>';
         }
       }]
@@ -119,6 +119,18 @@
     function loadData(){
       var date_from = $('#date_from').val();
       var date_to = $('#date_to').val();
+      var today = new Date().toISOString().slice(0, 10);
+
+      if (!date_from) {
+        date_from = today;
+        $('#date_from').val(today);
+      }
+
+      if (!date_to) {
+        date_to = today;
+        $('#date_to').val(today);
+      }
+
       var type = $('#filter_type').val();
       var q = $('#search_q').val();
       $.post("{{ url('panel/pedidos/date') }}", {_token:'{{ csrf_token() }}', date_from: date_from, date_to: date_to, type: type, q: q}, function(res){
@@ -139,12 +151,12 @@
       $.post("{{ route('purchases.getDetails') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
         if(res){
           $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
-          var html = '<p><strong>ID:</strong> '+res.id+'</p>';
+          var html = '<p><strong>{{ __('locale.ID') }}:</strong> '+res.id+'</p>';
           html += '<p><strong>{{ __('locale.Client') }}:</strong> '+(res.user?res.user.name:'-')+'</p>';
           html += '<p><strong>{{ __('locale.Amount') }}:</strong> '+res.total+'</p>';
           // Detalles de items
           if(res.details && res.details.length){
-            html += '<hr><h6>Items</h6><ul>';
+            html += '<hr><h6>{{ __('locale.Items') }}</h6><ul>';
             res.details.forEach(function(d){ html += '<li>'+ (d.description||'') +' x '+ d.quantity +'</li>'; });
             html += '</ul>';
           }
