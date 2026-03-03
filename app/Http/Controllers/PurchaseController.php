@@ -143,14 +143,34 @@ class PurchaseController extends Controller
     public function getDetails(Request $request)
     {
         return Purchase::where('id', $request->id)
-            ->with(['details', 'transfer', 'deposits'])
+            ->with([
+                'user',
+                'exchange',
+                'details.product_amount.product_color.product',
+                'details.product_amount.category_size',
+                'transfer.bankAccount.bank',
+                'deposits',
+                'delivery' => function ($query) {
+                    $query->with(['state', 'municipality', 'parish']);
+                }
+            ])
             ->first();
     }
 
     public function getDetailsCompany(Request $request)
     {
         return Purchase::where('id', $request->id)
-            ->with(['details'])
+            ->with([
+                'user',
+                'exchange',
+                'details.product_amount.product_color.product',
+                'details.product_amount.category_size',
+                'transfer.bankAccount.bank',
+                'deposits',
+                'delivery' => function ($query) {
+                    $query->with(['state', 'municipality', 'parish']);
+                }
+            ])
             ->first();
     }
 

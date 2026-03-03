@@ -109,12 +109,171 @@
       columnDefs: [{
         targets: -1,
         render: function(data){
-          var viewBtn = '<button class="btn btn-sm btn-outline-primary view" data-id="'+data.id+'" title="'+"{{ __('locale.View') }}"+'"><i data-feather="eye"></i></button>';
-          var printBtn = '<a class="btn btn-sm btn-outline-secondary" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print" target="_blank" title="'+"{{ __('locale.Print') }}"+'"><i data-feather="printer"></i></a>';
-          return '<div class="btn-group" role="group">' + viewBtn + printBtn + '</div>';
+          var viewBtn = '<button type="button" class="btn btn-icon btn-flat-primary mr-1 view" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.View') }}"+'"><i data-feather="eye"></i></button>';
+          var viewCompanyBtn = '<button type="button" class="btn btn-icon btn-flat-primary mr-1 view-company" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.View Details') }}"+'"><i data-feather="eye"></i></button>';
+          var approveBtn = '<button type="button" class="btn btn-icon btn-flat-success mr-1 approve" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Approved') }}"+'"><i data-feather="check"></i></button>';
+          var printBtn = '<a class="btn btn-icon btn-flat-dark mr-1" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print" target="_blank" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Print') }}"+'"><i data-feather="printer"></i></a>';
+          var printCompanyBtn = '<a class="btn btn-icon btn-flat-dark mr-1" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print?company=1" target="_blank" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Print Order') }}"+'"><i data-feather="printer"></i></a>';
+          var rejectBtn = '<button type="button" class="btn btn-icon btn-flat-danger reject" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Delete') }}"+'"><i data-feather="trash"></i></button>';
+          return '<div class="d-flex align-items-center">' + viewBtn + viewCompanyBtn + approveBtn + printBtn + printCompanyBtn + rejectBtn + '</div>';
         }
       }]
     });
+
+    function escapeHtml(value) {
+      return $('<div>').text(value == null ? '' : value).html();
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '—';
+      var date = new Date(value);
+      if (isNaN(date.getTime())) return escapeHtml(value);
+      var day = String(date.getDate()).padStart(2, '0');
+      var month = String(date.getMonth() + 1).padStart(2, '0');
+      var year = date.getFullYear();
+      var hour = String(date.getHours()).padStart(2, '0');
+      var minute = String(date.getMinutes()).padStart(2, '0');
+      var second = String(date.getSeconds()).padStart(2, '0');
+      return day + '-' + month + '-' + year + ' ' + hour + ':' + minute + ':' + second;
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      var date = new Date(value);
+      if (isNaN(date.getTime())) return escapeHtml(value);
+      var day = String(date.getDate()).padStart(2, '0');
+      var month = String(date.getMonth() + 1).padStart(2, '0');
+      var year = date.getFullYear();
+      return day + '-' + month + '-' + year;
+    }
+
+    function formatMoney(value) {
+      var amount = Number(value || 0);
+      return '$ ' + amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function resolveDeliveryType(typeValue) {
+      var type = parseInt(typeValue, 10);
+      if (type === 1) return 'Nacional (Cobro a Destino)';
+      if (type === 2) return 'Nacional (Envio a Tienda)';
+      return 'Envío Regional';
+    }
+
+    function resolveTurn(turnValue) {
+      var turn = parseInt(turnValue, 10);
+      if (turn === 1) return 'Mañana';
+      if (turn === 2) return 'Tarde';
+      if (turn === 3) return 'Noche';
+      return '—';
+    }
+
+    function renderPurchaseDetailsModal(res, includeTotals) {
+      var clientName = escapeHtml(res.user && res.user.name ? res.user.name : '—');
+      var paymentMethod = escapeHtml(res.text_payment_type || '—');
+      var paymentAmount = formatMoney(res.total || 0);
+      var turn = resolveTurn(res.delivery ? res.delivery.turn : null);
+      var dateTime = formatDateTime(res.created_at);
+      var deliveryType = escapeHtml(resolveDeliveryType(res.delivery ? res.delivery.type : null));
+      var phone = escapeHtml((res.user && res.user.phone) || (res.delivery && res.delivery.phone) || '—');
+      var address = escapeHtml(res.delivery && res.delivery.address ? res.delivery.address : '—');
+      var deliveryDate = formatDate(res.delivery ? res.delivery.date : null);
+
+      var html = '';
+      html += '<div class="border-top pt-1">';
+      html += '  <div class="row">';
+      html += '    <div class="col-md-6 mb-1">';
+      html += '      <p class="mb-50"><strong>{{ __('locale.Client') }}:</strong> ' + clientName + '</p>';
+      html += '      <p class="mb-50"><strong>{{ __('locale.Payment Method') }}:</strong> ' + paymentMethod + '</p>';
+      html += '      <p class="mb-50"><strong>{{ __('locale.Amount') }}:</strong> ' + paymentAmount + '</p>';
+      html += '      <p class="mb-0"><strong>{{ __('locale.Turn') }}:</strong> ' + turn + '</p>';
+      html += '    </div>';
+      html += '    <div class="col-md-6 mb-1">';
+      html += '      <p class="mb-50"><strong>{{ __('locale.Date - Time') }}:</strong> ' + dateTime + '</p>';
+      html += '      <p class="mb-50"><strong>{{ __('locale.Delivery Type') }}:</strong> ' + deliveryType + '</p>';
+      html += '      <p class="mb-0"><strong>{{ __('locale.Phone') }}:</strong> ' + phone + '</p>';
+      html += '    </div>';
+      html += '  </div>';
+      html += '  <p class="mb-50"><strong>{{ __('locale.Address') }}:</strong> ' + address + '</p>';
+      html += '  <p class="mb-1"><strong>{{ __('locale.Delivery Date') }}:</strong> ' + deliveryDate + '</p>';
+      html += '</div>';
+
+      html += '<div class="table-responsive mt-1">';
+      html += '  <table class="table table-borderless mb-0">';
+      html += '    <thead>';
+      html += '      <tr>';
+      html += '        <th>{{ __('locale.Description') }}</th>';
+      html += '        <th>{{ __('locale.Presentation') }}</th>';
+      html += '        <th>{{ __('locale.Tax') }}</th>';
+      html += '        <th>{{ __('locale.Price') }}</th>';
+      html += '        <th>{{ __('locale.Quantity') }}</th>';
+      html += '        <th>{{ __('locale.SubTotal') }}</th>';
+      html += '      </tr>';
+      html += '    </thead>';
+      html += '    <tbody>';
+
+      if(res.details && res.details.length){
+        res.details.forEach(function(d){
+          var description = d.description || (d.producto && d.producto.name ? d.producto.name : '');
+          description = escapeHtml(description + (d.discounts_text || ''));
+          var presentation = escapeHtml((d.presentation || '') + (d.unit || ''));
+          var tax = escapeHtml(d.tax || 'Exento');
+          var price = Number(d.price || 0);
+          var quantity = Number(d.quantity || 0);
+          var subtotal = price * quantity;
+
+          html += '      <tr>';
+          html += '        <td>' + description + '</td>';
+          html += '        <td>' + (presentation || '—') + '</td>';
+          html += '        <td>' + tax + '</td>';
+          html += '        <td>' + formatMoney(price) + '</td>';
+          html += '        <td>' + quantity + '</td>';
+          html += '        <td>' + formatMoney(subtotal) + '</td>';
+          html += '      </tr>';
+        });
+      } else {
+        html += '      <tr><td colspan="6" class="text-center text-muted">{{ __('locale.Not found') }}</td></tr>';
+      }
+
+      html += '    </tbody>';
+      html += '  </table>';
+      html += '</div>';
+
+      if (includeTotals) {
+        var subtotalValue = Number(
+          res.subtotal ||
+          res.sub_total ||
+          res.amount_without_tip ||
+          0
+        );
+        var tipValue = Number(
+          res.tip ||
+          res.propina ||
+          0
+        );
+        var shippingValue = Number(
+          res.shipping_cost ||
+          res.shipping_fee ||
+          res.shipping ||
+          res.delivery_fee ||
+          0
+        );
+        var totalValue = Number(res.total || 0);
+
+        html += '<div class="table-responsive mt-1">';
+        html += '  <table class="table table-borderless mb-0">';
+        html += '    <tbody>';
+        html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.SubTotal') }}</strong></td><td class="text-right" style="width: 170px;">' + formatMoney(subtotalValue) + '</td></tr>';
+        html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Tip') }}</strong></td><td class="text-right">' + formatMoney(tipValue) + '</td></tr>';
+        html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Shipping Cost') }}</strong></td><td class="text-right">' + formatMoney(shippingValue) + '</td></tr>';
+        html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Total') }}</strong></td><td class="text-right"><strong>' + formatMoney(totalValue) + '</strong></td></tr>';
+        html += '    </tbody>';
+        html += '  </table>';
+        html += '</div>';
+      }
+
+      $('#purchaseDetailsModal .modal-body').html(html);
+      $('#purchaseDetailsModal').modal('show');
+    }
 
     function loadData(){
       var date_from = $('#date_from').val();
@@ -146,24 +305,43 @@
     loadData();
 
     // view button
-          $(document).on('click', '.purchases-table .view', function(){
+    $(document).on('click', '.purchases-table .view', function(){
       var id = $(this).data('id');
       $.post("{{ route('purchases.getDetails') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
         if(res){
           $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
-          var html = '<p><strong>{{ __('locale.ID') }}:</strong> '+res.id+'</p>';
-          html += '<p><strong>{{ __('locale.Client') }}:</strong> '+(res.user?res.user.name:'-')+'</p>';
-          html += '<p><strong>{{ __('locale.Amount') }}:</strong> '+res.total+'</p>';
-          // Detalles de items
-          if(res.details && res.details.length){
-            html += '<hr><h6>{{ __('locale.Items') }}</h6><ul>';
-            res.details.forEach(function(d){ html += '<li>'+ (d.description||'') +' x '+ d.quantity +'</li>'; });
-            html += '</ul>';
-          }
-          $('#purchaseDetailsModal .modal-body').html(html);
-          $('#purchaseDetailsModal').modal('show');
+          renderPurchaseDetailsModal(res, true);
         }
       }, 'json');
+    });
+
+    // view company button
+    $(document).on('click', '.purchases-table .view-company', function(){
+      var id = $(this).data('id');
+      $.post("{{ route('purchases.getDetailsCompany') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
+        if(res){
+          $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
+          renderPurchaseDetailsModal(res, false);
+        }
+      }, 'json');
+    });
+
+    // approve button
+    $(document).on('click', '.purchases-table .approve', function(){
+      var id = $(this).data('id');
+      if(!confirm('{{ __('locale.Approved') }}?')) return;
+      $.post('/panel/pedidos/'+id+'/approve', {_token:'{{ csrf_token() }}', status: 1}, function(){
+        loadData();
+      });
+    });
+
+    // reject button
+    $(document).on('click', '.purchases-table .reject', function(){
+      var id = $(this).data('id');
+      if(!confirm('{{ __('locale.Delete') }}?')) return;
+      $.post('/panel/pedidos/'+id+'/reject', {_token:'{{ csrf_token() }}', status: 2}, function(){
+        loadData();
+      });
     });
 
     // Export
