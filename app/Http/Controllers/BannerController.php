@@ -42,12 +42,12 @@ class BannerController extends Controller
         $id = (int)($data['id'] ?? 0);
 
         if ($id === 0) {
-            $banner = Banner::create(['foto' => $fileName]);
+            $banner = Banner::create(['file' => $fileName]);
         } else {
             $banner = Banner::findOrFail($id);
-            $oldFile = $banner->foto;
+            $oldFile = $banner->file;
 
-            $banner->foto = $fileName;
+            $banner->file = $fileName;
             $banner->save();
 
             if ($oldFile) {
@@ -58,8 +58,8 @@ class BannerController extends Controller
         return response()->json([
             'result' => true,
             'id' => $banner->id,
-            'file' => $banner->foto,
-            'url' => asset('img/slider/' . $banner->foto),
+            'file' => $banner->file,
+            'url' => asset('img/slider/' . $banner->file),
         ]);
     }
 
@@ -67,8 +67,8 @@ class BannerController extends Controller
     {
         $banner = Banner::findOrFail($id);
 
-        if ($banner->foto) {
-            File::delete(public_path('img/slider/' . $banner->foto));
+        if ($banner->file) {
+            File::delete(public_path('img/slider/' . $banner->file));
         }
 
         $banner->delete();

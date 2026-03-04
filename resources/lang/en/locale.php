@@ -142,6 +142,7 @@ return [
   "List" => "List",
   "View" => "View",
   "Edit" => "Edit",
+  "Upload Image" => "Upload Image",
   "Account Settings" => "Account Settings",
   "Error 404" => "Error 404",
   "Error 405" => "Error 405",

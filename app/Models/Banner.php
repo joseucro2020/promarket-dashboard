@@ -13,5 +13,6 @@ class Banner extends Model
 
     protected $fillable = [
         'foto',
+        'file',
     ];
 }

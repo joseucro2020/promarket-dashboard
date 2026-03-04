@@ -191,6 +191,7 @@ return [
   "Notes" => "Notas",
   "Actions" => "Acciones",
   "Edit" => "Editar",
+  "Upload Image" => "Cargar imagen",
   "Delete" => "Eliminar",
   "Deleted" => "Eliminado",
   "Delete this rate?" => "¿Eliminar esta tasa?",

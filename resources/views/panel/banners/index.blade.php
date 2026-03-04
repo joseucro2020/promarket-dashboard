@@ -45,21 +45,38 @@
               </thead>
               <tbody>
                 @forelse($banners as $banner)
-                  <tr data-id="{{ $banner->id }}" data-file="{{ $banner->foto }}">
+                  <tr data-id="{{ $banner->id }}" data-file="{{ $banner->file }}">
                     <td>{{ $banner->id }}</td>
                     <td>
-                      @if($banner->foto && file_exists(public_path('img/slider/'.$banner->foto)))
-                        <img class="img-fluid rounded" style="max-height: 64px;" src="{{ asset('img/slider/'.$banner->foto) }}" alt="Banner #{{ $banner->id }}" onclick="window.__selectBannerFile({{ $banner->id }})">
+                      @php
+                        $file = $banner->file;
+                        $src = null;
+                        if ($file) {
+                          if (substr($file, 0, 4) === 'http') {
+                            $src = $file;
+                          } else {
+                            $base = env('BANNERS_IMAGE_URL');
+                            if ($base) {
+                              $src = rtrim($base, '/') . '/' . ltrim($file, '/');
+                            } elseif (file_exists(public_path('img/slider/'.$file))) {
+                              $src = asset('img/slider/'.$file);
+                            }
+                          }
+                        }
+                      @endphp
+
+                      @if($src)
+                        <img class="img-fluid rounded" style="max-height: 64px;" src="{{ $src }}" alt="Banner #{{ $banner->id }}" onclick="window.__selectBannerFile({{ $banner->id }})">
                       @else
                         <span class="text-muted">{{ __('No image') }}</span>
                       @endif
                     </td>
-                    <td>{{ $banner->foto }}</td>
+                    <td>{{ $banner->file }}</td>
                     <td>{{ optional($banner->created_at)->format('Y-m-d H:i') }}</td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Edit') }}" onclick="window.__selectBannerFile({{ $banner->id }})">
-                          <i data-feather="edit"></i>
+                        <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="{{ __('locale.Upload Image') }}" onclick="window.__selectBannerFile({{ $banner->id }})">
+                          <i data-feather="upload"></i>
                         </button>
                         <form class="m-0" action="{{ route('banners.destroy', $banner->id) }}" method="POST" onsubmit="return confirm('{{ __('locale.Delete this banner?') }}');">
                           @csrf
