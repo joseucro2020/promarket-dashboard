@@ -155,10 +155,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::post('ordenes-compra/details', [BuyOrderController::class, 'getDetails'])->name('buyorders.getDetails');
 
   // Orders (site purchases)
-  Route::get('pedidos/{id}/print', function($id){
-      $purchase = App\Models\Purchase::with(['details','user','delivery'])->find($id);
-      return view('panel.purchases.print', compact('purchase'));
-  })->name('purchases.print');
+  Route::get('pedidos/{purchase}/print', [App\Http\Controllers\PurchaseController::class, 'pdfview'])->name('purchases.print');
   Route::get('pedidos', [App\Http\Controllers\PurchaseController::class, 'index'])->name('purchases.index');
   Route::post('pedidos/date', [App\Http\Controllers\PurchaseController::class, 'date'])->name('purchases.date');
   Route::post('pedidos/details', [App\Http\Controllers\PurchaseController::class, 'getDetails'])->name('purchases.getDetails');

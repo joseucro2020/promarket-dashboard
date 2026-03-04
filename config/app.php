@@ -165,6 +165,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Barryvdh\DomPDF\ServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -229,6 +230,10 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         // custom theme helper
         'Helper' => App\Helpers\Helper::class,
+        'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
+        'CalcPrice' => App\Libraries\CalcPrice::class,
+        'Money' => App\Libraries\Money::class,
+        'Total' => App\Libraries\Total::class,
     ],
 
 ];

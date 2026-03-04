@@ -4,6 +4,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Purchase Mail Toggle
+    |--------------------------------------------------------------------------
+    |
+    | Permite habilitar/deshabilitar el envío de correos de pedidos por
+    | entorno. En local se desactiva por defecto para evitar errores SMTP.
+    |
+    */
+
+    'purchase_send_emails' => env('PURCHASE_SEND_EMAILS', env('APP_ENV') !== 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Mailer
     |--------------------------------------------------------------------------
     |

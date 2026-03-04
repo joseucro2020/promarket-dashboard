@@ -10,7 +10,7 @@
 
 @section('content')
 <section id="basic-datatable">
-  <div class="row">
+  <div class="row mt-2">
     <div class="col-12">
       <div class="card">
         <div class="card-header border-bottom p-1">
@@ -27,14 +27,14 @@
         </div>
         <div class="card-body">
           <div class="mb-2">
-            <div class="row">
+            <div class="row mt-2">
               <div class="col-md-3 mb-1">
                 <input type="date" id="date_from" class="form-control" placeholder="{{ __('locale.From') }}" value="{{ request('date_from', now()->toDateString()) }}">
               </div>
               <div class="col-md-3 mb-1">
                 <input type="date" id="date_to" class="form-control" placeholder="{{ __('locale.To') }}" value="{{ request('date_to', now()->toDateString()) }}">
               </div>
-              <div class="col-md-2 mb-1">
+              <div class="col-md-4 mb-1">
                 <select id="filter_type" class="form-control">
                   <option value="">{{ __('locale.All') }}</option>
                   <option value="pending">{{ __('locale.Pending') }}</option>
@@ -43,16 +43,23 @@
                   <option value="rejected">{{ __('locale.Rejected') }}</option>
                 </select>
               </div>
-              <div class="col-md-2 mb-1">
+              {{-- <div class="col-md-2 mb-1">
                 <input type="text" id="search_q" class="form-control" placeholder="{{ __('locale.Search') }}" value="{{ request('q','') }}">
-              </div>
+              </div> --}}
               <div class="col-md-2 mb-1">
                 <button id="btn-consult" class="btn btn-primary">{{ __('locale.Consult') }}</button>
               </div>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover w-100 purchases-table">
+          <div class="position-relative purchases-table-container">
+            <div id="purchases-table-loading" class="d-none align-items-center justify-content-center" style="position:absolute;inset:0;background:rgba(255,255,255,.65);z-index:10;">
+              <div class="text-center">
+                <div class="spinner-border text-primary mb-50" role="status" aria-hidden="true"></div>
+                <div class="font-small-3 text-primary">{{ __('locale.Loading') }}...</div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered table-hover w-100 purchases-table">
               <thead>
                   <tr>
                     <th>{{ __('locale.ID') }}</th>
@@ -67,9 +74,10 @@
                     <th class="text-end">{{ __('locale.Actions') }}</th>
                   </tr>
                 </thead>
-              <tbody>
-              </tbody>
-            </table>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
           </div>
         </div>
       </div>
@@ -88,8 +96,21 @@
 @endsection
 
 @section('page-script')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   $(function(){
+    var consultLabel = '{{ __('locale.Consult') }}';
+    var loadingLabel = '{{ __('locale.Loading') }}...';
+    var confirmTitle = '{{ __('locale.Are you sure?') }}';
+    var confirmApproveLabel = '{{ __('locale.Do you really want to approve order') }}';
+    var confirmCompleteLabel = '{{ __('locale.Do you really want to complete order') }}';
+    var confirmRejectLabel = '{{ __('locale.Do you really want to reject order') }}';
+    var confirmAcceptLabel = '{{ __('locale.Accept') }}';
+    var confirmCancelLabel = '{{ __('locale.Cancel') }}';
+    var approvedSuccessLabel = '{{ __('locale.Order approved successfully') }}';
+    var completedSuccessLabel = '{{ __('locale.Order completed successfully') }}';
+    var rejectedSuccessLabel = '{{ __('locale.Order rejected successfully') }}';
+
     var table = $('.purchases-table').DataTable({
       responsive: true,
       language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
@@ -109,16 +130,40 @@
       columnDefs: [{
         targets: -1,
         render: function(data){
-          var viewBtn = '<button type="button" class="btn btn-icon btn-flat-primary mr-1 view" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.View') }}"+'"><i data-feather="eye"></i></button>';
-          var viewCompanyBtn = '<button type="button" class="btn btn-icon btn-flat-primary mr-1 view-company" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.View Details') }}"+'"><i data-feather="eye"></i></button>';
-          var approveBtn = '<button type="button" class="btn btn-icon btn-flat-success mr-1 approve" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Approved') }}"+'"><i data-feather="check"></i></button>';
+          var viewBtn = '<button type="button" class="btn btn-icon btn-flat-primary mr-1 view" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.View Order') }}"+'"><i data-feather="eye"></i></button>';
+          var viewCompanyBtn = '<button type="button" class="btn btn-icon btn-flat-primary mr-1 view-company" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.View Company Details') }}"+'"><i data-feather="file-text"></i></button>';
+          var statusValue = Number(data.status);
+          var isPending = statusValue === 0 || String(data.statusType || '').toLowerCase() === 'en espera' || String(data.statusType || '').toLowerCase() === 'pending';
+          var isProcessing = statusValue === 1 || String(data.statusType || '').toLowerCase() === 'procesando' || String(data.statusType || '').toLowerCase() === 'processing';
+          var approveBtn = isPending
+            ? '<button type="button" class="btn btn-icon btn-flat-success mr-1 approve-action" data-id="'+data.id+'" data-next-status="1" data-action-label="{{ __('locale.Approve') }}" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Approve') }}"+'"><i data-feather="check-square"></i></button>'
+            : '';
+          var completeBtn = isProcessing
+            ? '<button type="button" class="btn btn-icon btn-flat-success mr-1 approve-action" data-id="'+data.id+'" data-next-status="3" data-action-label="{{ __('locale.Complete') }}" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Complete') }}"+'"><i data-feather="check-circle"></i></button>'
+            : '';
           var printBtn = '<a class="btn btn-icon btn-flat-dark mr-1" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print" target="_blank" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Print') }}"+'"><i data-feather="printer"></i></a>';
           var printCompanyBtn = '<a class="btn btn-icon btn-flat-dark mr-1" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print?company=1" target="_blank" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Print Order') }}"+'"><i data-feather="printer"></i></a>';
           var rejectBtn = '<button type="button" class="btn btn-icon btn-flat-danger reject" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Delete') }}"+'"><i data-feather="trash"></i></button>';
-          return '<div class="d-flex align-items-center">' + viewBtn + viewCompanyBtn + approveBtn + printBtn + printCompanyBtn + rejectBtn + '</div>';
+          return '<div class="d-flex align-items-center">' + viewBtn + viewCompanyBtn + approveBtn + completeBtn + printBtn + printCompanyBtn + rejectBtn + '</div>';
         }
       }]
     });
+
+    function setConsultLoading(isLoading) {
+      var $button = $('#btn-consult');
+      var $tableOverlay = $('#purchases-table-loading');
+
+      if (isLoading) {
+        $button.prop('disabled', true);
+        $button.html('<span class="spinner-border spinner-border-sm mr-50" role="status" aria-hidden="true"></span>' + loadingLabel);
+        $tableOverlay.removeClass('d-none').addClass('d-flex');
+        return;
+      }
+
+      $button.prop('disabled', false);
+      $button.text(consultLabel);
+      $tableOverlay.removeClass('d-flex').addClass('d-none');
+    }
 
     function escapeHtml(value) {
       return $('<div>').text(value == null ? '' : value).html();
@@ -167,7 +212,7 @@
       return '—';
     }
 
-    function renderPurchaseDetailsModal(res, includeTotals) {
+    function renderPurchaseDetailsModal(res, totalsMode) {
       var clientName = escapeHtml(res.user && res.user.name ? res.user.name : '—');
       var paymentMethod = escapeHtml(res.text_payment_type || '—');
       var paymentAmount = formatMoney(res.total || 0);
@@ -238,7 +283,7 @@
       html += '  </table>';
       html += '</div>';
 
-      if (includeTotals) {
+      if (totalsMode) {
         var subtotalValue = Number(
           res.subtotal ||
           res.sub_total ||
@@ -263,8 +308,10 @@
         html += '  <table class="table table-borderless mb-0">';
         html += '    <tbody>';
         html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.SubTotal') }}</strong></td><td class="text-right" style="width: 170px;">' + formatMoney(subtotalValue) + '</td></tr>';
-        html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Tip') }}</strong></td><td class="text-right">' + formatMoney(tipValue) + '</td></tr>';
-        html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Shipping Cost') }}</strong></td><td class="text-right">' + formatMoney(shippingValue) + '</td></tr>';
+        if (totalsMode === 'full') {
+          html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Tip') }}</strong></td><td class="text-right">' + formatMoney(tipValue) + '</td></tr>';
+          html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Shipping Cost') }}</strong></td><td class="text-right">' + formatMoney(shippingValue) + '</td></tr>';
+        }
         html += '      <tr><td class="text-right pr-2"><strong>{{ __('locale.Total') }}</strong></td><td class="text-right"><strong>' + formatMoney(totalValue) + '</strong></td></tr>';
         html += '    </tbody>';
         html += '  </table>';
@@ -291,7 +338,9 @@
       }
 
       var type = $('#filter_type').val();
-      var q = $('#search_q').val();
+      var q = $('#search_q').length ? $('#search_q').val() : '';
+
+      setConsultLoading(true);
       $.post("{{ url('panel/pedidos/date') }}", {_token:'{{ csrf_token() }}', date_from: date_from, date_to: date_to, type: type, q: q}, function(res){
         if(res && res.data){
           table.clear();
@@ -299,7 +348,15 @@
           table.draw();
           feather.replace();
         }
-      }, 'json');
+      }, 'json')
+      .fail(function(){
+        if (window.toastr) {
+          toastr.error("{{ __('locale.Network error. Please try again.') }}");
+        }
+      })
+      .always(function(){
+        setConsultLoading(false);
+      });
     }
 
     loadData();
@@ -310,7 +367,7 @@
       $.post("{{ route('purchases.getDetails') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
         if(res){
           $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
-          renderPurchaseDetailsModal(res, true);
+          renderPurchaseDetailsModal(res, 'full');
         }
       }, 'json');
     });
@@ -321,27 +378,140 @@
       $.post("{{ route('purchases.getDetailsCompany') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
         if(res){
           $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
-          renderPurchaseDetailsModal(res, false);
+          renderPurchaseDetailsModal(res, 'company');
         }
       }, 'json');
     });
 
-    // approve button
-    $(document).on('click', '.purchases-table .approve', function(){
-      var id = $(this).data('id');
-      if(!confirm('{{ __('locale.Approved') }}?')) return;
-      $.post('/panel/pedidos/'+id+'/approve', {_token:'{{ csrf_token() }}', status: 1}, function(){
-        loadData();
-      });
+    // approve/complete button
+    $(document).on('click', '.purchases-table .approve-action', function(){
+      var $actionButton = $(this);
+      var id = $actionButton.data('id');
+      var nextStatus = Number($actionButton.data('next-status'));
+      var actionLabel = String($actionButton.data('action-label') || '');
+      var isApprove = nextStatus === 1;
+      var confirmText = (isApprove ? confirmApproveLabel : confirmCompleteLabel) + ' ' + id + '?';
+
+      var completeRequest = function () {
+        $.post('/panel/pedidos/' + id + '/approve', {_token:'{{ csrf_token() }}', status: nextStatus}, function(){
+          var $rowElement = $actionButton.closest('tr');
+          if ($rowElement.hasClass('child')) {
+            $rowElement = $rowElement.prev();
+          }
+
+          var row = table.row($rowElement);
+          if (row && row.length) {
+            var rowData = row.data() || {};
+            rowData.status = nextStatus;
+            rowData.statusType = nextStatus === 1 ? 'Procesando' : 'Completado';
+            row.data(rowData).invalidate();
+            table.draw(false);
+            feather.replace();
+          } else {
+            loadData();
+          }
+
+          if (window.toastr) {
+            toastr.success(nextStatus === 1 ? approvedSuccessLabel : completedSuccessLabel);
+          } else if (window.Swal) {
+            Swal.fire({
+              icon: 'success',
+              text: nextStatus === 1 ? approvedSuccessLabel : completedSuccessLabel,
+              timer: 1400,
+              showConfirmButton: false
+            });
+          }
+        });
+      };
+
+      if (window.Swal) {
+        Swal.fire({
+          title: confirmTitle,
+          text: confirmText,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: confirmAcceptLabel,
+          cancelButtonText: confirmCancelLabel,
+          reverseButtons: true,
+          customClass: {
+            confirmButton: 'btn btn-primary',
+            cancelButton: 'btn btn-outline-secondary mr-1'
+          },
+          buttonsStyling: false
+        }).then(function(result){
+          if (result.isConfirmed) {
+            completeRequest();
+          }
+        });
+        return;
+      }
+
+      if (confirm((actionLabel || '{{ __('locale.Complete') }}') + ': ' + id + '?')) {
+        completeRequest();
+      }
     });
 
     // reject button
     $(document).on('click', '.purchases-table .reject', function(){
-      var id = $(this).data('id');
-      if(!confirm('{{ __('locale.Delete') }}?')) return;
-      $.post('/panel/pedidos/'+id+'/reject', {_token:'{{ csrf_token() }}', status: 2}, function(){
-        loadData();
-      });
+      var $rejectButton = $(this);
+      var id = $rejectButton.data('id');
+      var rejectRequest = function () {
+        $.post('/panel/pedidos/' + id + '/reject', {_token:'{{ csrf_token() }}', status: 2}, function(){
+          var $rowElement = $rejectButton.closest('tr');
+          if ($rowElement.hasClass('child')) {
+            $rowElement = $rowElement.prev();
+          }
+
+          var row = table.row($rowElement);
+          if (row && row.length) {
+            var rowData = row.data() || {};
+            rowData.status = 2;
+            rowData.statusType = 'Cancelado';
+            row.data(rowData).invalidate();
+            table.draw(false);
+            feather.replace();
+          } else {
+            loadData();
+          }
+
+          if (window.toastr) {
+            toastr.success(rejectedSuccessLabel);
+          } else if (window.Swal) {
+            Swal.fire({
+              icon: 'success',
+              text: rejectedSuccessLabel,
+              timer: 1400,
+              showConfirmButton: false
+            });
+          }
+        });
+      };
+
+      if (window.Swal) {
+        Swal.fire({
+          title: confirmTitle,
+          text: confirmRejectLabel + ' ' + id + '?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: confirmAcceptLabel,
+          cancelButtonText: confirmCancelLabel,
+          reverseButtons: true,
+          customClass: {
+            confirmButton: 'btn btn-primary',
+            cancelButton: 'btn btn-outline-secondary mr-1'
+          },
+          buttonsStyling: false
+        }).then(function(result){
+          if (result.isConfirmed) {
+            rejectRequest();
+          }
+        });
+        return;
+      }
+
+      if (confirm(confirmRejectLabel + ' ' + id + '?')) {
+        rejectRequest();
+      }
     });
 
     // Export

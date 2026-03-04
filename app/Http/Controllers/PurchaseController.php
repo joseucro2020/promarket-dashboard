@@ -17,6 +17,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Excel;
 use App\Traits\FCMTrait;
 use App\Exports\PurchaseExport;
@@ -24,6 +25,54 @@ use App\Exports\PurchaseExport;
 class PurchaseController extends Controller
 {
     use FCMTrait;
+
+    public function pdfview(Purchase $purchase)
+    {
+        $purchase->load([
+            'user.parish',
+            'details.product_amount.product_color.product.taxe',
+            'exchange',
+            'transfer.bankAccount.bank',
+            'transfer.gateway',
+            'deposits',
+            'delivery.state',
+            'delivery.municipality',
+            'delivery.parish',
+        ]);
+
+        $viewData = [
+            'purchase' => $purchase,
+            'compra' => $purchase,
+            'bankAccount' => data_get($purchase, 'transfer.bankAccount'),
+            'user' => $purchase->user,
+            'logoUrl' => env('PURCHASE_PDF_LOGO_URL', 'https://www.promarketlatino.com/img/logo-black.png'),
+        ];
+
+        $wantsPdf = !request()->boolean('html');
+        $download = request()->boolean('download');
+
+        if (!$wantsPdf) {
+            return view('panel.purchases.print', $viewData);
+        }
+
+        try {
+            $file = app('dompdf.wrapper');
+            $file->setOption('isRemoteEnabled', true);
+            $file->loadView('panel.purchases.print', $viewData);
+
+            $file_name = 'REPORTE-' . Carbon::now()->format('d-m-Y') . strtoupper(Str::random(10));
+
+            return $file->stream($file_name . '.pdf', ['Attachment' => $download])->header('Content-Type', 'application/pdf');
+        } catch (\Throwable $e) {
+            Log::warning('Purchase PDF generation failed, fallback to HTML', [
+                'purchase_id' => $purchase->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return view('panel.purchases.print', $viewData);
+        }
+    }
+
     public function index()
     {
         return view('panel.purchases.index');
@@ -370,18 +419,32 @@ class PurchaseController extends Controller
         } catch (\Exception $e) {
         }
 
-        Mail::send('emails.compra-aprobada', [
-            'compra'     => $purchase,
-            'user'       => $user,
-            'sociales'   => $_sociales,
-            'statusName' => $statusName
-        ], function ($m) use ($user, $subjectName, $request) {
-            $to = $request->status == 1 ? [$user->email, env('MAIL_CONTACTO', 'promarketlatinove@gmail.com')] : $user->email;
-            $m->to($to)
-                ->subject($subjectName . config('app.name'));
-        });
+        $mailError = '';
+        $mailSkipped = !config('mail.purchase_send_emails');
 
-        return response()->json(['result' => true]);
+        if (!$mailSkipped) {
+            try {
+                Mail::send('emails.compra-aprobada', [
+                    'compra'     => $purchase,
+                    'user'       => $user,
+                    'sociales'   => $_sociales,
+                    'statusName' => $statusName
+                ], function ($m) use ($user, $subjectName, $request) {
+                    $to = $request->status == 1 ? [$user->email, env('MAIL_CONTACTO', 'promarketlatinove@gmail.com')] : $user->email;
+                    $m->to($to)
+                        ->subject($subjectName . config('app.name'));
+                });
+            } catch (\Exception $e) {
+                $mailError = 'Code: ' . $e->getCode() . ', Line: ' . $e->getLine() . ', Descript: ' . $e->getMessage();
+                Log::warning('Purchase approve mail failed', [
+                    'purchase_id' => $purchase->id,
+                    'user_id' => $user->id,
+                    'error' => $mailError,
+                ]);
+            }
+        }
+
+        return response()->json(['result' => true, 'error' => $mailError, 'mailSkipped' => $mailSkipped]);
     }
 
     public function reject(Request $request, $id)
@@ -460,14 +523,18 @@ class PurchaseController extends Controller
         } catch (\Exception $e) {
         }
 
-        try {
-            Mail::send('emails.compra-rechazada', ['compra' => $purchase, 'user' => $user], function ($m) use ($user) {
-                $m->to([$user->email, env('MAIL_CONTACTO', 'promarketlatinove@gmail.com')])->subject('Compra Cancelada | ' . config('app.name'));
-            });
-        } catch (\Exception $e) {
-            $mailError = 'Code: ' . $e->getCode() . ', Line: ' . $e->getLine() . ', Descript: ' . $e->getMessage();
+        $mailSkipped = !config('mail.purchase_send_emails');
+
+        if (!$mailSkipped) {
+            try {
+                Mail::send('emails.compra-rechazada', ['compra' => $purchase, 'user' => $user], function ($m) use ($user) {
+                    $m->to([$user->email, env('MAIL_CONTACTO', 'promarketlatinove@gmail.com')])->subject('Compra Cancelada | ' . config('app.name'));
+                });
+            } catch (\Exception $e) {
+                $mailError = 'Code: ' . $e->getCode() . ', Line: ' . $e->getLine() . ', Descript: ' . $e->getMessage();
+            }
         }
 
-        return response()->json(['result' => true, 'error' => $mailError, 'emailUser' => $user->email, 'emailEnv' => env('MAIL_CONTACTO')]);
+        return response()->json(['result' => true, 'error' => $mailError, 'emailUser' => $user->email, 'emailEnv' => env('MAIL_CONTACTO'), 'mailSkipped' => $mailSkipped]);
     }
 }
