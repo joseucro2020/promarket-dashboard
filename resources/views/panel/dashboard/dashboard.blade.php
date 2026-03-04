@@ -69,6 +69,42 @@
       </div>
     </div> --}}
     <!--/ Medal Card -->
+    <div class="col-xl-12 col-md-12 col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="GET" action="{{ route('dashboard-home') }}" class="row align-items-end">
+            <div class="col-md-4 col-sm-6 col-12 mb-1">
+              <label for="dashboard-date-from">{{ __('locale.From') }}</label>
+              <input
+                type="date"
+                id="dashboard-date-from"
+                name="date_from"
+                class="form-control"
+                value="{{ $dateFrom ?? '' }}"
+              >
+            </div>
+            <div class="col-md-4 col-sm-6 col-12 mb-1">
+              <label for="dashboard-date-to">{{ __('locale.To') }}</label>
+              <input
+                type="date"
+                id="dashboard-date-to"
+                name="date_to"
+                class="form-control"
+                value="{{ $dateTo ?? '' }}"
+              >
+            </div>
+            @if(!empty($reportYear))
+              <input type="hidden" name="year" value="{{ $reportYear }}">
+            @endif
+            <div class="col-md-4 col-sm-12 col-12 mb-1">
+              <button type="submit" class="btn btn-primary">
+                {{ __('locale.Consult') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <!-- Statistics Card -->
     <div class="col-xl-12 col-md-12 col-12">
@@ -254,7 +290,16 @@
               </button>
               <div class="dropdown-menu">
                 @for($y = $currentYear; $y > $currentYear - 4; $y--)
-                  <a class="dropdown-item js-dashboard-year" data-year="{{ $y }}" href="{{ route('dashboard-home', ['year' => $y]) }}">{{ $y }}</a>
+                  @php
+                    $yearQuery = ['year' => $y];
+                    if (!empty($dateFrom)) {
+                      $yearQuery['date_from'] = $dateFrom;
+                    }
+                    if (!empty($dateTo)) {
+                      $yearQuery['date_to'] = $dateTo;
+                    }
+                  @endphp
+                  <a class="dropdown-item js-dashboard-year" data-year="{{ $y }}" href="{{ route('dashboard-home', $yearQuery) }}">{{ $y }}</a>
                 @endfor
               </div>
             </div>

@@ -18,6 +18,33 @@ class DashboardController extends Controller
 {
   public function index()
   {
+    $dateFrom = request()->get('date_from');
+    $dateTo = request()->get('date_to');
+
+    if (blank($dateFrom)) {
+      $dateFrom = now()->toDateString();
+    }
+
+    if (blank($dateTo)) {
+      $dateTo = now()->toDateString();
+    }
+
+    try {
+      $salesFrom = Carbon::parse($dateFrom)->startOfDay();
+      $salesTo = Carbon::parse($dateTo)->endOfDay();
+    } catch (\Throwable $e) {
+      $salesFrom = now()->startOfDay();
+      $salesTo = now()->endOfDay();
+      $dateFrom = $salesFrom->toDateString();
+      $dateTo = $salesTo->toDateString();
+    }
+
+    if ($salesFrom->gt($salesTo)) {
+      [$salesFrom, $salesTo] = [$salesTo->copy()->startOfDay(), $salesFrom->copy()->endOfDay()];
+      $dateFrom = $salesFrom->toDateString();
+      $dateTo = $salesTo->toDateString();
+    }
+
     $enableSlowQueryLog = (bool) env('DASHBOARD_SLOW_QUERY_LOG', false);
     $slowQueryThresholdMs = (int) env('DASHBOARD_SLOW_QUERY_THRESHOLD_MS', 200);
     if ($enableSlowQueryLog) {
@@ -36,11 +63,11 @@ class DashboardController extends Controller
     }
 
     // Obtener datos reales para el dashboard
-    $sales = BuyOrder::count(); // Número de órdenes de compra
+    $sales = BuyOrder::whereBetween('created_at', [$salesFrom, $salesTo])->count(); // Número de órdenes de compra
     $customers = User::count(); // Número de usuarios/clientes
     $products = Product::where('status', '1')->count(); // Número de productos publicados
-    $revenue = User::where('created_at', '>=', now()->subMonth())->count(); // Número de nuevos clientes en el último mes
-    $profit = BuyOrderDetail::sum('total'); // Suma total de ganancias
+    $revenue = User::whereBetween('created_at', [$salesFrom, $salesTo])->count(); // Número de nuevos clientes en el rango seleccionado
+    $profit = BuyOrderDetail::whereBetween('created_at', [$salesFrom, $salesTo])->sum('total'); // Suma total de ganancias en el rango seleccionado
 
     // Earnings: ingresos del mes actual y comparación con el mes anterior
     $earningsCurrent = BuyOrderDetail::whereYear('created_at', now()->year)
@@ -295,6 +322,8 @@ class DashboardController extends Controller
     ];
 
     return view('panel.dashboard.dashboard', compact(
+      'dateFrom',
+      'dateTo',
       'sales',
       'customers',
       'products',
