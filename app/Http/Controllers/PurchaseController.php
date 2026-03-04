@@ -33,7 +33,6 @@ class PurchaseController extends Controller
             'details.product_amount.product_color.product.taxe',
             'exchange',
             'transfer.bankAccount.bank',
-            'transfer.gateway',
             'deposits',
             'delivery.state',
             'delivery.municipality',
