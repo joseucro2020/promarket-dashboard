@@ -111,6 +111,18 @@
     var completedSuccessLabel = '{{ __('locale.Order completed successfully') }}';
     var rejectedSuccessLabel = '{{ __('locale.Order rejected successfully') }}';
 
+    function refreshDynamicIcons() {
+      if (window.feather) {
+        feather.replace({ width: 14, height: 14 });
+      }
+
+      if ($.fn.tooltip) {
+        $('[data-toggle="tooltip"]').tooltip({
+          container: 'body'
+        });
+      }
+    }
+
     var table = $('.purchases-table').DataTable({
       responsive: true,
       language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
@@ -146,7 +158,14 @@
           var rejectBtn = '<button type="button" class="btn btn-icon btn-flat-danger reject" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Delete') }}"+'"><i data-feather="trash"></i></button>';
           return '<div class="d-flex align-items-center">' + viewBtn + viewCompanyBtn + approveBtn + completeBtn + printBtn + printCompanyBtn + rejectBtn + '</div>';
         }
-      }]
+      }],
+      drawCallback: function () {
+        refreshDynamicIcons();
+      }
+    });
+
+    table.on('responsive-display.dt responsive-resize.dt', function () {
+      refreshDynamicIcons();
     });
 
     function setConsultLoading(isLoading) {
@@ -346,7 +365,7 @@
           table.clear();
           table.rows.add(res.data);
           table.draw();
-          feather.replace();
+          refreshDynamicIcons();
         }
       }, 'json')
       .fail(function(){
@@ -406,7 +425,7 @@
             rowData.statusType = nextStatus === 1 ? 'Procesando' : 'Completado';
             row.data(rowData).invalidate();
             table.draw(false);
-            feather.replace();
+            refreshDynamicIcons();
           } else {
             loadData();
           }
@@ -469,7 +488,7 @@
             rowData.statusType = 'Cancelado';
             row.data(rowData).invalidate();
             table.draw(false);
-            feather.replace();
+            refreshDynamicIcons();
           } else {
             loadData();
           }
