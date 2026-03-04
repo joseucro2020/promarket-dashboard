@@ -135,7 +135,9 @@ class PurchaseController extends Controller
             $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']);
             $item['createdAt'] = Carbon::parse($item['created_at'])->format('d-m-Y h:i A');
             $item['clientName'] = data_get($item, 'user.name', '—');
-            $item['paymentType'] = $this->getTypePayment($item['payment_type'], $item['use_balance']);
+            $item['paymentType'] = collect(data_get($item, 'deposits', []))->count() > 1
+                ? 'Multipago'
+                : 'Pago único';
             $item['deliveryDay'] = data_get($item, 'delivery.date') ? Carbon::parse($item['delivery']['date'])->format('d-m-Y') : '—';
             $item['typeTurn'] = $this->getTurn(data_get($item, 'delivery.turn'));
             $item['stateName'] = data_get($item, 'delivery.state.nombre', '—');
@@ -148,7 +150,7 @@ class PurchaseController extends Controller
                     ? $item['transaction_code']
                     : data_get($item, 'transfer.number', ''));
 
-            $item['payName'] = data_get($item, 'transfer.name', '');
+            $item['payName'] = $this->resolvePayName($item);
 
             $type = (int) data_get($item, 'delivery.type');
             switch ($type) {
@@ -286,6 +288,22 @@ class PurchaseController extends Controller
         return $method;
     }
 
+    private function resolvePayName($item)
+    {
+        $depositGatewayNames = collect(data_get($item, 'deposits', []))
+            ->map(function ($deposit) {
+                return trim((string) data_get($deposit, 'gateway.name', ''));
+            })
+            ->filter()
+            ->values();
+
+        if ($depositGatewayNames->isNotEmpty()) {
+            return $depositGatewayNames->join(', ');
+        }
+
+        return $this->getTypePayment(data_get($item, 'payment_type'), data_get($item, 'use_balance'));
+    }
+
     public function getTurn($turn)
     {
         switch ($turn) {
@@ -309,6 +327,7 @@ class PurchaseController extends Controller
                 'exchange',
                 'details',
                 'transfer.bankAccount.bank',
+                'deposits',
                 'delivery' => function ($q) {
                     $q->with(['state', 'municipality', 'parish']);
                 }
@@ -336,7 +355,9 @@ class PurchaseController extends Controller
             $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']);
             $item['createdAt'] = Carbon::parse($item['created_at'])->format('d-m-Y h:i A');
             $item['clientName'] = data_get($item, 'user.name', '—');
-            $item['paymentType'] = $this->getTypePayment($item['payment_type'], $item['use_balance']);
+            $item['paymentType'] = collect(data_get($item, 'deposits', []))->count() > 1
+                ? 'Multipago'
+                : 'Pago único';
             $item['deliveryDay'] = data_get($item, 'delivery.date') ? Carbon::parse($item['delivery']['date'])->format('d-m-Y') : '—';
             $item['typeTurn'] = $this->getTurn(data_get($item, 'delivery.turn'));
             $item['stateName'] = data_get($item, 'delivery.state.nombre', '—');
@@ -349,7 +370,7 @@ class PurchaseController extends Controller
                     ? $item['transaction_code']
                     : data_get($item, 'transfer.number', ''));
 
-            $item['payName'] = data_get($item, 'transfer.name', '');
+            $item['payName'] = $this->resolvePayName($item);
 
             $type = (int) data_get($item, 'delivery.type');
             switch ($type) {
