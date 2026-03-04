@@ -105,6 +105,9 @@
     var confirmApproveLabel = '{{ __('locale.Do you really want to approve order') }}';
     var confirmCompleteLabel = '{{ __('locale.Do you really want to complete order') }}';
     var confirmRejectLabel = '{{ __('locale.Do you really want to reject order') }}';
+    var rejectReasonLabel = '{{ __('locale.Enter cancellation reason for order') }}';
+    var rejectReasonPlaceholder = '{{ __('locale.Write cancellation reason') }}';
+    var rejectReasonRequiredLabel = '{{ __('locale.Cancellation reason is required') }}';
     var confirmAcceptLabel = '{{ __('locale.Accept') }}';
     var confirmCancelLabel = '{{ __('locale.Cancel') }}';
     var approvedSuccessLabel = '{{ __('locale.Order approved successfully') }}';
@@ -152,7 +155,27 @@
         { data: 'paymentType' },
         { data: 'payName' },
         { data: 'deliveryType' },
-        { data: 'statusType' },
+        {
+          data: 'statusType',
+          render: function (data, type, row) {
+            var statusValue = Number(row && row.status);
+            var statusText = String(data || '').trim();
+            var normalized = statusText.toLowerCase();
+            var badgeClass = 'badge-light-secondary';
+
+            if (statusValue === 0 || normalized === 'en espera' || normalized === 'pending') {
+              badgeClass = 'badge-light-warning';
+            } else if (statusValue === 1 || normalized === 'procesando' || normalized === 'processing') {
+              badgeClass = 'badge-light-info';
+            } else if (statusValue === 2 || normalized === 'cancelado' || normalized === 'rejected') {
+              badgeClass = 'badge-light-danger';
+            } else if (statusValue === 3 || normalized === 'completado' || normalized === 'completed') {
+              badgeClass = 'badge-light-success';
+            }
+
+            return '<span class="badge ' + badgeClass + '">' + escapeHtml(statusText || '—') + '</span>';
+          }
+        },
         { data: null, orderable:false, searchable:false }
       ],
       columnDefs: [{
@@ -171,7 +194,9 @@
             : '';
           var printBtn = '<a class="btn btn-icon btn-flat-dark mr-1" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print" target="_blank" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Print') }}"+'"><i data-feather="printer"></i></a>';
           var printCompanyBtn = '<a class="btn btn-icon btn-flat-dark mr-1" href="'+window.location.origin+'/panel/pedidos/'+data.id+'/print?company=1" target="_blank" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Print Order') }}"+'"><i data-feather="printer"></i></a>';
-          var rejectBtn = '<button type="button" class="btn btn-icon btn-flat-danger reject" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Delete') }}"+'"><i data-feather="trash"></i></button>';
+          var rejectBtn = (isPending || isProcessing)
+            ? '<button type="button" class="btn btn-icon btn-flat-danger reject" data-id="'+data.id+'" data-toggle="tooltip" data-placement="top" title="'+"{{ __('locale.Cancel') }}"+'"><i data-feather="x-circle"></i></button>'
+            : '';
           return '<div class="d-flex align-items-center">' + viewBtn + viewCompanyBtn + approveBtn + completeBtn + printBtn + printCompanyBtn + rejectBtn + '</div>';
         }
       }],
@@ -490,8 +515,8 @@
     $(document).on('click', '.purchases-table .reject', function(){
       var $rejectButton = $(this);
       var id = $rejectButton.data('id');
-      var rejectRequest = function () {
-        $.post('/panel/pedidos/' + id + '/reject', {_token:'{{ csrf_token() }}', status: 2}, function(){
+      var rejectRequest = function (rejectReason) {
+        $.post('/panel/pedidos/' + id + '/reject', {_token:'{{ csrf_token() }}', status: 2, rejectReason: rejectReason}, function(){
           var $rowElement = $rejectButton.closest('tr');
           if ($rowElement.hasClass('child')) {
             $rowElement = $rowElement.prev();
@@ -524,9 +549,19 @@
 
       if (window.Swal) {
         Swal.fire({
-          title: confirmTitle,
-          text: confirmRejectLabel + ' ' + id + '?',
+          title: confirmRejectLabel + ' ' + id + ' ?',
           icon: 'warning',
+          input: 'textarea',
+          inputLabel: rejectReasonLabel,
+          inputPlaceholder: rejectReasonPlaceholder,
+          inputAttributes: {
+            rows: 5
+          },
+          inputValidator: function (value) {
+            if (!value || !String(value).trim()) {
+              return rejectReasonRequiredLabel;
+            }
+          },
           showCancelButton: true,
           confirmButtonText: confirmAcceptLabel,
           cancelButtonText: confirmCancelLabel,
@@ -538,14 +573,17 @@
           buttonsStyling: false
         }).then(function(result){
           if (result.isConfirmed) {
-            rejectRequest();
+            rejectRequest(String(result.value || '').trim());
           }
         });
         return;
       }
 
       if (confirm(confirmRejectLabel + ' ' + id + '?')) {
-        rejectRequest();
+        var reason = prompt(rejectReasonLabel, '');
+        if (reason && String(reason).trim()) {
+          rejectRequest(String(reason).trim());
+        }
       }
     });
 
