@@ -131,8 +131,24 @@
         { data: 'id' },
         { data: 'createdAt' },
         { data: 'clientName' },
-        { data: 'tip' },
-        { data: 'amount' },
+        {
+          data: 'tip',
+          render: function (data) {
+            return Number(data || 0).toLocaleString('es-ES', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+          }
+        },
+        {
+          data: 'amount',
+          render: function (data) {
+            return Number(data || 0).toLocaleString('es-ES', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+          }
+        },
         { data: 'paymentType' },
         { data: 'payName' },
         { data: 'deliveryType' },
