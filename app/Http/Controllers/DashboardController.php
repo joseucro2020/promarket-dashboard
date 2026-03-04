@@ -38,8 +38,8 @@ class DashboardController extends Controller
     }
 
     // Obtener datos reales para el dashboard
-    $ordersCount = (clone $this->buildOrdersQuery($salesFrom, $salesTo))->count(); // Número de órdenes de compra
-    $sales = (clone $this->buildSalesAmountQuery($salesFrom, $salesTo))->sum('total'); // Monto total de ventas en el rango seleccionado
+    $ordersCount = (clone $this->buildOrdersQuery($salesFrom, $salesTo))->count(); // Número de órdenes completadas en el rango seleccionado
+    $sales = (clone $this->buildSalesAmountQuery($salesFrom, $salesTo))->sum('subtotal_bruto'); // Monto bruto de ventas en el rango seleccionado
     $customers = User::count(); // Número de usuarios/clientes
     $products = Product::where('status', '1')->count(); // Número de productos publicados
     $revenue = User::whereBetween('created_at', [$salesFrom, $salesTo])->count(); // Número de nuevos clientes en el rango seleccionado
@@ -333,7 +333,7 @@ class DashboardController extends Controller
     $ordersCount = (clone $ordersQuery)->count();
 
     $salesQuery = $this->buildSalesAmountQuery($salesFrom, $salesTo);
-    $sales = (clone $salesQuery)->sum('total');
+    $sales = (clone $salesQuery)->sum('subtotal_bruto');
     $revenue = User::whereBetween('created_at', [$salesFrom, $salesTo])->count();
     $profit = BuyOrderDetail::whereBetween('created_at', [$salesFrom, $salesTo])->sum('total');
 
@@ -450,17 +450,16 @@ class DashboardController extends Controller
 
   private function buildOrdersQuery(Carbon $salesFrom, Carbon $salesTo)
   {
-    return BuyOrder::query()
-      ->whereDate('fecha', '>=', $salesFrom->toDateString())
-      ->whereDate('fecha', '<=', $salesTo->toDateString());
+    return Purchase::query()
+      ->whereBetween('created_at', [$salesFrom, $salesTo])
+      ->where('status', Purchase::STATUS_COMPLETED);
   }
 
   private function buildSalesAmountQuery(Carbon $salesFrom, Carbon $salesTo)
   {
-    return BuyOrderDetail::query()->whereHas('order', function ($query) use ($salesFrom, $salesTo) {
-      $query->whereDate('fecha', '>=', $salesFrom->toDateString())
-        ->whereDate('fecha', '<=', $salesTo->toDateString());
-    });
+    return Purchase::query()
+      ->whereBetween('created_at', [$salesFrom, $salesTo])
+      ->where('status', Purchase::STATUS_COMPLETED);
   }
 
   private function buildRevenueReport(int $reportYear): array
