@@ -18,32 +18,7 @@ class DashboardController extends Controller
 {
   public function index()
   {
-    $dateFrom = request()->get('date_from');
-    $dateTo = request()->get('date_to');
-
-    if (blank($dateFrom)) {
-      $dateFrom = now()->toDateString();
-    }
-
-    if (blank($dateTo)) {
-      $dateTo = now()->toDateString();
-    }
-
-    try {
-      $salesFrom = Carbon::parse($dateFrom)->startOfDay();
-      $salesTo = Carbon::parse($dateTo)->endOfDay();
-    } catch (\Throwable $e) {
-      $salesFrom = now()->startOfDay();
-      $salesTo = now()->endOfDay();
-      $dateFrom = $salesFrom->toDateString();
-      $dateTo = $salesTo->toDateString();
-    }
-
-    if ($salesFrom->gt($salesTo)) {
-      [$salesFrom, $salesTo] = [$salesTo->copy()->startOfDay(), $salesFrom->copy()->endOfDay()];
-      $dateFrom = $salesFrom->toDateString();
-      $dateTo = $salesTo->toDateString();
-    }
+    ['salesFrom' => $salesFrom, 'salesTo' => $salesTo, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo] = $this->resolveDashboardDateRange(request());
 
     $enableSlowQueryLog = (bool) env('DASHBOARD_SLOW_QUERY_LOG', false);
     $slowQueryThresholdMs = (int) env('DASHBOARD_SLOW_QUERY_THRESHOLD_MS', 200);
@@ -63,7 +38,8 @@ class DashboardController extends Controller
     }
 
     // Obtener datos reales para el dashboard
-    $sales = BuyOrder::whereBetween('created_at', [$salesFrom, $salesTo])->count(); // Número de órdenes de compra
+    $ordersCount = (clone $this->buildOrdersQuery($salesFrom, $salesTo))->count(); // Número de órdenes de compra
+    $sales = (clone $this->buildSalesAmountQuery($salesFrom, $salesTo))->sum('total'); // Monto total de ventas en el rango seleccionado
     $customers = User::count(); // Número de usuarios/clientes
     $products = Product::where('status', '1')->count(); // Número de productos publicados
     $revenue = User::whereBetween('created_at', [$salesFrom, $salesTo])->count(); // Número de nuevos clientes en el rango seleccionado
@@ -325,6 +301,7 @@ class DashboardController extends Controller
       'dateFrom',
       'dateTo',
       'sales',
+      'ordersCount',
       'customers',
       'products',
       'revenue',
@@ -346,6 +323,47 @@ class DashboardController extends Controller
       'paymentMethodPercentages',
       'topProducts'
     ));
+  }
+
+  public function metrics(Request $request)
+  {
+    ['salesFrom' => $salesFrom, 'salesTo' => $salesTo, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo] = $this->resolveDashboardDateRange($request);
+
+    $ordersQuery = $this->buildOrdersQuery($salesFrom, $salesTo);
+    $ordersCount = (clone $ordersQuery)->count();
+
+    $salesQuery = $this->buildSalesAmountQuery($salesFrom, $salesTo);
+    $sales = (clone $salesQuery)->sum('total');
+    $revenue = User::whereBetween('created_at', [$salesFrom, $salesTo])->count();
+    $profit = BuyOrderDetail::whereBetween('created_at', [$salesFrom, $salesTo])->sum('total');
+
+    $response = [
+      'date_from' => $dateFrom,
+      'date_to' => $dateTo,
+      'sales' => (float) $sales,
+      'sales_formatted' => number_format($sales, 2),
+      'orders_count' => (int) $ordersCount,
+      'orders_formatted' => number_format($ordersCount),
+      'revenue' => (int) $revenue,
+      'revenue_formatted' => number_format($revenue),
+      'profit' => (float) $profit,
+      'profit_formatted' => \App\Helpers\Helper::abbreviateNumber($profit),
+      'profit_full' => number_format($profit, 2),
+    ];
+
+    if ($request->boolean('debug_sql')) {
+      $response['sales_sql'] = $salesQuery->toSql();
+      $response['sales_bindings'] = collect($salesQuery->getBindings())->map(function ($binding) {
+        return $binding instanceof \DateTimeInterface ? $binding->format('Y-m-d H:i:s') : $binding;
+      })->values()->all();
+      $response['sales_table'] = (new BuyOrder())->getTable();
+      $response['orders_sql'] = $ordersQuery->toSql();
+      $response['orders_bindings'] = collect($ordersQuery->getBindings())->map(function ($binding) {
+        return $binding instanceof \DateTimeInterface ? $binding->format('Y-m-d H:i:s') : $binding;
+      })->values()->all();
+    }
+
+    return response()->json($response);
   }
 
   public function revenueReport(Request $request)
@@ -384,6 +402,65 @@ class DashboardController extends Controller
     }
 
     return $requestedYear;
+  }
+
+  private function parseDashboardDate($value, Carbon $fallback): Carbon
+  {
+    if (blank($value)) {
+      return $fallback;
+    }
+
+    $value = trim((string) $value);
+    $formats = ['Y-m-d', 'd/m/Y', 'm/d/Y'];
+
+    foreach ($formats as $format) {
+      try {
+        $date = Carbon::createFromFormat($format, $value);
+        if ($date !== false) {
+          return $date;
+        }
+      } catch (\Throwable $e) {
+      }
+    }
+
+    try {
+      return Carbon::parse($value);
+    } catch (\Throwable $e) {
+      return $fallback;
+    }
+  }
+
+  private function resolveDashboardDateRange(Request $request): array
+  {
+    $today = now();
+    $salesFrom = $this->parseDashboardDate($request->get('date_from'), $today->copy())->startOfDay();
+    $salesTo = $this->parseDashboardDate($request->get('date_to'), $today->copy())->endOfDay();
+
+    if ($salesFrom->gt($salesTo)) {
+      [$salesFrom, $salesTo] = [$salesTo->copy()->startOfDay(), $salesFrom->copy()->endOfDay()];
+    }
+
+    return [
+      'salesFrom' => $salesFrom,
+      'salesTo' => $salesTo,
+      'dateFrom' => $salesFrom->toDateString(),
+      'dateTo' => $salesTo->toDateString(),
+    ];
+  }
+
+  private function buildOrdersQuery(Carbon $salesFrom, Carbon $salesTo)
+  {
+    return BuyOrder::query()
+      ->whereDate('fecha', '>=', $salesFrom->toDateString())
+      ->whereDate('fecha', '<=', $salesTo->toDateString());
+  }
+
+  private function buildSalesAmountQuery(Carbon $salesFrom, Carbon $salesTo)
+  {
+    return BuyOrderDetail::query()->whereHas('order', function ($query) use ($salesFrom, $salesTo) {
+      $query->whereDate('fecha', '>=', $salesFrom->toDateString())
+        ->whereDate('fecha', '<=', $salesTo->toDateString());
+    });
   }
 
   private function buildRevenueReport(int $reportYear): array

@@ -72,7 +72,7 @@
     <div class="col-xl-12 col-md-12 col-12">
       <div class="card">
         <div class="card-body">
-          <form method="GET" action="{{ route('dashboard-home') }}" class="row align-items-end">
+          <form method="GET" action="{{ route('dashboard-home') }}" class="row align-items-end" id="dashboard-date-range-form" data-metrics-endpoint="{{ route('dashboard.metrics') }}">
             <div class="col-md-4 col-sm-6 col-12 mb-1">
               <label for="dashboard-date-from">{{ __('locale.From') }}</label>
               <input
@@ -97,7 +97,7 @@
               <input type="hidden" name="year" value="{{ $reportYear }}">
             @endif
             <div class="col-md-4 col-sm-12 col-12 mb-1">
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary" id="dashboard-consult-button">
                 {{ __('locale.Consult') }}
               </button>
             </div>
@@ -125,7 +125,7 @@
                   </div>
                 </div>
                 <div class="media-body my-auto">
-                  <h4 class="font-weight-bolder mb-0">{{ number_format($sales) }}</h4>
+                  <h4 class="font-weight-bolder mb-0" id="dashboard-sales-value">{{ number_format($sales, 2) }}</h4>
                   <p class="card-text font-small-3 mb-0">{{ __("locale.Sales") }}</p>
                 </div>
               </div>
@@ -164,7 +164,7 @@
                   </div>
                 </div>
                 <div class="media-body my-auto">
-                  <h4 class="font-weight-bolder mb-0">{{ number_format($revenue) }}</h4>
+                  <h4 class="font-weight-bolder mb-0" id="dashboard-revenue-value">{{ number_format($revenue) }}</h4>
                   <p class="card-text font-small-3 mb-0">{{ __("locale.Revenue") }}</p>
                 </div>
               </div>
@@ -184,7 +184,7 @@
           <div class="card">
             <div class="card-body pb-50">
               <h6>{{ __("locale.Orders") }}</h6>
-              <h2 class="font-weight-bolder mb-1">{{ number_format($sales) }}</h2>
+              <h2 class="font-weight-bolder mb-1" id="dashboard-orders-value">{{ number_format($ordersCount ?? 0) }}</h2>
               <div id="statistics-order-chart"></div>
             </div>
           </div>
@@ -196,7 +196,7 @@
               <div class="card card-tiny-line-stats">
             <div class="card-body pb-50">
               <h6>{{ __("locale.Profit") }}</h6>
-              <h2 class="font-weight-bolder mb-1" title="{{ number_format($profit, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($profit) }}</h2>
+              <h2 class="font-weight-bolder mb-1" id="dashboard-profit-value" title="{{ number_format($profit, 2) }}">{{ \App\Helpers\Helper::abbreviateNumber($profit) }}</h2>
               <div id="statistics-profit-chart"></div>
             </div>
           </div>
@@ -721,6 +721,80 @@
   <script src="{{ asset(mix('js/scripts/pages/dashboard-ecommerce.js')) }}"></script>
   <script>
     (function () {
+      var $dateForm = $('#dashboard-date-range-form');
+      if ($dateForm.length) {
+        var metricsEndpoint = $dateForm.data('metrics-endpoint');
+        var $consultButton = $('#dashboard-consult-button');
+        var $dateFromInput = $('#dashboard-date-from');
+        var $dateToInput = $('#dashboard-date-to');
+        var $salesValue = $('#dashboard-sales-value');
+        var $ordersValue = $('#dashboard-orders-value');
+        var $revenueValue = $('#dashboard-revenue-value');
+        var $profitValue = $('#dashboard-profit-value');
+
+        $dateForm.on('submit', function (event) {
+          event.preventDefault();
+
+          if (!metricsEndpoint) {
+            return;
+          }
+
+          var query = {
+            date_from: $dateFromInput.val(),
+            date_to: $dateToInput.val()
+          };
+
+          if ($consultButton.length) {
+            $consultButton.prop('disabled', true);
+          }
+
+          $.getJSON(metricsEndpoint, query)
+            .done(function (payload) {
+              if (!payload) {
+                return;
+              }
+
+              if ($salesValue.length) {
+                $salesValue.text(payload.sales_formatted);
+              }
+              if ($ordersValue.length) {
+                $ordersValue.text(payload.orders_formatted || '0');
+              }
+              if ($revenueValue.length) {
+                $revenueValue.text(payload.revenue_formatted);
+              }
+              if ($profitValue.length) {
+                $profitValue.text(payload.profit_formatted);
+                $profitValue.attr('title', payload.profit_full);
+              }
+              if ($dateFromInput.length && payload.date_from) {
+                $dateFromInput.val(payload.date_from);
+              }
+              if ($dateToInput.length && payload.date_to) {
+                $dateToInput.val(payload.date_to);
+              }
+
+              var currentUrl = new URL(window.location.href);
+              currentUrl.searchParams.set('date_from', payload.date_from || query.date_from || '');
+              currentUrl.searchParams.set('date_to', payload.date_to || query.date_to || '');
+              window.history.replaceState({}, '', currentUrl.toString());
+            })
+            .fail(function () {
+              if (window.toastr) {
+                toastr['error']("{{ __('locale.Network error. Please try again.') }}", "{{ __('locale.Error') }}", {
+                  closeButton: true,
+                  tapToDismiss: true
+                });
+              }
+            })
+            .always(function () {
+              if ($consultButton.length) {
+                $consultButton.prop('disabled', false);
+              }
+            });
+        });
+      }
+
       var $chart = $('#revenue-report-chart');
       if (!$chart.length) {
         return;
