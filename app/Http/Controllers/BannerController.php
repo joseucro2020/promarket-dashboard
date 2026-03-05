@@ -182,6 +182,7 @@ class BannerController extends Controller
 
     public function probeWriteTxt(Request $request): JsonResponse
     {
+        try {
         $pathSource = null;
         $diskPath = $this->getBannerImageDiskPath($pathSource);
 
@@ -252,14 +253,35 @@ class BannerController extends Controller
             ], 500);
         }
 
+        $size = null;
+        try {
+            $size = File::size($targetPath);
+        } catch (\Throwable $e) {
+            Log::warning('Banner TXT probe size check failed', [
+                'path' => $targetPath,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
         return response()->json([
             'result' => true,
             'file' => $fileName,
             'saved_path' => $targetPath,
             'configured_path' => $diskPath,
             'configured_path_source' => $pathSource,
-            'size' => File::size($targetPath),
+            'size' => $size,
         ]);
+        } catch (\Throwable $e) {
+            Log::error('Banner TXT probe fatal error', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'result' => false,
+                'error' => __('Unexpected error while probing banner write path.'),
+                'detail' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function image(string $file)
