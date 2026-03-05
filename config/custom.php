@@ -17,7 +17,7 @@ return [
     'blankPage' => false, // options[Boolean]: true, false(default) (warning:only make true if your whole project without navabr and sidebar otherwise override option page wise)
     'direction' => env('MIX_CONTENT_DIRECTION', 'ltr'), // Options[String]: ltr(default), rtl
   ],
-  'banner_image_path' => env('BANNERS_IMAGE_PATH', public_path('img/slider')),
+  'banner_image_path' => env('BANNERS_IMAGE_PATH'),
   'banner_image_url' => env('BANNERS_IMAGE_URL'),
   'banner_image_public_path' => env('BANNERS_IMAGE_PUBLIC_PATH', 'img/slider'),
 ];

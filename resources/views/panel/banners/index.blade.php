@@ -51,7 +51,9 @@
                       @php
                         $file = $banner->foto;
                         $src = null;
+                        $fallbackSrc = null;
                         if ($file) {
+                          $fallbackSrc = route('banners.image', ['file' => $file]);
                           if (substr($file, 0, 4) === 'http') {
                             $src = $file;
                           } else {
@@ -59,14 +61,23 @@
                             if ($base) {
                               $src = rtrim($base, '/') . '/' . ltrim($file, '/');
                             } else {
-                              $src = route('banners.image', ['file' => $file]);
+                              $src = $fallbackSrc;
                             }
                           }
                         }
                       @endphp
 
                       @if($src)
-                        <img class="img-fluid rounded" style="max-height: 64px;" src="{{ $src }}" alt="Banner #{{ $banner->id }}" onclick="window.__selectBannerFile({{ $banner->id }})">
+                        <img
+                          class="img-fluid rounded"
+                          style="max-height: 64px;"
+                          src="{{ $src }}"
+                          @if($fallbackSrc && $src !== $fallbackSrc)
+                            onerror="this.onerror=null;this.src='{{ $fallbackSrc }}';"
+                            referrerpolicy="no-referrer"
+                          @endif
+                          alt="Banner #{{ $banner->id }}"
+                          onclick="window.__selectBannerFile({{ $banner->id }})">
                       @else
                         <span class="text-muted">{{ __('No image') }}</span>
                       @endif
@@ -123,6 +134,7 @@
   const deleteConfirmText = @json(__('locale.Delete this banner?'));
   const noImageText = @json(__('No image'));
   const genericErrorText = @json(__('locale.An error occurred'));
+  const bannerImageTemplate = @json(route('banners.image', ['file' => '__FILE__']));
   const bannerCreatedText = @json(__('locale.Banner created successfully.'));
   const bannerUpdatedText = @json(__('locale.Banner updated successfully.'));
 
@@ -141,6 +153,23 @@
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function localBannerImageUrl(fileName) {
+    return bannerImageTemplate.replace('__FILE__', encodeURIComponent(fileName || ''));
+  }
+
+  function buildBannerImageHtml(bannerId, imageUrl, fileName) {
+    if (!imageUrl) {
+      return `<span class="text-muted">${escapeHtml(noImageText)}</span>`;
+    }
+
+    const fallbackUrl = localBannerImageUrl(fileName);
+    const onErrorAttr = imageUrl !== fallbackUrl
+      ? ` onerror="this.onerror=null;this.src='${escapeHtml(fallbackUrl)}';" referrerpolicy="no-referrer"`
+      : '';
+
+    return `<img class="img-fluid rounded" style="max-height: 64px;" src="${escapeHtml(imageUrl)}"${onErrorAttr} alt="Banner #${bannerId}" onclick="window.__selectBannerFile(${bannerId})">`;
   }
 
   function refreshDynamicIcons() {
@@ -224,7 +253,7 @@
 
           if (photoCell) {
             if (imageUrl) {
-              photoCell.innerHTML = `<img class="img-fluid rounded" style="max-height: 64px;" src="${escapeHtml(imageUrl)}" alt="Banner #${bannerId}" onclick="window.__selectBannerFile(${bannerId})">`;
+              photoCell.innerHTML = buildBannerImageHtml(bannerId, imageUrl, fileName);
             } else {
               photoCell.innerHTML = `<span class="text-muted">${escapeHtml(noImageText)}</span>`;
             }
@@ -252,9 +281,7 @@
             </div>
           `;
 
-          const photoHtml = imageUrl
-            ? `<img class="img-fluid rounded" style="max-height: 64px;" src="${escapeHtml(imageUrl)}" alt="Banner #${bannerId}" onclick="window.__selectBannerFile(${bannerId})">`
-            : `<span class="text-muted">${escapeHtml(noImageText)}</span>`;
+          const photoHtml = buildBannerImageHtml(bannerId, imageUrl, fileName);
 
           const rowNode = tableApi
             .row
