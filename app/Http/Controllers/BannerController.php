@@ -44,13 +44,15 @@ class BannerController extends Controller
         }
 
         // Determine disk path for banners (must be explicitly configured)
-        $diskPath = $this->getBannerImageDiskPath();
+        $pathSource = null;
+        $diskPath = $this->getBannerImageDiskPath($pathSource);
         $savedPath = null;
 
         if (!$diskPath) {
             return response()->json([
                 'result' => false,
                 'error' => __('BANNERS_IMAGE_PATH is not configured.'),
+                'configured_path_source' => $pathSource,
             ], 500);
         }
 
@@ -63,6 +65,7 @@ class BannerController extends Controller
                 'result' => false,
                 'error' => __('Banner path does not exist and could not be created.'),
                 'path' => $diskPath,
+                'configured_path_source' => $pathSource,
             ], 500);
         }
 
@@ -71,6 +74,7 @@ class BannerController extends Controller
                 'result' => false,
                 'error' => __('No write permissions on banner path.'),
                 'path' => $diskPath,
+                'configured_path_source' => $pathSource,
             ], 500);
         }
 
@@ -94,6 +98,7 @@ class BannerController extends Controller
                     'error' => __('Error saving banner image.'),
                     'path' => $targetPath,
                     'detail' => $e->getMessage(),
+                    'configured_path_source' => $pathSource,
                 ], 500);
             }
             $savedPath = $targetPath;
@@ -104,6 +109,7 @@ class BannerController extends Controller
                     'result' => false,
                     'error' => __('Banner image was not saved on destination path.'),
                     'path' => $targetPath,
+                    'configured_path_source' => $pathSource,
                 ], 500);
             }
 
@@ -132,6 +138,7 @@ class BannerController extends Controller
                     'error' => __('Error saving banner image.'),
                     'path' => $targetPath,
                     'detail' => $e->getMessage(),
+                    'configured_path_source' => $pathSource,
                 ], 500);
             }
             $savedPath = $targetPath;
@@ -142,6 +149,7 @@ class BannerController extends Controller
                     'result' => false,
                     'error' => __('Banner image was not saved on destination path.'),
                     'path' => $targetPath,
+                    'configured_path_source' => $pathSource,
                 ], 500);
             }
 
@@ -167,6 +175,90 @@ class BannerController extends Controller
             'file' => $file_name,
             'url' => $imageUrl,
             'saved_path' => $savedPath,
+            'configured_path' => $diskPath,
+            'configured_path_source' => $pathSource,
+        ]);
+    }
+
+    public function probeWriteTxt(Request $request): JsonResponse
+    {
+        $pathSource = null;
+        $diskPath = $this->getBannerImageDiskPath($pathSource);
+
+        if (!$diskPath) {
+            return response()->json([
+                'result' => false,
+                'error' => __('BANNERS_IMAGE_PATH is not configured.'),
+                'configured_path_source' => $pathSource,
+            ], 500);
+        }
+
+        if (!File::exists($diskPath)) {
+            File::makeDirectory($diskPath, 0755, true);
+        }
+
+        if (!File::exists($diskPath)) {
+            return response()->json([
+                'result' => false,
+                'error' => __('Banner path does not exist and could not be created.'),
+                'path' => $diskPath,
+                'configured_path_source' => $pathSource,
+            ], 500);
+        }
+
+        if (!File::isWritable($diskPath)) {
+            return response()->json([
+                'result' => false,
+                'error' => __('No write permissions on banner path.'),
+                'path' => $diskPath,
+                'configured_path_source' => $pathSource,
+            ], 500);
+        }
+
+        $providedName = (string) $request->input('name', '');
+        $baseName = $providedName !== '' ? pathinfo($providedName, PATHINFO_FILENAME) : 'probe_' . date('Ymd_His');
+        $safeBaseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
+        $fileName = trim($safeBaseName, '_') ?: 'probe_' . date('Ymd_His');
+        $fileName .= '.txt';
+
+        $content = (string) $request->input('content', 'Banner path write probe OK');
+        $content .= PHP_EOL . 'time=' . date('c') . PHP_EOL;
+
+        $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $fileName;
+
+        try {
+            File::put($targetPath, $content);
+        } catch (\Throwable $e) {
+            Log::error('Banner TXT probe failed', [
+                'path' => $targetPath,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'result' => false,
+                'error' => __('Error writing probe file.'),
+                'path' => $targetPath,
+                'detail' => $e->getMessage(),
+                'configured_path_source' => $pathSource,
+            ], 500);
+        }
+
+        if (!File::exists($targetPath)) {
+            return response()->json([
+                'result' => false,
+                'error' => __('Probe file was not saved on destination path.'),
+                'path' => $targetPath,
+                'configured_path_source' => $pathSource,
+            ], 500);
+        }
+
+        return response()->json([
+            'result' => true,
+            'file' => $fileName,
+            'saved_path' => $targetPath,
+            'configured_path' => $diskPath,
+            'configured_path_source' => $pathSource,
+            'size' => File::size($targetPath),
         ]);
     }
 
@@ -182,15 +274,28 @@ class BannerController extends Controller
         return response()->file($fullPath);
     }
 
-    private function getBannerImageDiskPath(): string
+    private function getBannerImageDiskPath(?string &$source = null): string
     {
+        $runtimeEnvPath = getenv('BANNERS_IMAGE_PATH');
+        if (!$runtimeEnvPath && isset($_ENV['BANNERS_IMAGE_PATH'])) {
+            $runtimeEnvPath = $_ENV['BANNERS_IMAGE_PATH'];
+        }
+
+        if ($runtimeEnvPath) {
+            $source = 'runtime-env';
+            return rtrim(trim($runtimeEnvPath, " \t\n\r\0\x0B\"'"), '\\/');
+        }
+
         $path = config('custom.banner_image_path');
 
         if (!$path) {
+            $source = 'none';
             return '';
         }
 
-        return rtrim($path, '\\/');
+        $source = 'config';
+
+        return rtrim(trim((string) $path, " \t\n\r\0\x0B\"'"), '\\/');
     }
 
     private function getBannerImagePublicPath(): string

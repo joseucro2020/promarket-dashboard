@@ -290,6 +290,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('banners', [BannerController::class, 'index'])->name('banners.index');
   Route::get('banners/image/{file}', [BannerController::class, 'image'])->name('banners.image');
   Route::post('banners/upload', [BannerController::class, 'upload'])->name('banners.upload');
+  Route::post('banners/probe-write-txt', [BannerController::class, 'probeWriteTxt'])->name('banners.probe-write-txt');
   Route::delete('banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
   // About Us
