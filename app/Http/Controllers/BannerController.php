@@ -242,115 +242,72 @@ class BannerController extends Controller
     public function probeWriteTxt(Request $request): JsonResponse
     {
         try {
-            // Bypass Laravel configuration cache and read directly from environment
-            $envPath = getenv('BANNERS_IMAGE_PATH');
-            if (!$envPath && isset($_ENV['BANNERS_IMAGE_PATH'])) {
-                $envPath = $_ENV['BANNERS_IMAGE_PATH'];
-            }
-
+            // Build debug info
             $info = [
                 'step' => 'init',
-                'env_value' => $envPath,
-                'php_user' => function_exists('posix_getpwuid') && function_exists('posix_geteuid') 
-                    ? (posix_getpwuid(posix_geteuid())['name'] ?? 'unknown') 
+                'php_user' => function_exists('posix_getpwuid') && function_exists('posix_geteuid')
+                    ? (posix_getpwuid(posix_geteuid())['name'] ?? 'unknown')
                     : get_current_user(),
                 'php_version' => PHP_VERSION,
                 'cwd' => getcwd(),
             ];
 
-            if (!$envPath) {
+            // SFTP configuration
+            $sftpHost = config('filesystems.disks.ecommerce_sftp.host') ?? env('SFTP_HOST');
+            $sftpRoot = config('filesystems.disks.ecommerce_sftp.root') ?? env('SFTP_ROOT', '');
+            $info['sftp_host'] = $sftpHost;
+            $info['sftp_root'] = $sftpRoot;
+
+            if (!$sftpHost) {
                 return response()->json([
                     'result' => false,
-                    'error' => 'BANNERS_IMAGE_PATH is empty in environment.',
-                    'debug' => $info
+                    'error' => 'SFTP not configured (SFTP_HOST missing).',
+                    'debug' => $info,
                 ], 500);
             }
 
-            $diskPath = rtrim(trim($envPath, " \t\n\r\0\x0B\"'"), '\\/');
-            $info['clean_path'] = $diskPath;
-            $info['step'] = 'check_exists';
+            // Prepare probe content and remote path
+            $providedName = (string) $request->input('name', '');
+            $baseName = $providedName !== '' ? pathinfo($providedName, PATHINFO_FILENAME) : 'probe_' . date('Ymd_His');
+            $safeBaseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
+            $probeFile = trim($safeBaseName, '_') ?: 'probe_' . date('Ymd_His');
+            $probeFile .= '.txt';
 
-            if (!File::exists($diskPath)) {
-                $info['exists'] = false;
-                try {
-                    $info['step'] = 'attempt_mkdir';
-                    $made = File::makeDirectory($diskPath, 0775, true);
-                    $info['mkdir_result'] = $made;
-                } catch (\Throwable $ex) {
-                    return response()->json([
-                        'result' => false,
-                        'diskPath' => $diskPath ?? null,
-                        'error' => 'Failed to create directory: ' . $ex->getMessage(),
-                        'debug' => $info
-                    ], 500);
-                }
-            } else {
-                $info['exists'] = true;
-            }
+            $content = (string) $request->input('content', 'SFTP probe OK') . "\n" . 'time=' . date('c') . "\n";
 
-            $info['step'] = 'check_writable';
-            $info['is_writable'] = is_writable($diskPath);
-            $info['perms'] = substr(sprintf('%o', fileperms($diskPath)), -4);
-
-            $fileName = 'probe_' . date('Ymd_His') . '.txt';
-            $targetPath = $diskPath . DIRECTORY_SEPARATOR . $fileName;
-            $info['target_file'] = $targetPath;
-            $info['step'] = 'write_file';
+            $remotePath = rtrim($sftpRoot, '/') . ($sftpRoot !== '' ? '/' : '') . $probeFile;
+            $info['remote_probe'] = $remotePath;
+            $info['step'] = 'sftp_put';
 
             try {
-                $bytes = file_put_contents($targetPath, "Probe at " . date('c'));
-                $info['bytes_written'] = $bytes;
-                
-                if ($bytes === false) {
-                    throw new \Exception("file_put_contents returned false");
+                $put = Storage::disk('ecommerce_sftp')->put($remotePath, $content);
+                $info['sftp_put_result'] = $put;
+                try {
+                    $info['sftp_exists'] = Storage::disk('ecommerce_sftp')->exists($remotePath);
+                } catch (\Throwable $e2) {
+                    $info['sftp_exists'] = 'unknown';
                 }
+                // attempt cleanup
+                try { Storage::disk('ecommerce_sftp')->delete($remotePath); } catch (\Throwable $__) {}
+
+                return response()->json([
+                    'result' => true,
+                    'message' => 'SFTP probe successful',
+                    'debug' => $info,
+                ]);
             } catch (\Throwable $ex) {
+                $info['sftp_error'] = $ex->getMessage();
                 return response()->json([
                     'result' => false,
-                    'error' => 'Write failed: ' . $ex->getMessage(),
-                    'debug' => $info
+                    'error' => 'SFTP probe failed: ' . $ex->getMessage(),
+                    'debug' => $info,
                 ], 500);
             }
-
-            $info['step'] = 'verify_write';
-            $info['file_exists_after'] = File::exists($targetPath);
-
-            // SFTP probe: try remote disk if configured
-            $info['sftp_available'] = false;
-            $info['sftp_host'] = config('filesystems.disks.ecommerce_sftp.host') ?? env('SFTP_HOST');
-            $info['sftp_root'] = env('SFTP_ROOT', '');
-            if ($info['sftp_host']) {
-                $info['sftp_available'] = true;
-                $sftpProbeName = 'probe_sftp_' . date('Ymd_His') . '.txt';
-                $sftpRemote = rtrim($info['sftp_root'], '/') . ($info['sftp_root'] !== '' ? '/' : '') . $sftpProbeName;
-                try {
-                    $sftpContent = "SFTP probe at " . date('c');
-                    $put = Storage::disk('ecommerce_sftp')->put($sftpRemote, $sftpContent);
-                    $info['sftp_put'] = $put;
-                    try {
-                        $info['sftp_exists_after'] = Storage::disk('ecommerce_sftp')->exists($sftpRemote);
-                    } catch (\Throwable $__) {
-                        $info['sftp_exists_after'] = 'unknown';
-                    }
-                    // clean up probe file (ignore errors)
-                    try { Storage::disk('ecommerce_sftp')->delete($sftpRemote); } catch (\Throwable $__) {}
-                } catch (\Throwable $ex) {
-                    $info['sftp_error'] = $ex->getMessage();
-                }
-            }
-
-            return response()->json([
-                'result' => true,
-                'message' => 'Write probe successful!',
-                'debug' => $info
-            ]);
-
         } catch (\Throwable $e) {
             return response()->json([
                 'result' => false,
-                
                 'error' => 'Fatal probe error: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ], 500);
         }
     }
