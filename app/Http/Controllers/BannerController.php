@@ -43,16 +43,10 @@ class BannerController extends Controller
             ], 422);
         }
 
-        // Determine disk path for banners (must be explicitly configured)
+        // Determine disk and public paths for banners (configurable via env)
         $diskPath = $this->getBannerImageDiskPath();
+        $publicPath = $this->getBannerImagePublicPath(); // relative web path like 'img/slider/'
         $savedPath = null;
-
-        if (!$diskPath) {
-            return response()->json([
-                'result' => false,
-                'error' => __('BANNERS_IMAGE_PATH is not configured.'),
-            ], 500);
-        }
 
         if (!File::exists($diskPath)) {
             File::makeDirectory($diskPath, 0755, true);
@@ -146,13 +140,33 @@ class BannerController extends Controller
 
     private function getBannerImageDiskPath(): string
     {
-        $path = env('BANNERS_IMAGE_PATH') ?: config('custom.banner_image_path');
+        $bannerPathEnv = env('BANNERS_IMAGE_PATH');
+        $ecommercePathEnv = env('ECOMMERCE_IMAGE_PATH');
 
-        if (!$path) {
-            return '';
+        $derivedFromEcommerce = null;
+        if ($ecommercePathEnv) {
+            $normalized = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $ecommercePathEnv);
+            $derivedFromEcommerce = preg_replace('/[\\\\\/]img[\\\\\/]products$/i', DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'slider', $normalized);
+            if ($derivedFromEcommerce === $normalized) {
+                $derivedFromEcommerce = rtrim($normalized, '\\/') . DIRECTORY_SEPARATOR . 'slider';
+            }
         }
 
-        return rtrim($path, '\\/');
+        $candidates = array_filter([
+            $bannerPathEnv,
+            $derivedFromEcommerce,
+            config('custom.banner_image_path'),
+            public_path('img/slider'),
+        ]);
+
+        foreach ($candidates as $candidate) {
+            $resolved = rtrim($candidate, '\\/');
+            if (File::exists($resolved) || @File::makeDirectory($resolved, 0755, true)) {
+                return $resolved;
+            }
+        }
+
+        return rtrim(public_path('img/slider'), '\\/');
     }
 
     private function getBannerImagePublicPath(): string
