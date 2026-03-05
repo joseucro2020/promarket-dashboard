@@ -22,7 +22,6 @@ class BannerController extends Controller
 
     public function upload(Request $request)
     {
-        try {
         $rules = [
             'file' => 'required|mimes:jpg,jpeg,png',
         ];
@@ -45,15 +44,13 @@ class BannerController extends Controller
         }
 
         // Determine disk path for banners (must be explicitly configured)
-        $pathSource = null;
-        $diskPath = $this->getBannerImageDiskPath($pathSource);
+        $diskPath = $this->getBannerImageDiskPath();
         $savedPath = null;
 
         if (!$diskPath) {
             return response()->json([
                 'result' => false,
                 'error' => __('BANNERS_IMAGE_PATH is not configured.'),
-                'configured_path_source' => $pathSource,
             ], 500);
         }
 
@@ -66,7 +63,6 @@ class BannerController extends Controller
                 'result' => false,
                 'error' => __('Banner path does not exist and could not be created.'),
                 'path' => $diskPath,
-                'configured_path_source' => $pathSource,
             ], 500);
         }
 
@@ -75,7 +71,6 @@ class BannerController extends Controller
                 'result' => false,
                 'error' => __('No write permissions on banner path.'),
                 'path' => $diskPath,
-                'configured_path_source' => $pathSource,
             ], 500);
         }
 
@@ -99,7 +94,6 @@ class BannerController extends Controller
                     'error' => __('Error saving banner image.'),
                     'path' => $targetPath,
                     'detail' => $e->getMessage(),
-                    'configured_path_source' => $pathSource,
                 ], 500);
             }
             $savedPath = $targetPath;
@@ -110,7 +104,6 @@ class BannerController extends Controller
                     'result' => false,
                     'error' => __('Banner image was not saved on destination path.'),
                     'path' => $targetPath,
-                    'configured_path_source' => $pathSource,
                 ], 500);
             }
 
@@ -139,7 +132,6 @@ class BannerController extends Controller
                     'error' => __('Error saving banner image.'),
                     'path' => $targetPath,
                     'detail' => $e->getMessage(),
-                    'configured_path_source' => $pathSource,
                 ], 500);
             }
             $savedPath = $targetPath;
@@ -150,7 +142,6 @@ class BannerController extends Controller
                     'result' => false,
                     'error' => __('Banner image was not saved on destination path.'),
                     'path' => $targetPath,
-                    'configured_path_source' => $pathSource,
                 ], 500);
             }
 
@@ -176,21 +167,7 @@ class BannerController extends Controller
             'file' => $file_name,
             'url' => $imageUrl,
             'saved_path' => $savedPath,
-            'configured_path' => $diskPath,
-            'configured_path_source' => $pathSource,
         ]);
-        } catch (\Throwable $e) {
-            Log::error('Banner upload fatal error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'result' => false,
-                'error' => __('Unexpected error while uploading banner image.'),
-                'detail' => $e->getMessage(),
-            ], 500);
-        }
     }
 
     public function image(string $file)
@@ -205,30 +182,13 @@ class BannerController extends Controller
         return response()->file($fullPath);
     }
 
-    private function getBannerImageDiskPath(?string &$source = null): string
+    private function getBannerImageDiskPath(): string
     {
-        $runtimeEnvPath = getenv('BANNERS_IMAGE_PATH');
-        if (!$runtimeEnvPath && isset($_ENV['BANNERS_IMAGE_PATH'])) {
-            $runtimeEnvPath = $_ENV['BANNERS_IMAGE_PATH'];
-        }
-
-        if ($runtimeEnvPath) {
-            $runtimeEnvPath = trim($runtimeEnvPath, " \t\n\r\0\x0B\"'");
-            $source = 'runtime-env';
-            return rtrim($runtimeEnvPath, '\\/');
-        }
-
         $path = config('custom.banner_image_path');
-        if (is_string($path)) {
-            $path = trim($path, " \t\n\r\0\x0B\"'");
-        }
 
         if (!$path) {
-            $source = 'none';
             return '';
         }
-
-        $source = 'config';
 
         return rtrim($path, '\\/');
     }
