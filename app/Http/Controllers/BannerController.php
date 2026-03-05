@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class BannerController extends Controller
 {
@@ -44,77 +45,26 @@ class BannerController extends Controller
             ], 422);
         }
 
-        // Determine disk path for banners (must be explicitly configured)
-        $pathSource = null;
-        $diskPath = $this->getBannerImageDiskPath($pathSource);
-        $savedPath = null;
-
-        if (!$diskPath) {
-            return response()->json([
-                'result' => false,
-                'error' => __('BANNERS_IMAGE_PATH is not configured.'),
-                'configured_path_source' => $pathSource,
-            ], 500);
+        $url = "img/slider/";
+        // Ensure target directory exists
+        if (!File::exists(public_path($url))) {
+            File::makeDirectory(public_path($url), 0755, true);
         }
 
-        if (!File::exists($diskPath)) {
-            File::makeDirectory($diskPath, 0755, true);
-        }
-
-        if (!File::exists($diskPath)) {
-            return response()->json([
-                'result' => false,
-                'error' => __('Banner path does not exist and could not be created.'),
-                'path' => $diskPath,
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
-        if (!File::isWritable($diskPath)) {
-            return response()->json([
-                'result' => false,
-                'error' => __('No write permissions on banner path.'),
-                'path' => $diskPath,
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
+        $useImageLib = class_exists(\Intervention\Image\ImageManagerStatic::class);
         if ($request->id == 0) {
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
 
-            // Save file locally inside the configured disk path (no SFTP)
-            $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
-            try {
-                $file->move($diskPath, $file_name);
-            } catch (\Throwable $e) {
-                Log::error('Banner upload move exception', [
-                    'diskPath' => $diskPath,
-                    'targetPath' => $targetPath,
-                    'message' => $e->getMessage(),
-                ]);
-
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Error saving banner image.'),
-                    'path' => $targetPath,
-                    'detail' => $e->getMessage(),
-                    'configured_path_source' => $pathSource,
-                ], 500);
-            }
-            $savedPath = $targetPath;
-
-            if (!File::exists($targetPath)) {
-                Log::error('Banner upload failed after move', ['targetPath' => $targetPath]);
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Banner image was not saved on destination path.'),
-                    'path' => $targetPath,
-                    'configured_path_source' => $pathSource,
-                ], 500);
+            if ($useImageLib) {
+                Image::configure(['driver' => 'gd']);
+                Image::make($file->getRealPath())->save(public_path($url . $file_name), 70);
+            } else {
+                // fallback: move uploaded file as-is
+                $file->move(public_path($url), $file_name);
             }
 
-            // Build public URL and save it in DB (avoid duplicating public path)
+            // Build public URL and save full URL in DB
             $publicPath = $this->getBannerImagePublicPath();
             $publicPathTrim = trim($publicPath, '/');
             $requestBase = $request->getSchemeAndHttpHost();
@@ -132,49 +82,21 @@ class BannerController extends Controller
             $banner->save();
             $fileId = $banner->id;
         } else {
-            $item = Banner::findOrFail($request->id);
+            $item = Banner::find($request->id);
             $odlFile = $item->foto;
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
-            // Save file locally for update (no SFTP)
-            $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
-            try {
-                $file->move($diskPath, $file_name);
-            } catch (\Throwable $e) {
-                Log::error('Banner update move exception', [
-                    'diskPath' => $diskPath,
-                    'targetPath' => $targetPath,
-                    'message' => $e->getMessage(),
-                ]);
 
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Error saving banner image.'),
-                    'path' => $targetPath,
-                    'detail' => $e->getMessage(),
-                    'configured_path_source' => $pathSource,
-                ], 500);
-            }
-            $savedPath = $targetPath;
-
-            if (!File::exists($targetPath)) {
-                Log::error('Banner update failed after move', ['targetPath' => $targetPath]);
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Banner image was not saved on destination path.'),
-                    'path' => $targetPath,
-                    'configured_path_source' => $pathSource,
-                ], 500);
+            if ($useImageLib) {
+                Image::configure(['driver' => 'gd']);
+                Image::make($file->getRealPath())->save(public_path($url . $file_name), 70);
+            } else {
+                $file->move(public_path($url), $file_name);
             }
 
-            // delete old local file if exists (odlFile may be full URL)
-            if ($odlFile) {
-                $oldName = basename($odlFile);
-                $oldFull = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $oldName;
-                File::delete($oldFull);
-            }
+            File::delete(public_path($url . $odlFile));
 
-            // Build public URL and save it in DB (avoid duplicating public path)
+            // Build public URL and save full URL in DB
             $publicPath = $this->getBannerImagePublicPath();
             $publicPathTrim = trim($publicPath, '/');
             $requestBase = $request->getSchemeAndHttpHost();
@@ -192,31 +114,7 @@ class BannerController extends Controller
             $fileId = $request->id;
         }
 
-        // Build full public URL for the saved banner image
-        // Ensure $imageUrl is defined (it may have been set above)
-        if (!isset($imageUrl)) {
-            $publicPath = $this->getBannerImagePublicPath(); // e.g. 'img/slider/'
-            $publicPathTrim = trim($publicPath, '/');
-            $requestBase = $request->getSchemeAndHttpHost();
-            $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
-            $baseUrlTrim = rtrim($baseUrlCandidate, '/');
-            $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
-            if ($endsWithPublic) {
-                $imageUrl = $baseUrlTrim . '/' . ltrim($file_name, '/');
-            } else {
-                $imageUrl = $baseUrlTrim . '/' . $publicPathTrim . '/' . ltrim($file_name, '/');
-            }
-        }
-
-        return response()->json([
-            'result' => true,
-            'id' => $fileId,
-            'file' => $file_name,
-            'url' => $imageUrl,
-            'saved_path' => $savedPath,
-            'configured_path' => $diskPath,
-            'configured_path_source' => $pathSource,
-        ]);
+        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name, 'url' => $imageUrl, 'saved_path' => public_path($url . $file_name)]);
     }
 
     public function probeWriteTxt(Request $request): JsonResponse
