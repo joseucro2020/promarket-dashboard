@@ -91,8 +91,8 @@
                                             </div>
 
                                             <div class="d-flex align-items-center mb-2">
-                                                <label class="mb-0 me-3"><input type="checkbox" id="select-all-products"> {{ __('Seleccionar Todos') }}</label>
-                                                <button type="button" id="add-selected-products" class="btn btn-sm btn-primary ml-auto">{{ __('Add Selected') }}</button>
+                                                <label class="mb-0 me-3"><input type="checkbox" id="select-all-products"> {{ __('locale.Seleccionar Todos') }}</label>
+                                                <button type="button" id="add-selected-products" class="btn btn-sm btn-primary ml-auto">{{ __('locale.Add Selected') }}</button>
                                             </div>
                                             <div class="table-responsive">
                                                 <table class="table table-striped table-bordered products-table w-100">
