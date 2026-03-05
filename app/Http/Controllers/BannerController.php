@@ -192,7 +192,9 @@ class BannerController extends Controller
             $info = [
                 'step' => 'init',
                 'env_value' => $envPath,
-                'php_user' => posix_getpwuid(posix_geteuid())['name'] ?? 'unknown',
+                'php_user' => function_exists('posix_getpwuid') && function_exists('posix_geteuid') 
+                    ? (posix_getpwuid(posix_geteuid())['name'] ?? 'unknown') 
+                    : get_current_user(),
                 'php_version' => PHP_VERSION,
                 'cwd' => getcwd(),
             ];
