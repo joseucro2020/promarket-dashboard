@@ -113,17 +113,59 @@
 @endsection
 
 @section('page-script')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   const csrfToken = '{{ csrf_token() }}';
   const uploadUrl = '{{ route('banners.upload') }}';
+  const deleteUrlTemplate = @json(route('banners.destroy', ['id' => '__ID__']));
+  const uploadTooltip = @json(__('locale.Upload Image'));
+  const deleteTooltip = @json(__('locale.Delete'));
+  const deleteConfirmText = @json(__('locale.Delete this banner?'));
+  const noImageText = @json(__('No image'));
+  const genericErrorText = @json(__('locale.An error occurred'));
+  const bannerCreatedText = @json(__('locale.Banner created successfully.'));
+  const bannerUpdatedText = @json(__('locale.Banner updated successfully.'));
 
   let __bannerTargetId = 0;
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function nowYmdHi() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
 
   function refreshDynamicIcons() {
     if (feather) {
       feather.replace({
         width: 14,
         height: 14
+      });
+    }
+
+    if ($.fn.tooltip) {
+      $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
+    }
+  }
+
+  function showToast(icon, title) {
+    if (window.Swal) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon,
+        title,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
       });
     }
   }
@@ -161,12 +203,79 @@
         const res = await fetch(uploadUrl, { method: 'POST', body: formData });
         const json = await res.json().catch(() => ({}));
         if (!res.ok || !json.result) {
-          alert(json.error || '{{ __('locale.An error occurred') }}');
+          showToast('error', json.error || genericErrorText);
           return;
         }
-        location.reload();
+
+        const tableApi = table;
+        const bannerId = Number(json.id || __bannerTargetId || 0);
+        const fileName = String(json.file || '');
+        const imageUrl = String(json.url || '');
+
+        const existingRow = bannerId
+          ? document.querySelector(`.banners-table tbody tr[data-id="${bannerId}"]`)
+          : null;
+
+        if (existingRow) {
+          existingRow.setAttribute('data-file', fileName);
+
+          const photoCell = existingRow.children[1];
+          const fileCell = existingRow.children[2];
+
+          if (photoCell) {
+            if (imageUrl) {
+              photoCell.innerHTML = `<img class="img-fluid rounded" style="max-height: 64px;" src="${escapeHtml(imageUrl)}" alt="Banner #${bannerId}" onclick="window.__selectBannerFile(${bannerId})">`;
+            } else {
+              photoCell.innerHTML = `<span class="text-muted">${escapeHtml(noImageText)}</span>`;
+            }
+          }
+
+          if (fileCell) {
+            fileCell.textContent = fileName;
+          }
+        } else if (bannerId) {
+          $('.banners-table tbody tr td[colspan="5"]').closest('tr').remove();
+
+          const deleteUrl = deleteUrlTemplate.replace('__ID__', String(bannerId));
+          const actionsHtml = `
+            <div class="d-flex align-items-center">
+              <button type="button" class="btn btn-icon btn-flat-success mr-1" data-toggle="tooltip" data-placement="top" title="${escapeHtml(uploadTooltip)}" onclick="window.__selectBannerFile(${bannerId})">
+                <i data-feather="upload"></i>
+              </button>
+              <form class="m-0" action="${escapeHtml(deleteUrl)}" method="POST" onsubmit="return confirm('${escapeHtml(deleteConfirmText)}');">
+                <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-icon btn-flat-danger" data-toggle="tooltip" data-placement="top" title="${escapeHtml(deleteTooltip)}">
+                  <i data-feather="trash"></i>
+                </button>
+              </form>
+            </div>
+          `;
+
+          const photoHtml = imageUrl
+            ? `<img class="img-fluid rounded" style="max-height: 64px;" src="${escapeHtml(imageUrl)}" alt="Banner #${bannerId}" onclick="window.__selectBannerFile(${bannerId})">`
+            : `<span class="text-muted">${escapeHtml(noImageText)}</span>`;
+
+          const rowNode = tableApi
+            .row
+            .add([
+              String(bannerId),
+              photoHtml,
+              escapeHtml(fileName),
+              nowYmdHi(),
+              actionsHtml
+            ])
+            .draw(false)
+            .node();
+
+          rowNode.setAttribute('data-id', String(bannerId));
+          rowNode.setAttribute('data-file', fileName);
+        }
+
+        refreshDynamicIcons();
+        showToast('success', __bannerTargetId ? bannerUpdatedText : bannerCreatedText);
       } catch (e) {
-        alert('{{ __('locale.An error occurred') }}');
+        showToast('error', genericErrorText);
       } finally {
         input.value = '';
         __bannerTargetId = 0;

@@ -467,6 +467,8 @@ return [
   "Invalid file format. Must be jpg, jpeg or png." => "Invalid file format. Must be jpg, jpeg or png.",
   "Delete this banner?" => "Delete this banner?",
   "Banner deleted successfully." => "Banner deleted successfully.",
+  "Banner created successfully." => "Banner created successfully.",
+  "Banner updated successfully." => "Banner updated successfully.",
   "About Us" => "About Us",
   "Who are we? (Spanish)" => "Who are we? (Spanish)",
   "Who are we? (English)" => "Who are we? (English)",

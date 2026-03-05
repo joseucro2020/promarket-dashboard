@@ -478,6 +478,8 @@ return [
   "Invalid file format. Must be jpg, jpeg or png." => "Formato de archivo incorrecto. Debe ser jpg, jpeg o png.",
   "Delete this banner?" => "¿Eliminar este banner?",
   "Banner deleted successfully." => "Banner eliminado correctamente.",
+  "Banner created successfully." => "Banner creado correctamente.",
+  "Banner updated successfully." => "Banner actualizado correctamente.",
   "About Us" => "Nosotros",
   "Who are we? (Spanish)" => "¿Quiénes somos? (Español)",
   "Who are we? (English)" => "¿Quiénes somos? (Inglés)",

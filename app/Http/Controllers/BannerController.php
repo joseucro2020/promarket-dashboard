@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class BannerController extends Controller
 {
@@ -45,9 +46,18 @@ class BannerController extends Controller
         // Determine disk and public paths for banners (configurable via env)
         $diskPath = $this->getBannerImageDiskPath();
         $publicPath = $this->getBannerImagePublicPath(); // relative web path like 'img/slider/'
+        $savedPath = null;
 
         if (!File::exists($diskPath)) {
             File::makeDirectory($diskPath, 0755, true);
+        }
+
+        if (!File::isWritable($diskPath)) {
+            return response()->json([
+                'result' => false,
+                'error' => __('No write permissions on banner path.'),
+                'path' => $diskPath,
+            ], 500);
         }
 
         if ($request->id == 0) {
@@ -55,7 +65,18 @@ class BannerController extends Controller
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
 
             // Save file to disk path
+            $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
             $file->move($diskPath, $file_name);
+            $savedPath = $targetPath;
+
+            if (!File::exists($targetPath)) {
+                Log::error('Banner upload failed after move', ['targetPath' => $targetPath]);
+                return response()->json([
+                    'result' => false,
+                    'error' => __('Banner image was not saved on destination path.'),
+                    'path' => $targetPath,
+                ], 500);
+            }
 
             $banner = new Banner;
             $banner->foto = $file_name;
@@ -67,7 +88,18 @@ class BannerController extends Controller
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
 
+            $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
             $file->move($diskPath, $file_name);
+            $savedPath = $targetPath;
+
+            if (!File::exists($targetPath)) {
+                Log::error('Banner update failed after move', ['targetPath' => $targetPath]);
+                return response()->json([
+                    'result' => false,
+                    'error' => __('Banner image was not saved on destination path.'),
+                    'path' => $targetPath,
+                ], 500);
+            }
 
             // delete old file if exists
             if ($odlFile) {
@@ -85,7 +117,13 @@ class BannerController extends Controller
             ? rtrim($baseUrl, '/') . '/' . ltrim($file_name, '/')
             : route('banners.image', ['file' => $file_name]);
 
-        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name, 'url' => $imageUrl]);
+        return response()->json([
+            'result' => true,
+            'id' => $fileId,
+            'file' => $file_name,
+            'url' => $imageUrl,
+            'saved_path' => $savedPath,
+        ]);
     }
 
     public function image(string $file)
@@ -102,13 +140,33 @@ class BannerController extends Controller
 
     private function getBannerImageDiskPath(): string
     {
-        $path = config('custom.banner_image_path');
+        $bannerPathEnv = env('BANNERS_IMAGE_PATH');
+        $ecommercePathEnv = env('ECOMMERCE_IMAGE_PATH');
 
-        if ($path) {
-            return rtrim($path, '\\/');
+        $derivedFromEcommerce = null;
+        if ($ecommercePathEnv) {
+            $normalized = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $ecommercePathEnv);
+            $derivedFromEcommerce = preg_replace('/[\\\\\/]img[\\\\\/]products$/i', DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'slider', $normalized);
+            if ($derivedFromEcommerce === $normalized) {
+                $derivedFromEcommerce = rtrim($normalized, '\\/') . DIRECTORY_SEPARATOR . 'slider';
+            }
         }
 
-        return public_path('img/slider');
+        $candidates = array_filter([
+            $bannerPathEnv,
+            $derivedFromEcommerce,
+            config('custom.banner_image_path'),
+            public_path('img/slider'),
+        ]);
+
+        foreach ($candidates as $candidate) {
+            $resolved = rtrim($candidate, '\\/');
+            if (File::exists($resolved) || @File::makeDirectory($resolved, 0755, true)) {
+                return $resolved;
+            }
+        }
+
+        return rtrim(public_path('img/slider'), '\\/');
     }
 
     private function getBannerImagePublicPath(): string
