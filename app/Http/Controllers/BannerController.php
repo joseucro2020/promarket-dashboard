@@ -67,8 +67,8 @@ class BannerController extends Controller
             // Build public URL and save full URL in DB
             $publicPath = $this->getBannerImagePublicPath();
             $publicPathTrim = trim($publicPath, '/');
-            $requestBase = $request->getSchemeAndHttpHost();
-            $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+                $requestBase = rtrim($request->getSchemeAndHttpHost() . $request->getBaseUrl(), '/');
+                $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
             $baseUrlTrim = rtrim($baseUrlCandidate, '/');
             $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
             if ($endsWithPublic) {
@@ -99,8 +99,8 @@ class BannerController extends Controller
             // Build public URL and save full URL in DB
             $publicPath = $this->getBannerImagePublicPath();
             $publicPathTrim = trim($publicPath, '/');
-            $requestBase = $request->getSchemeAndHttpHost();
-            $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+                $requestBase = rtrim($request->getSchemeAndHttpHost() . $request->getBaseUrl(), '/');
+                $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
             $baseUrlTrim = rtrim($baseUrlCandidate, '/');
             $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
             if ($endsWithPublic) {
