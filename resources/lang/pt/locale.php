@@ -117,6 +117,7 @@ return [
   "Sweet Alert" => "Alerta doce",
   "Toastr" => "Toastr",
   "Slider" => "Slider",
+  "Logo" => "Logo",
   "File Uploader" => "Uploader de arquivos",
   "Quill Editor" => "Editor de pena",
   "Drag & Drop" => "Arraste e solte",
@@ -180,5 +181,8 @@ return [
   "Verify Email" => "Verificar e-mail",
   "Deactivate Account" => "Desativar conta",
   "Promotional" => "Promocional",
-  "message" => "O sésamo do bolo agarra dinamarquês do pão-de-espécie do queque eu amo o pão-de-espécie. Torta de torta de maçã jujubes chupa chups  pirulito halvah muffin. Ameixa do açúcar do maçapão do tiramisu do bolo da aveia do bolo de chocolate. Donut doce aveia torta dragée fruitcake algodão doce gotas de limão."
+  "message" => "O sésamo do bolo agarra dinamarquês do pão-de-espécie do queque eu amo o pão-de-espécie. Torta de torta de maçã jujubes chupa chups  pirulito halvah muffin. Ameixa do açúcar do maçapão do tiramisu do bolo da aveia do bolo de chocolate. Donut doce aveia torta dragée fruitcake algodão doce gotas de limão.",
+  "Seleccionar Todos" => "Selecionar todos",
+  "Add Selected" => "Adicionar produtos selecionados",
+  "No products selected" => "Nenhum produto selecionado",
 ];

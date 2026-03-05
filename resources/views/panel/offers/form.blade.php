@@ -90,6 +90,10 @@
                                                 </div>
                                             </div>
 
+                                            <div class="d-flex align-items-center mb-2">
+                                                <label class="mb-0 me-3"><input type="checkbox" id="select-all-products"> {{ __('Seleccionar Todos') }}</label>
+                                                <button type="button" id="add-selected-products" class="btn btn-sm btn-primary ml-auto">{{ __('Add Selected') }}</button>
+                                            </div>
                                             <div class="table-responsive">
                                                 <table class="table table-striped table-bordered products-table w-100">
                                                     <thead>
@@ -217,6 +221,22 @@
                     if (window.feather) {
                         feather.replace({ width: 14, height: 14 });
                     }
+                    // add checkboxes to the first column (logo) using the action button data-id
+                    $('.products-table tbody tr').each(function() {
+                        const $tr = $(this);
+                        // skip if checkbox already added
+                        if ($tr.find('.select-product-checkbox').length) return;
+                        const $actionBtn = $tr.find('.add-to-offer');
+                        if ($actionBtn.length) {
+                            const id = $actionBtn.data('id');
+                            const name = $actionBtn.data('name') || $tr.find('td').eq(1).text().trim();
+                            // insert checkbox into first cell
+                            const $firstCell = $tr.find('td').first();
+                            const $cb = $('<input type="checkbox" class="select-product-checkbox" />').attr('data-id', id).attr('data-name', name);
+                            // prepend checkbox into the first cell
+                            $firstCell.prepend($cb).css('position', 'relative');
+                        }
+                    });
                 }
             });
 
@@ -237,6 +257,35 @@
                         feather.replace({ width: 14, height: 14 });
                     }
                 }
+            });
+
+            // Select all checkbox handler
+            $(document).on('change', '#select-all-products', function() {
+                const checked = $(this).is(':checked');
+                $('.select-product-checkbox').prop('checked', checked);
+            });
+
+            // Add selected products in batch
+            $(document).on('click', '#add-selected-products', function() {
+                const selected = $('.select-product-checkbox:checked');
+                if (selected.length === 0) {
+                    Swal.fire({toast:true, position:'top-end', icon:'info', title: '{{ __('No products selected') }}', showConfirmButton:false, timer:1500});
+                    return;
+                }
+                selected.each(function() {
+                    const id = $(this).data('id');
+                    const name = $(this).data('name');
+                    if ($('input[name="products[]"][value="' + id + '"]').length) return; // already added
+                    const input = $('<input>').attr('type', 'hidden').attr('name', 'products[]').val(id);
+                    $('form').first().append(input);
+                    const rowNode = offerTable.row.add([id, name,
+                        '<button type="button" class="btn btn-icon btn-flat-danger remove-from-offer" data-id="' + id + '" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}"><i data-feather="trash"></i></button>'
+                    ]).draw().node();
+                    $(rowNode).attr('data-id', id);
+                });
+                if (window.feather) { feather.replace({ width: 14, height: 14 }); }
+                // uncheck select all
+                $('#select-all-products').prop('checked', false);
             });
 
             // server-side processing: no client cache needed
