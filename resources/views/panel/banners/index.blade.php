@@ -55,7 +55,12 @@
                           if (substr($file, 0, 4) === 'http') {
                             $src = $file;
                           } else {
-                            $src = route('banners.image', ['file' => $file]);
+                            $base = config('custom.banner_image_url');
+                            if ($base) {
+                              $src = rtrim($base, '/') . '/' . ltrim($file, '/');
+                            } else {
+                              $src = route('banners.image', ['file' => $file]);
+                            }
                           }
                         }
                       @endphp
@@ -114,8 +119,17 @@
 
   let __bannerTargetId = 0;
 
+  function refreshDynamicIcons() {
+    if (feather) {
+      feather.replace({
+        width: 14,
+        height: 14
+      });
+    }
+  }
+
   $(function() {
-    $('.banners-table').DataTable({
+    const table = $('.banners-table').DataTable({
       responsive: true,
       dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
       order: [[0, 'desc']],
@@ -126,13 +140,12 @@
         url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
       },
       drawCallback: function() {
-        if (feather) {
-          feather.replace({
-            width: 14,
-            height: 14
-          });
-        }
+        refreshDynamicIcons();
       }
+    });
+
+    table.on('responsive-display.dt responsive-resize.dt', function() {
+      refreshDynamicIcons();
     });
 
     const input = document.getElementById('bannerFileInput');

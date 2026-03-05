@@ -80,7 +80,12 @@ class BannerController extends Controller
             $fileId = $request->id;
         }
 
-        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name, 'url' => route('banners.image', ['file' => $file_name])]);
+        $baseUrl = config('custom.banner_image_url');
+        $imageUrl = $baseUrl
+            ? rtrim($baseUrl, '/') . '/' . ltrim($file_name, '/')
+            : route('banners.image', ['file' => $file_name]);
+
+        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name, 'url' => $imageUrl]);
     }
 
     public function image(string $file)
@@ -97,7 +102,7 @@ class BannerController extends Controller
 
     private function getBannerImageDiskPath(): string
     {
-        $path = env('BANNERS_IMAGE_PATH');
+        $path = config('custom.banner_image_path');
 
         if ($path) {
             return rtrim($path, '\\/');
@@ -108,7 +113,7 @@ class BannerController extends Controller
 
     private function getBannerImagePublicPath(): string
     {
-        $path = env('BANNERS_IMAGE_PUBLIC_PATH', 'img/slider');
+        $path = config('custom.banner_image_public_path', 'img/slider');
 
         return rtrim($path, '/\\') . '/';
     }

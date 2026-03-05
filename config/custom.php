@@ -16,7 +16,10 @@ return [
     'defaultLanguage' => 'es',    //en/de/es/pt/fr here are optional languages provided in theme
     'blankPage' => false, // options[Boolean]: true, false(default) (warning:only make true if your whole project without navabr and sidebar otherwise override option page wise)
     'direction' => env('MIX_CONTENT_DIRECTION', 'ltr'), // Options[String]: ltr(default), rtl
-  ]
+  ],
+  'banner_image_path' => env('BANNERS_IMAGE_PATH', public_path('img/slider')),
+  'banner_image_url' => env('BANNERS_IMAGE_URL'),
+  'banner_image_public_path' => env('BANNERS_IMAGE_PUBLIC_PATH', 'img/slider'),
 ];
 
 /* Do changes in this file if you know what it effects to your template. For more infomation refer the <a href="https://pixinvent.com/demo/vuexy-bootstrap-laravel-admin-template//documentation/documentation-laravel.html"> documentation </a> */
