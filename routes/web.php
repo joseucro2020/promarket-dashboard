@@ -288,6 +288,7 @@ Route::group(['prefix' => 'panel'], function () {
 
   // Banners
   Route::get('banners', [BannerController::class, 'index'])->name('banners.index');
+  Route::get('banners/image/{file}', [BannerController::class, 'image'])->name('banners.image');
   Route::post('banners/upload', [BannerController::class, 'upload'])->name('banners.upload');
   Route::delete('banners/{id}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
