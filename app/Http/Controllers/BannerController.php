@@ -183,103 +183,87 @@ class BannerController extends Controller
     public function probeWriteTxt(Request $request): JsonResponse
     {
         try {
-        $pathSource = null;
-        $diskPath = $this->getBannerImageDiskPath($pathSource);
+            // Bypass Laravel configuration cache and read directly from environment
+            $envPath = getenv('BANNERS_IMAGE_PATH');
+            if (!$envPath && isset($_ENV['BANNERS_IMAGE_PATH'])) {
+                $envPath = $_ENV['BANNERS_IMAGE_PATH'];
+            }
 
-        if (!$diskPath) {
+            $info = [
+                'step' => 'init',
+                'env_value' => $envPath,
+                'php_user' => posix_getpwuid(posix_geteuid())['name'] ?? 'unknown',
+                'php_version' => PHP_VERSION,
+                'cwd' => getcwd(),
+            ];
+
+            if (!$envPath) {
+                return response()->json([
+                    'result' => false,
+                    'error' => 'BANNERS_IMAGE_PATH is empty in environment.',
+                    'debug' => $info
+                ], 500);
+            }
+
+            $diskPath = rtrim(trim($envPath, " \t\n\r\0\x0B\"'"), '\\/');
+            $info['clean_path'] = $diskPath;
+            $info['step'] = 'check_exists';
+
+            if (!File::exists($diskPath)) {
+                $info['exists'] = false;
+                try {
+                    $info['step'] = 'attempt_mkdir';
+                    $made = File::makeDirectory($diskPath, 0775, true);
+                    $info['mkdir_result'] = $made;
+                } catch (\Throwable $ex) {
+                    return response()->json([
+                        'result' => false,
+                        'error' => 'Failed to create directory: ' . $ex->getMessage(),
+                        'debug' => $info
+                    ], 500);
+                }
+            } else {
+                $info['exists'] = true;
+            }
+
+            $info['step'] = 'check_writable';
+            $info['is_writable'] = is_writable($diskPath);
+            $info['perms'] = substr(sprintf('%o', fileperms($diskPath)), -4);
+
+            $fileName = 'probe_' . date('Ymd_His') . '.txt';
+            $targetPath = $diskPath . DIRECTORY_SEPARATOR . $fileName;
+            $info['target_file'] = $targetPath;
+            $info['step'] = 'write_file';
+
+            try {
+                $bytes = file_put_contents($targetPath, "Probe at " . date('c'));
+                $info['bytes_written'] = $bytes;
+                
+                if ($bytes === false) {
+                    throw new \Exception("file_put_contents returned false");
+                }
+            } catch (\Throwable $ex) {
+                return response()->json([
+                    'result' => false,
+                    'error' => 'Write failed: ' . $ex->getMessage(),
+                    'debug' => $info
+                ], 500);
+            }
+
+            $info['step'] = 'verify_write';
+            $info['file_exists_after'] = File::exists($targetPath);
+
             return response()->json([
-                'result' => false,
-                'error' => __('BANNERS_IMAGE_PATH is not configured.'),
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
-        if (!File::exists($diskPath)) {
-            File::makeDirectory($diskPath, 0755, true);
-        }
-
-        if (!File::exists($diskPath)) {
-            return response()->json([
-                'result' => false,
-                'error' => __('Banner path does not exist and could not be created.'),
-                'path' => $diskPath,
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
-        if (!File::isWritable($diskPath)) {
-            return response()->json([
-                'result' => false,
-                'error' => __('No write permissions on banner path.'),
-                'path' => $diskPath,
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
-        $providedName = (string) $request->input('name', '');
-        $baseName = $providedName !== '' ? pathinfo($providedName, PATHINFO_FILENAME) : 'probe_' . date('Ymd_His');
-        $safeBaseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
-        $fileName = trim($safeBaseName, '_') ?: 'probe_' . date('Ymd_His');
-        $fileName .= '.txt';
-
-        $content = (string) $request->input('content', 'Banner path write probe OK');
-        $content .= PHP_EOL . 'time=' . date('c') . PHP_EOL;
-
-        $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $fileName;
-
-        try {
-            File::put($targetPath, $content);
-        } catch (\Throwable $e) {
-            Log::error('Banner TXT probe failed', [
-                'path' => $targetPath,
-                'message' => $e->getMessage(),
+                'result' => true,
+                'message' => 'Write probe successful!',
+                'debug' => $info
             ]);
 
-            return response()->json([
-                'result' => false,
-                'error' => __('Error writing probe file.'),
-                'path' => $targetPath,
-                'detail' => $e->getMessage(),
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
-        if (!File::exists($targetPath)) {
-            return response()->json([
-                'result' => false,
-                'error' => __('Probe file was not saved on destination path.'),
-                'path' => $targetPath,
-                'configured_path_source' => $pathSource,
-            ], 500);
-        }
-
-        $size = null;
-        try {
-            $size = File::size($targetPath);
         } catch (\Throwable $e) {
-            Log::warning('Banner TXT probe size check failed', [
-                'path' => $targetPath,
-                'message' => $e->getMessage(),
-            ]);
-        }
-
-        return response()->json([
-            'result' => true,
-            'file' => $fileName,
-            'saved_path' => $targetPath,
-            'configured_path' => $diskPath,
-            'configured_path_source' => $pathSource,
-            'size' => $size,
-        ]);
-        } catch (\Throwable $e) {
-            Log::error('Banner TXT probe fatal error', [
-                'message' => $e->getMessage(),
-            ]);
-
             return response()->json([
                 'result' => false,
-                'error' => __('Unexpected error while probing banner write path.'),
-                'detail' => $e->getMessage(),
+                'error' => 'Fatal probe error: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
