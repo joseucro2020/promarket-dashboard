@@ -276,6 +276,13 @@
                 }
             });
 
+            // Ensure feather icons render inside responsive child rows
+            productsTable.on('responsive-display.dt responsive-resize.dt', function(e, datatable, row, showHide, update) {
+                if (window.feather) {
+                    feather.replace({ width: 14, height: 14 });
+                }
+            });
+
             const offerTable = $('.offer-products-table').DataTable({
                 responsive: true,
                 order: [
@@ -292,6 +299,13 @@
                     if (window.feather) {
                         feather.replace({ width: 14, height: 14 });
                     }
+                }
+            });
+
+            // Also ensure offer table re-renders feather icons when responsive child rows open
+            offerTable.on('responsive-display.dt responsive-resize.dt', function(e, datatable, row, showHide, update) {
+                if (window.feather) {
+                    feather.replace({ width: 14, height: 14 });
                 }
             });
 
