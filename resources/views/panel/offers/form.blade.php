@@ -58,7 +58,7 @@
                                             <h5 class="mb-0">{{ __('locale.Products') }}</h5>
                                         </div>
                                         <div class="card-body">
-                                            <div class="row mb-2">
+                                            <div class="row mb-2 d-none d-md-flex">
                                                 <div class="col-4">
                                                     <select id="filter-category" class="form-select">
                                                         <option value="">{{ __('locale.All Categories') }}</option>
@@ -89,6 +89,42 @@
                                                     </select>
                                                 </div>
                                             </div>
+
+                                            {{-- Mobile filters: button toggles collapse with stacked selects --}}
+                                            <div class="d-block d-md-none mb-2">
+                                                <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-toggle="collapse" data-target="#mobileFilters" aria-expanded="false" aria-controls="mobileFilters">
+                                                    {{ __('locale.Search filters') }}
+                                                </button>
+                                                <div class="collapse mt-2" id="mobileFilters">
+                                                    <div class="card card-body p-2">
+                                                        <div class="mb-2">
+                                                            <select id="filter-category-mobile" class="form-select">
+                                                                <option value="">{{ __('locale.All Categories') }}</option>
+                                                                @foreach ($categories as $c)
+                                                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <select id="filter-subcategory-mobile" class="form-select">
+                                                                <option value="">{{ __('locale.All Subcategories') }}</option>
+                                                                @foreach ($subcategories as $s)
+                                                                    <option value="{{ $s->id }}" data-category="{{ $s->category_id }}">{{ $s->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <select id="filter-subsub-mobile" class="form-select">
+                                                                <option value="">{{ __('locale.All Sub-Subcategories') }}</option>
+                                                                @foreach ($subsub as $ss)
+                                                                    <option value="{{ $ss->id }}" data-subcategory="{{ $ss->subcategory_id }}">{{ $ss->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
 
                                             <div class="d-flex align-items-center mb-2">
                                                 <label class="mb-0 me-3"><input type="checkbox" id="select-all-products"> {{ __('locale.Seleccionar Todos') }}</label>
@@ -312,17 +348,21 @@
 
                 const url = '/panel/promociones/' + cat + '/subcategorias';
                 $.getJSON(url, function(response) {
-                    // populate subcategories
-                    $subcat.empty().append(
-                        '<option value="">{{ __('All Subcategories') }}</option>');
+                    // populate subcategories (desktop)
+                        $subcat.empty().append('<option value="">{{ __('All Subcategories') }}</option>');
+                        const $subcatMobile = $('#filter-subcategory-mobile');
+                        $subcatMobile.empty().append('<option value="">{{ __('All Subcategories') }}</option>');
                     response.subcategory.forEach(function(s) {
-                        $subcat.append('<option value="' + s.id + '">' + s.name +
-                            '</option>');
+                        $subcat.append('<option value="' + s.id + '">' + s.name + '</option>');
+                            $subcatMobile.append('<option value="' + s.id + '">' + s.name + '</option>');
                     });
 
-                    // reset subsub select
-                    $subsub.empty().append(
-                        '<option value="">{{ __('All Sub-Subcategories') }}</option>');
+
+
+                    // reset subsub select (desktop & mobile)
+                    $subsub.empty().append('<option value="">{{ __('All Sub-Subcategories') }}</option>');
+                    $('#filter-subsub-mobile').empty().append('<option value="">{{ __('All Sub-Subcategories') }}</option>');
+                        if ($('#filter-subsub-mobile').data('select2')) { $('#filter-subsub-mobile').trigger('change.select2'); }
                     productsTable.ajax.reload();
                 });
             });
@@ -331,6 +371,8 @@
                 const sub = $(this).val();
                 if (!sub) {
                     $subsub.empty().append(subsubOptions);
+                    // mirror to mobile
+                    $('#filter-subsub-mobile').empty().append(subsubOptions);
                     productsTable.ajax.reload();
                     return;
                 }
@@ -340,6 +382,16 @@
                     if (!val) return true;
                     return $(this).data('subcategory').toString() === sub.toString();
                 }));
+                    if ($('#filter-subsub-mobile').data('select2')) { $('#filter-subsub-mobile').trigger('change.select2'); }
+
+                // mirror subsub options to mobile (filtering by same sub)
+                const filtered = subsubOptions.filter(function() {
+                    const val = $(this).attr('value');
+                    if (!val) return true;
+                    return $(this).data('subcategory').toString() === sub.toString();
+                });
+                $('#filter-subsub-mobile').empty().append(filtered);
+                    if ($('#filter-subsub-mobile').data('select2')) { $('#filter-subsub-mobile').trigger('change.select2'); }
 
                 // optional: fetch products for subcategory
                 // just reload server-side table with subcategory filter
@@ -361,6 +413,23 @@
                 placeholder: '{{ __('All Sub-Subcategories') }}',
                 allowClear: true,
                 width: '100%'
+            });
+
+            // Sync mobile <-> desktop selects
+            // initialize mobile selects with desktop values
+            $('#filter-category-mobile').val($('#filter-category').val());
+            $('#filter-subcategory-mobile').val($('#filter-subcategory').val());
+            $('#filter-subsub-mobile').val($('#filter-subsub').val());
+
+            // when mobile selects change, propagate to desktop (which handles population and reload)
+            $('#filter-category-mobile').on('change', function() {
+                $('#filter-category').val($(this).val()).trigger('change');
+            });
+            $('#filter-subcategory-mobile').on('change', function() {
+                $('#filter-subcategory').val($(this).val()).trigger('change');
+            });
+            $('#filter-subsub-mobile').on('change', function() {
+                $('#filter-subsub').val($(this).val()).trigger('change');
             });
 
             // Add to offer
