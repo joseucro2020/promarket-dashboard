@@ -22,6 +22,7 @@ class BannerController extends Controller
 
     public function upload(Request $request)
     {
+        try {
         $rules = [
             'file' => 'required|mimes:jpg,jpeg,png',
         ];
@@ -178,6 +179,18 @@ class BannerController extends Controller
             'configured_path' => $diskPath,
             'configured_path_source' => $pathSource,
         ]);
+        } catch (\Throwable $e) {
+            Log::error('Banner upload fatal error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'result' => false,
+                'error' => __('Unexpected error while uploading banner image.'),
+                'detail' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function image(string $file)
@@ -200,11 +213,15 @@ class BannerController extends Controller
         }
 
         if ($runtimeEnvPath) {
+            $runtimeEnvPath = trim($runtimeEnvPath, " \t\n\r\0\x0B\"'");
             $source = 'runtime-env';
             return rtrim($runtimeEnvPath, '\\/');
         }
 
         $path = config('custom.banner_image_path');
+        if (is_string($path)) {
+            $path = trim($path, " \t\n\r\0\x0B\"'");
+        }
 
         if (!$path) {
             $source = 'none';
