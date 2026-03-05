@@ -83,66 +83,52 @@ class BannerController extends Controller
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
 
-            // Try uploading to remote ecommerce via SFTP first (if configured)
-            $sftpUsed = false;
-            if (config('filesystems.disks.ecommerce_sftp.host') || env('SFTP_HOST')) {
-                try {
-                    $stream = fopen($file->getRealPath(), 'r');
-                    $sftpRoot = rtrim(env('SFTP_ROOT', ''), '/');
-                    $remotePath = ($sftpRoot !== '' ? $sftpRoot . '/' : '') . $file_name;
-                    Storage::disk('ecommerce_sftp')->put($remotePath, $stream);
-                    if (is_resource($stream)) {
-                        fclose($stream);
-                    }
-                    $savedPath = 'sftp://' . $remotePath;
-                    $sftpUsed = true;
-                } catch (\Throwable $e) {
-                    Log::warning('SFTP upload failed', [
-                        'host' => config('filesystems.disks.ecommerce_sftp.host'),
-                        'target' => $remotePath ?? null,
-                        'message' => $e->getMessage(),
-                    ]);
-                    if (isset($stream) && is_resource($stream)) {
-                        fclose($stream);
-                    }
-                }
+            // Save file locally inside the configured disk path (no SFTP)
+            $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
+            try {
+                $file->move($diskPath, $file_name);
+            } catch (\Throwable $e) {
+                Log::error('Banner upload move exception', [
+                    'diskPath' => $diskPath,
+                    'targetPath' => $targetPath,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return response()->json([
+                    'result' => false,
+                    'error' => __('Error saving banner image.'),
+                    'path' => $targetPath,
+                    'detail' => $e->getMessage(),
+                    'configured_path_source' => $pathSource,
+                ], 500);
+            }
+            $savedPath = $targetPath;
+
+            if (!File::exists($targetPath)) {
+                Log::error('Banner upload failed after move', ['targetPath' => $targetPath]);
+                return response()->json([
+                    'result' => false,
+                    'error' => __('Banner image was not saved on destination path.'),
+                    'path' => $targetPath,
+                    'configured_path_source' => $pathSource,
+                ], 500);
             }
 
-            // Fallback to local filesystem if remote failed or not configured
-            if (!$sftpUsed) {
-                $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
-                try {
-                    $file->move($diskPath, $file_name);
-                } catch (\Throwable $e) {
-                    Log::error('Banner upload move exception', [
-                        'diskPath' => $diskPath,
-                        'targetPath' => $targetPath,
-                        'message' => $e->getMessage(),
-                    ]);
-
-                    return response()->json([
-                        'result' => false,
-                        'error' => __('Error saving banner image.'),
-                        'path' => $targetPath,
-                        'detail' => $e->getMessage(),
-                        'configured_path_source' => $pathSource,
-                    ], 500);
-                }
-                $savedPath = $targetPath;
-
-                if (!File::exists($targetPath)) {
-                    Log::error('Banner upload failed after move', ['targetPath' => $targetPath]);
-                    return response()->json([
-                        'result' => false,
-                        'error' => __('Banner image was not saved on destination path.'),
-                        'path' => $targetPath,
-                        'configured_path_source' => $pathSource,
-                    ], 500);
-                }
+            // Build public URL and save it in DB (avoid duplicating public path)
+            $publicPath = $this->getBannerImagePublicPath();
+            $publicPathTrim = trim($publicPath, '/');
+            $requestBase = $request->getSchemeAndHttpHost();
+            $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+            $baseUrlTrim = rtrim($baseUrlCandidate, '/');
+            $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
+            if ($endsWithPublic) {
+                $imageUrl = $baseUrlTrim . '/' . ltrim($file_name, '/');
+            } else {
+                $imageUrl = $baseUrlTrim . '/' . $publicPathTrim . '/' . ltrim($file_name, '/');
             }
 
             $banner = new Banner;
-            $banner->foto = $file_name;
+            $banner->foto = $imageUrl;
             $banner->save();
             $fileId = $banner->id;
         } else {
@@ -150,83 +136,77 @@ class BannerController extends Controller
             $odlFile = $item->foto;
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
-            // Try SFTP upload for update
-            $sftpUsed = false;
-            if (config('filesystems.disks.ecommerce_sftp.host') || env('SFTP_HOST')) {
-                try {
-                    $stream = fopen($file->getRealPath(), 'r');
-                    $sftpRoot = rtrim(env('SFTP_ROOT', ''), '/');
-                    $remotePath = ($sftpRoot !== '' ? $sftpRoot . '/' : '') . $file_name;
-                    Storage::disk('ecommerce_sftp')->put($remotePath, $stream);
-                    if (is_resource($stream)) {
-                        fclose($stream);
-                    }
-                    $savedPath = 'sftp://' . $remotePath;
-                    $sftpUsed = true;
-                    // delete old remote file if exists
-                    if ($odlFile) {
-                        $oldRemote = ($sftpRoot !== '' ? $sftpRoot . '/' : '') . $odlFile;
-                        try { Storage::disk('ecommerce_sftp')->delete($oldRemote); } catch (\Throwable $__) {}
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning('SFTP update failed', [
-                        'host' => config('filesystems.disks.ecommerce_sftp.host'),
-                        'target' => $remotePath ?? null,
-                        'message' => $e->getMessage(),
-                    ]);
-                    if (isset($stream) && is_resource($stream)) {
-                        fclose($stream);
-                    }
-                }
+            // Save file locally for update (no SFTP)
+            $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
+            try {
+                $file->move($diskPath, $file_name);
+            } catch (\Throwable $e) {
+                Log::error('Banner update move exception', [
+                    'diskPath' => $diskPath,
+                    'targetPath' => $targetPath,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return response()->json([
+                    'result' => false,
+                    'error' => __('Error saving banner image.'),
+                    'path' => $targetPath,
+                    'detail' => $e->getMessage(),
+                    'configured_path_source' => $pathSource,
+                ], 500);
+            }
+            $savedPath = $targetPath;
+
+            if (!File::exists($targetPath)) {
+                Log::error('Banner update failed after move', ['targetPath' => $targetPath]);
+                return response()->json([
+                    'result' => false,
+                    'error' => __('Banner image was not saved on destination path.'),
+                    'path' => $targetPath,
+                    'configured_path_source' => $pathSource,
+                ], 500);
             }
 
-            if (!$sftpUsed) {
-                $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
-                try {
-                    $file->move($diskPath, $file_name);
-                } catch (\Throwable $e) {
-                    Log::error('Banner update move exception', [
-                        'diskPath' => $diskPath,
-                        'targetPath' => $targetPath,
-                        'message' => $e->getMessage(),
-                    ]);
-
-                    return response()->json([
-                        'result' => false,
-                        'error' => __('Error saving banner image.'),
-                        'path' => $targetPath,
-                        'detail' => $e->getMessage(),
-                        'configured_path_source' => $pathSource,
-                    ], 500);
-                }
-                $savedPath = $targetPath;
-
-                if (!File::exists($targetPath)) {
-                    Log::error('Banner update failed after move', ['targetPath' => $targetPath]);
-                    return response()->json([
-                        'result' => false,
-                        'error' => __('Banner image was not saved on destination path.'),
-                        'path' => $targetPath,
-                        'configured_path_source' => $pathSource,
-                    ], 500);
-                }
-
-                // delete old local file if exists
-                if ($odlFile) {
-                    $oldFull = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $odlFile;
-                    File::delete($oldFull);
-                }
+            // delete old local file if exists (odlFile may be full URL)
+            if ($odlFile) {
+                $oldName = basename($odlFile);
+                $oldFull = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $oldName;
+                File::delete($oldFull);
             }
 
-            $item->foto = $file_name;
+            // Build public URL and save it in DB (avoid duplicating public path)
+            $publicPath = $this->getBannerImagePublicPath();
+            $publicPathTrim = trim($publicPath, '/');
+            $requestBase = $request->getSchemeAndHttpHost();
+            $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+            $baseUrlTrim = rtrim($baseUrlCandidate, '/');
+            $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
+            if ($endsWithPublic) {
+                $imageUrl = $baseUrlTrim . '/' . ltrim($file_name, '/');
+            } else {
+                $imageUrl = $baseUrlTrim . '/' . $publicPathTrim . '/' . ltrim($file_name, '/');
+            }
+
+            $item->foto = $imageUrl;
             $item->save();
             $fileId = $request->id;
         }
 
-        $baseUrl = config('custom.banner_image_url');
-        $imageUrl = $baseUrl
-            ? rtrim($baseUrl, '/') . '/' . ltrim($file_name, '/')
-            : route('banners.image', ['file' => $file_name]);
+        // Build full public URL for the saved banner image
+        // Ensure $imageUrl is defined (it may have been set above)
+        if (!isset($imageUrl)) {
+            $publicPath = $this->getBannerImagePublicPath(); // e.g. 'img/slider/'
+            $publicPathTrim = trim($publicPath, '/');
+            $requestBase = $request->getSchemeAndHttpHost();
+            $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+            $baseUrlTrim = rtrim($baseUrlCandidate, '/');
+            $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
+            if ($endsWithPublic) {
+                $imageUrl = $baseUrlTrim . '/' . ltrim($file_name, '/');
+            } else {
+                $imageUrl = $baseUrlTrim . '/' . $publicPathTrim . '/' . ltrim($file_name, '/');
+            }
+        }
 
         return response()->json([
             'result' => true,
@@ -333,7 +313,14 @@ class BannerController extends Controller
 
         if ($runtimeEnvPath) {
             $source = 'runtime-env';
-            return rtrim(trim($runtimeEnvPath, " \t\n\r\0\x0B\"'"), '\\/');
+            $p = rtrim(trim($runtimeEnvPath, " \t\n\r\0\x0B\"'"), '\\/');
+            // If path is absolute (starts with drive letter, \ or /), return as-is.
+            if ($this->isAbsolutePath($p)) {
+                return $p;
+            }
+            // If path starts with "public/", strip it to avoid duplicating public
+            $p = preg_replace('#^public[\\/]#i', '', $p);
+            return rtrim(public_path($p), '\\/');
         }
 
         $path = config('custom.banner_image_path');
@@ -344,8 +331,12 @@ class BannerController extends Controller
         }
 
         $source = 'config';
-
-        return rtrim(trim((string) $path, " \t\n\r\0\x0B\"'"), '\\/');
+        $p = rtrim(trim((string) $path, " \t\n\r\0\x0B\"'"), '\\/');
+        if ($this->isAbsolutePath($p)) {
+            return $p;
+        }
+        $p = preg_replace('#^public[\\/]#i', '', $p);
+        return rtrim(public_path($p), '\\/');
     }
 
     private function getBannerImagePublicPath(): string
@@ -355,12 +346,33 @@ class BannerController extends Controller
         return rtrim($path, '/\\') . '/';
     }
 
+    /**
+     * Determine whether a path is absolute (Windows drive or Unix root).
+     */
+    private function isAbsolutePath(string $p): bool
+    {
+        if ($p === '') {
+            return false;
+        }
+        // Unix absolute
+        if ($p[0] === '/' || $p[0] === '\\') {
+            return true;
+        }
+        // Windows drive letter, e.g. C:\ or C:/
+        if (strlen($p) >= 3 && ctype_alpha($p[0]) && $p[1] === ':' && ($p[2] === '\\' || $p[2] === '/')) {
+            return true;
+        }
+        return false;
+    }
+
     public function destroy(Request $request, $id)
     {
         $banner = Banner::findOrFail($id);
 
         if ($banner->foto) {
-            $fullPath = rtrim($this->getBannerImageDiskPath(), '\\/') . DIRECTORY_SEPARATOR . $banner->foto;
+            // `foto` may contain a full URL; extract basename to delete local file
+            $fileName = basename($banner->foto);
+            $fullPath = rtrim($this->getBannerImageDiskPath(), '\\/') . DIRECTORY_SEPARATOR . $fileName;
             File::delete($fullPath);
         }
 
