@@ -182,6 +182,8 @@ class BannerController extends Controller
 
     public function probeWriteTxt(Request $request): JsonResponse
     {
+
+        dd('probeWriteTxt');    
         try {
         $pathSource = null;
         $diskPath = $this->getBannerImageDiskPath($pathSource);
