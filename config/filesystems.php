@@ -52,6 +52,19 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
         ],
 
+        // Remote SFTP disk to send banners to legacy application
+        'ecommerce_sftp' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_HOST'),
+            'port' => env('SFTP_PORT', 22),
+            'username' => env('SFTP_USERNAME'),
+            // Use one of password OR privateKey
+            'password' => env('SFTP_PASSWORD'),
+            'privateKey' => env('SFTP_PRIVATE_KEY'),
+            'root' => env('SFTP_ROOT', ''),
+            'timeout' => env('SFTP_TIMEOUT', 30),
+        ],
+
     ],
 
     /*

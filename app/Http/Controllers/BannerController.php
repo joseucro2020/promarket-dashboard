@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -82,35 +83,62 @@ class BannerController extends Controller
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
 
-            // Save file to disk path
-            $targetPath = rtrim($diskPath, '\/') . DIRECTORY_SEPARATOR . $file_name;
-            try {
-                $file->move($diskPath, $file_name);
-            } catch (\Throwable $e) {
-                Log::error('Banner upload move exception', [
-                    'diskPath' => $diskPath,
-                    'targetPath' => $targetPath,
-                    'message' => $e->getMessage(),
-                ]);
-
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Error saving banner image.'),
-                    'path' => $targetPath,
-                    'detail' => $e->getMessage(),
-                    'configured_path_source' => $pathSource,
-                ], 500);
+            // Try uploading to remote ecommerce via SFTP first (if configured)
+            $sftpUsed = false;
+            if (config('filesystems.disks.ecommerce_sftp.host') || env('SFTP_HOST')) {
+                try {
+                    $stream = fopen($file->getRealPath(), 'r');
+                    $sftpRoot = rtrim(env('SFTP_ROOT', ''), '/');
+                    $remotePath = ($sftpRoot !== '' ? $sftpRoot . '/' : '') . $file_name;
+                    Storage::disk('ecommerce_sftp')->put($remotePath, $stream);
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                    $savedPath = 'sftp://' . $remotePath;
+                    $sftpUsed = true;
+                } catch (\Throwable $e) {
+                    Log::warning('SFTP upload failed', [
+                        'host' => config('filesystems.disks.ecommerce_sftp.host'),
+                        'target' => $remotePath ?? null,
+                        'message' => $e->getMessage(),
+                    ]);
+                    if (isset($stream) && is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
             }
-            $savedPath = $targetPath;
 
-            if (!File::exists($targetPath)) {
-                Log::error('Banner upload failed after move', ['targetPath' => $targetPath]);
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Banner image was not saved on destination path.'),
-                    'path' => $targetPath,
-                    'configured_path_source' => $pathSource,
-                ], 500);
+            // Fallback to local filesystem if remote failed or not configured
+            if (!$sftpUsed) {
+                $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
+                try {
+                    $file->move($diskPath, $file_name);
+                } catch (\Throwable $e) {
+                    Log::error('Banner upload move exception', [
+                        'diskPath' => $diskPath,
+                        'targetPath' => $targetPath,
+                        'message' => $e->getMessage(),
+                    ]);
+
+                    return response()->json([
+                        'result' => false,
+                        'error' => __('Error saving banner image.'),
+                        'path' => $targetPath,
+                        'detail' => $e->getMessage(),
+                        'configured_path_source' => $pathSource,
+                    ], 500);
+                }
+                $savedPath = $targetPath;
+
+                if (!File::exists($targetPath)) {
+                    Log::error('Banner upload failed after move', ['targetPath' => $targetPath]);
+                    return response()->json([
+                        'result' => false,
+                        'error' => __('Banner image was not saved on destination path.'),
+                        'path' => $targetPath,
+                        'configured_path_source' => $pathSource,
+                    ], 500);
+                }
             }
 
             $banner = new Banner;
@@ -122,41 +150,72 @@ class BannerController extends Controller
             $odlFile = $item->foto;
             $file = $request->file('file');
             $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
-
-            $targetPath = rtrim($diskPath, '\/') . DIRECTORY_SEPARATOR . $file_name;
-            try {
-                $file->move($diskPath, $file_name);
-            } catch (\Throwable $e) {
-                Log::error('Banner update move exception', [
-                    'diskPath' => $diskPath,
-                    'targetPath' => $targetPath,
-                    'message' => $e->getMessage(),
-                ]);
-
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Error saving banner image.'),
-                    'path' => $targetPath,
-                    'detail' => $e->getMessage(),
-                    'configured_path_source' => $pathSource,
-                ], 500);
+            // Try SFTP upload for update
+            $sftpUsed = false;
+            if (config('filesystems.disks.ecommerce_sftp.host') || env('SFTP_HOST')) {
+                try {
+                    $stream = fopen($file->getRealPath(), 'r');
+                    $sftpRoot = rtrim(env('SFTP_ROOT', ''), '/');
+                    $remotePath = ($sftpRoot !== '' ? $sftpRoot . '/' : '') . $file_name;
+                    Storage::disk('ecommerce_sftp')->put($remotePath, $stream);
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                    $savedPath = 'sftp://' . $remotePath;
+                    $sftpUsed = true;
+                    // delete old remote file if exists
+                    if ($odlFile) {
+                        $oldRemote = ($sftpRoot !== '' ? $sftpRoot . '/' : '') . $odlFile;
+                        try { Storage::disk('ecommerce_sftp')->delete($oldRemote); } catch (\Throwable $__) {}
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('SFTP update failed', [
+                        'host' => config('filesystems.disks.ecommerce_sftp.host'),
+                        'target' => $remotePath ?? null,
+                        'message' => $e->getMessage(),
+                    ]);
+                    if (isset($stream) && is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
             }
-            $savedPath = $targetPath;
 
-            if (!File::exists($targetPath)) {
-                Log::error('Banner update failed after move', ['targetPath' => $targetPath]);
-                return response()->json([
-                    'result' => false,
-                    'error' => __('Banner image was not saved on destination path.'),
-                    'path' => $targetPath,
-                    'configured_path_source' => $pathSource,
-                ], 500);
-            }
+            if (!$sftpUsed) {
+                $targetPath = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $file_name;
+                try {
+                    $file->move($diskPath, $file_name);
+                } catch (\Throwable $e) {
+                    Log::error('Banner update move exception', [
+                        'diskPath' => $diskPath,
+                        'targetPath' => $targetPath,
+                        'message' => $e->getMessage(),
+                    ]);
 
-            // delete old file if exists
-            if ($odlFile) {
-                $oldFull = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $odlFile;
-                File::delete($oldFull);
+                    return response()->json([
+                        'result' => false,
+                        'error' => __('Error saving banner image.'),
+                        'path' => $targetPath,
+                        'detail' => $e->getMessage(),
+                        'configured_path_source' => $pathSource,
+                    ], 500);
+                }
+                $savedPath = $targetPath;
+
+                if (!File::exists($targetPath)) {
+                    Log::error('Banner update failed after move', ['targetPath' => $targetPath]);
+                    return response()->json([
+                        'result' => false,
+                        'error' => __('Banner image was not saved on destination path.'),
+                        'path' => $targetPath,
+                        'configured_path_source' => $pathSource,
+                    ], 500);
+                }
+
+                // delete old local file if exists
+                if ($odlFile) {
+                    $oldFull = rtrim($diskPath, '\\/') . DIRECTORY_SEPARATOR . $odlFile;
+                    File::delete($oldFull);
+                }
             }
 
             $item->foto = $file_name;
@@ -255,6 +314,30 @@ class BannerController extends Controller
 
             $info['step'] = 'verify_write';
             $info['file_exists_after'] = File::exists($targetPath);
+
+            // SFTP probe: try remote disk if configured
+            $info['sftp_available'] = false;
+            $info['sftp_host'] = config('filesystems.disks.ecommerce_sftp.host') ?? env('SFTP_HOST');
+            $info['sftp_root'] = env('SFTP_ROOT', '');
+            if ($info['sftp_host']) {
+                $info['sftp_available'] = true;
+                $sftpProbeName = 'probe_sftp_' . date('Ymd_His') . '.txt';
+                $sftpRemote = rtrim($info['sftp_root'], '/') . ($info['sftp_root'] !== '' ? '/' : '') . $sftpProbeName;
+                try {
+                    $sftpContent = "SFTP probe at " . date('c');
+                    $put = Storage::disk('ecommerce_sftp')->put($sftpRemote, $sftpContent);
+                    $info['sftp_put'] = $put;
+                    try {
+                        $info['sftp_exists_after'] = Storage::disk('ecommerce_sftp')->exists($sftpRemote);
+                    } catch (\Throwable $__) {
+                        $info['sftp_exists_after'] = 'unknown';
+                    }
+                    // clean up probe file (ignore errors)
+                    try { Storage::disk('ecommerce_sftp')->delete($sftpRemote); } catch (\Throwable $__) {}
+                } catch (\Throwable $ex) {
+                    $info['sftp_error'] = $ex->getMessage();
+                }
+            }
 
             return response()->json([
                 'result' => true,
