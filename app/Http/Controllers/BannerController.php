@@ -68,7 +68,8 @@ class BannerController extends Controller
             $publicPath = $this->getBannerImagePublicPath();
             $publicPathTrim = trim($publicPath, '/');
                 $requestBase = rtrim($request->getSchemeAndHttpHost() . $request->getBasePath(), '/');
-                $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+                $envBase = config('app.asset_url') ?: config('app.url') ?: env('APP_URL') ?: env('ASSET_URL');
+                $baseUrlCandidate = $envBase ?: $requestBase ?: config('custom.banner_image_url');
             $baseUrlTrim = rtrim($baseUrlCandidate, '/');
             $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
             if ($endsWithPublic) {
@@ -100,7 +101,8 @@ class BannerController extends Controller
             $publicPath = $this->getBannerImagePublicPath();
             $publicPathTrim = trim($publicPath, '/');
                 $requestBase = rtrim($request->getSchemeAndHttpHost() . $request->getBasePath(), '/');
-                $baseUrlCandidate = $requestBase ?: config('custom.banner_image_url') ?: rtrim(config('app.url', ''), '/');
+                $envBase = config('app.asset_url') ?: config('app.url') ?: env('APP_URL') ?: env('ASSET_URL');
+                $baseUrlCandidate = $envBase ?: $requestBase ?: config('custom.banner_image_url');
             $baseUrlTrim = rtrim($baseUrlCandidate, '/');
             $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
             if ($endsWithPublic) {
