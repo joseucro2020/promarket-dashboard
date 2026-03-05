@@ -264,6 +264,7 @@ class BannerController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'result' => false,
+                'diskPath' => $diskPath ?? null,
                 'error' => 'Fatal probe error: ' . $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ], 500);
