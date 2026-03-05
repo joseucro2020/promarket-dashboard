@@ -45,22 +45,17 @@
               </thead>
               <tbody>
                 @forelse($banners as $banner)
-                  <tr data-id="{{ $banner->id }}" data-file="{{ $banner->file }}">
+                  <tr data-id="{{ $banner->id }}" data-file="{{ $banner->foto }}">
                     <td>{{ $banner->id }}</td>
                     <td>
                       @php
-                        $file = $banner->file;
+                        $file = $banner->foto;
                         $src = null;
                         if ($file) {
                           if (substr($file, 0, 4) === 'http') {
                             $src = $file;
                           } else {
-                            $base = env('BANNERS_IMAGE_URL');
-                            if ($base) {
-                              $src = rtrim($base, '/') . '/' . ltrim($file, '/');
-                            } elseif (file_exists(public_path('img/slider/'.$file))) {
-                              $src = asset('img/slider/'.$file);
-                            }
+                            $src = route('banners.image', ['file' => $file]);
                           }
                         }
                       @endphp
@@ -71,7 +66,7 @@
                         <span class="text-muted">{{ __('No image') }}</span>
                       @endif
                     </td>
-                    <td>{{ $banner->file }}</td>
+                    <td>{{ $banner->foto }}</td>
                     <td>{{ optional($banner->created_at)->format('Y-m-d H:i') }}</td>
                     <td>
                       <div class="d-flex align-items-center">
