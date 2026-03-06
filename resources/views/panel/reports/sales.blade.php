@@ -133,6 +133,20 @@ async function fetchSalesData(type, init, end){
 }
 
 async function doFilter(){
+  const btnFilter = document.getElementById('btnFilter');
+  const setLoading = (state) => {
+    if (!btnFilter) return;
+    if (state) {
+      btnFilter.disabled = true;
+      btnFilter.setAttribute('aria-busy', 'true');
+      btnFilter.innerHTML = `<span class="spinner-border spinner-border-sm mr-50" role="status" aria-hidden="true"></span>{{ __('locale.Loading...') }}`;
+      return;
+    }
+    btnFilter.disabled = false;
+    btnFilter.removeAttribute('aria-busy');
+    btnFilter.textContent = `{{ __('locale.Filter') }}`;
+  };
+
   const type = document.getElementById('type').value;
   const init = document.getElementById('init').value;
   const end = document.getElementById('end').value;
@@ -142,6 +156,7 @@ async function doFilter(){
   }
 
   try {
+    setLoading(true);
     const data = await fetchSalesData(type, init, end);
     const labels = data.map(r => String(r.label));
     const values = data.map(r => Number(r.purchases || 0));
@@ -150,6 +165,8 @@ async function doFilter(){
   } catch (e) {
     console.error(e);
     alert('Error cargando reporte. Revisa consola / logs.');
+  } finally {
+    setLoading(false);
   }
 }
 

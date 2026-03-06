@@ -13,11 +13,11 @@
         <div class="row mt-1">
           <div class="col-md-6">
             <label for="from">{{ __('locale.From') }}</label>
-            <input type="date" id="from" class="form-control" />
+            <input type="date" id="from" class="form-control" value="{{ now()->format('Y-m-d') }}" />
           </div>
           <div class="col-md-6">
             <label for="to">{{ __('locale.To') }}</label>
-            <input type="date" id="to" class="form-control" />
+            <input type="date" id="to" class="form-control" value="{{ now()->format('Y-m-d') }}" />
           </div>
         </div>
       </fieldset>
@@ -29,11 +29,11 @@
         <div class="row mt-1">
           <div class="col-md-6">
             <label for="fromcom">{{ __('locale.From') }}</label>
-            <input type="date" id="fromcom" class="form-control" />
+            <input type="date" id="fromcom" class="form-control" value="{{ now()->format('Y-m-d') }}" />
           </div>
           <div class="col-md-6">
             <label for="tocom">{{ __('locale.To') }}</label>
-            <input type="date" id="tocom" class="form-control" />
+            <input type="date" id="tocom" class="form-control" value="{{ now()->format('Y-m-d') }}" />
           </div>
         </div>
       </fieldset>
@@ -93,7 +93,7 @@
   </div>
 </div>
 
-@push('scripts')
+@section('page-script')
 <script>
 function num(value){
   const n = Number(value);
@@ -148,6 +148,20 @@ async function fetchProfitShare(params){
 }
 
 async function doFilter(){
+  const btnFilter = document.getElementById('btnFilter');
+  const setLoading = (state) => {
+    if (!btnFilter) return;
+    if (state) {
+      btnFilter.disabled = true;
+      btnFilter.setAttribute('aria-busy', 'true');
+      btnFilter.innerHTML = `<span class="spinner-border spinner-border-sm mr-50" role="status" aria-hidden="true"></span>{{ __('locale.Loading...') }}`;
+      return;
+    }
+    btnFilter.disabled = false;
+    btnFilter.removeAttribute('aria-busy');
+    btnFilter.textContent = `{{ __('locale.Filter') }}`;
+  };
+
   const from = document.getElementById('from').value;
   const to = document.getElementById('to').value;
   const fromcom = document.getElementById('fromcom').value;
@@ -159,33 +173,34 @@ async function doFilter(){
   }
 
   try {
+    setLoading(true);
     const payload = await fetchProfitShare({ from, to, fromcom, tocom });
     renderTable('tbodyMain', payload?.lucro ?? []);
     renderTable('tbodyCompare', payload?.comparativo ?? []);
   } catch (e) {
     console.error(e);
     alert('Error cargando reporte. Revisa consola / logs.');
+  } finally {
+    setLoading(false);
   }
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   const today = new Date();
-  const prior = new Date();
-  prior.setDate(today.getDate() - 30);
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const localIso = `${yyyy}-${mm}-${dd}`;
 
-  // Periodo principal: últimos 30 días
-  document.getElementById('to').value = today.toISOString().slice(0,10);
-  document.getElementById('from').value = prior.toISOString().slice(0,10);
-
-  // Periodo comparativo: 30 días anteriores
-  const prior2 = new Date(prior);
-  prior2.setDate(prior.getDate() - 30);
-  document.getElementById('tocom').value = prior.toISOString().slice(0,10);
-  document.getElementById('fromcom').value = prior2.toISOString().slice(0,10);
+  if(!document.getElementById('to').value) document.getElementById('to').value = localIso;
+  if(!document.getElementById('from').value) document.getElementById('from').value = localIso;
+  if(!document.getElementById('tocom').value) document.getElementById('tocom').value = localIso;
+  if(!document.getElementById('fromcom').value) document.getElementById('fromcom').value = localIso;
 
   document.getElementById('btnFilter').addEventListener('click', doFilter);
+  doFilter();
 });
 </script>
-@endpush
+@endsection
 
 @endsection

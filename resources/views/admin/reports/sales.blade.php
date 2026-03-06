@@ -7,11 +7,11 @@
   <form id="filterForm" class="form-inline mb-3">
     <div class="form-group mr-2">
       <label for="init" class="mr-2">From</label>
-      <input type="date" id="init" name="init" class="form-control">
+      <input type="date" id="init" name="init" class="form-control" value="{{ now()->format('Y-m-d') }}">
     </div>
     <div class="form-group mr-2">
       <label for="end" class="mr-2">To</label>
-      <input type="date" id="end" name="end" class="form-control">
+      <input type="date" id="end" name="end" class="form-control" value="{{ now()->format('Y-m-d') }}">
     </div>
     <button type="button" id="btnFilter" class="btn btn-primary">Filter</button>
     <button type="button" id="btnExport" class="btn btn-secondary ml-2">Export</button>
@@ -34,26 +34,57 @@
 
 @push('scripts')
 <script>
-document.getElementById('btnFilter').addEventListener('click', function(){
+function doFilter(){
+  const btnFilter = document.getElementById('btnFilter');
+  const setLoading = (state) => {
+    if (!btnFilter) return;
+    if (state) {
+      btnFilter.disabled = true;
+      btnFilter.setAttribute('aria-busy', 'true');
+      btnFilter.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>Loading...';
+      return;
+    }
+    btnFilter.disabled = false;
+    btnFilter.removeAttribute('aria-busy');
+    btnFilter.textContent = 'Filter';
+  };
+
   const init = document.getElementById('init').value;
   const end = document.getElementById('end').value;
+  if (!init || !end) {
+    alert('Please select a date range');
+    return;
+  }
+
+  setLoading(true);
   fetch('{{ route('reports.sales.data') }}', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    },
-    body: JSON.stringify({ init: init, end: end })
-  }).then(r=>r.json()).then(data=>{
-    const tbody = document.getElementById('reportBody');
-    tbody.innerHTML = '';
-    data.forEach(row=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${row.date}</td><td>${row.total}</td><td>${row.count}</td>`;
-      tbody.appendChild(tr);
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ init: init, end: end })
+    })
+    .then(r => r.json())
+    .then(data => {
+      const tbody = document.getElementById('reportBody');
+      tbody.innerHTML = '';
+      data.forEach(row=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.date}</td><td>${row.total}</td><td>${row.count}</td>`;
+        tbody.appendChild(tr);
+      });
+    })
+    .catch((e) => {
+      console.error(e);
+      alert('Error loading report');
+    })
+    .finally(() => {
+      setLoading(false);
     });
-  });
-});
+}
+
+document.getElementById('btnFilter').addEventListener('click', doFilter);
 
 document.getElementById('btnExport').addEventListener('click', function(){
   const init = document.getElementById('init').value;
@@ -68,6 +99,10 @@ document.getElementById('btnExport').addEventListener('click', function(){
   form.appendChild(token); form.appendChild(i1); form.appendChild(i2);
   document.body.appendChild(form);
   form.submit();
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+  doFilter();
 });
 </script>
 @endpush

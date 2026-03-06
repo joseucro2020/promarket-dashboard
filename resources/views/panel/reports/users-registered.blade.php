@@ -9,12 +9,12 @@
   <form id="filterForm" class="row mb-3 align-items-end">
     <div class="col-md-5">
       <label for="init">{{ __('locale.From') }}</label>
-      <input type="date" id="init" name="init" class="form-control">
+      <input type="date" id="init" name="init" class="form-control" value="{{ now()->format('Y-m-d') }}">
     </div>
 
     <div class="col-md-5">
       <label for="end">{{ __('locale.To') }}</label>
-      <input type="date" id="end" name="end" class="form-control">
+      <input type="date" id="end" name="end" class="form-control" value="{{ now()->format('Y-m-d') }}">
     </div>
 
     <div class="col-md-2 text-right">
@@ -50,7 +50,7 @@
   </div>
 </div>
 
-@push('scripts')
+@section('page-script')
 <script>
 function populateTable(rows){
   const tbody = document.getElementById('reportBody');
@@ -86,6 +86,20 @@ async function fetchUsersData(init, end){
 }
 
 async function doFilter(){
+  const btnFilter = document.getElementById('btnFilter');
+  const setLoading = (state) => {
+    if (!btnFilter) return;
+    if (state) {
+      btnFilter.disabled = true;
+      btnFilter.setAttribute('aria-busy', 'true');
+      btnFilter.innerHTML = `<span class="spinner-border spinner-border-sm mr-50" role="status" aria-hidden="true"></span>{{ __('locale.Loading...') }}`;
+      return;
+    }
+    btnFilter.disabled = false;
+    btnFilter.removeAttribute('aria-busy');
+    btnFilter.textContent = `{{ __('locale.Filter') }}`;
+  };
+
   const init = document.getElementById('init').value;
   const end = document.getElementById('end').value;
 
@@ -95,22 +109,27 @@ async function doFilter(){
   }
 
   try {
+    setLoading(true);
     const data = await fetchUsersData(init, end);
     document.getElementById('totalRecords').innerText = Array.isArray(data) ? data.length : 0;
     populateTable(Array.isArray(data) ? data : []);
   } catch (e) {
     console.error(e);
     alert('Error cargando reporte. Revisa consola / logs.');
+  } finally {
+    setLoading(false);
   }
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   const today = new Date();
-  const prior = new Date();
-  prior.setDate(today.getDate() - 30);
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const localIso = `${yyyy}-${mm}-${dd}`;
 
-  document.getElementById('end').value = today.toISOString().slice(0,10);
-  document.getElementById('init').value = prior.toISOString().slice(0,10);
+  if(!document.getElementById('end').value) document.getElementById('end').value = localIso;
+  if(!document.getElementById('init').value) document.getElementById('init').value = localIso;
 
   document.getElementById('btnFilter').addEventListener('click', doFilter);
 
@@ -136,6 +155,6 @@ document.addEventListener('DOMContentLoaded', function(){
   doFilter();
 });
 </script>
-@endpush
+@endsection
 
 @endsection
