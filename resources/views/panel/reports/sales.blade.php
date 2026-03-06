@@ -17,11 +17,11 @@
     </div>
     <div class="col-md-3">
       <label for="init">{{ __('locale.From') }}</label>
-      <input type="date" id="init" name="init" class="form-control">
+      <input type="date" id="init" name="init" class="form-control" value="{{ now()->format('Y-m-d') }}">
     </div>
     <div class="col-md-3">
       <label for="end">{{ __('locale.To') }}</label>
-      <input type="date" id="end" name="end" class="form-control">
+      <input type="date" id="end" name="end" class="form-control" value="{{ now()->format('Y-m-d') }}">
     </div>
     <div class="col-md-3 text-right">
       <button type="button" id="btnFilter" class="btn btn-outline-danger mt-1">{{ __('locale.Filter') }}</button>
@@ -62,7 +62,7 @@
   </div>
 </div>
 
-@push('scripts')
+@section('page-script')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Helper: format numbers
@@ -154,11 +154,14 @@ async function doFilter(){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  // set default dates: last 30 days
+  // set default dates: today (use local date to avoid UTC shift)
   const today = new Date();
-  const prior = new Date(); prior.setDate(today.getDate() - 30);
-  document.getElementById('end').value = today.toISOString().slice(0,10);
-  document.getElementById('init').value = prior.toISOString().slice(0,10);
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const localIso = `${yyyy}-${mm}-${dd}`;
+  if(!document.getElementById('end').value) document.getElementById('end').value = localIso;
+  if(!document.getElementById('init').value) document.getElementById('init').value = localIso;
   document.getElementById('btnFilter').addEventListener('click', doFilter);
   document.getElementById('exportCsv').addEventListener('click', function(){
     // export table to CSV
@@ -178,6 +181,6 @@ document.addEventListener('DOMContentLoaded', function(){
   doFilter();
 });
 </script>
-@endpush
+@endsection
 
 @endsection
