@@ -636,6 +636,8 @@ return [
   // Sales report labels
   "Sales Report" => "Sales Report",
   "Type" => "Type",
+  "Simple" => "Simple",
+  "Variable" => "Variable",
   "Daily" => "Daily",
   "Weekly" => "Weekly",
   "Monthly" => "Monthly",

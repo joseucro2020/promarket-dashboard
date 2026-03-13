@@ -62,6 +62,7 @@ Route::get('/panel/test', function () {
 Route::get('/panel', [DashboardController::class,'index'])->name('dashboard-home');
 Route::get('/panel/revenue-report', [DashboardController::class, 'revenueReport'])->name('dashboard.revenue-report');
 Route::get('/panel/dashboard-metrics', [DashboardController::class, 'metrics'])->name('dashboard.metrics');
+Route::post('admin/products/export', [ProductController::class, 'exportExcel'])->name('products.export');
 
 // Routes para el módulo de Tasa de cambio
 Route::group(['prefix' => 'panel'], function () {
@@ -78,6 +79,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('productos', [ProductController::class, 'index'])->name('products.index');
   Route::get('productos/nuevo', [ProductController::class, 'create'])->name('products.create');
   Route::post('productos', [ProductController::class, 'store'])->name('products.store');
+  Route::post('productos/export', [ProductController::class, 'exportExcel'])->name('products.export.panel');
   Route::get('productos/{id}/editar', [ProductController::class, 'edit'])->name('products.edit');
   Route::put('productos/{id}', [ProductController::class, 'update'])->name('products.update');
   Route::delete('productos/{id}', [ProductController::class, 'destroy'])->name('products.destroy');

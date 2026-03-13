@@ -19,6 +19,9 @@
           </div>
           <div class="dt-action-buttons text-right">
             <div class="dt-buttons d-inline-flex">
+                <a href="#" class="dt-button btn btn-outline-primary mr-1" id="btn-export-products">
+                <i data-feather="download"></i> {{ __('locale.Export') }}
+              </a>
                 <a href="{{ route('products.create') }}" class="dt-button create-new btn btn-primary">
                 <i data-feather="plus"></i> {{ __('locale.Add New') }}
               </a>
@@ -26,6 +29,45 @@
           </div>
         </div>
         <div class="card-body">
+            <div class="row mb-1">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter-type">{{ __('locale.Type') }}</label>
+                  <select class="form-control" id="filter-type">
+                    <option value="">{{ __('locale.All') }}</option>
+                    <option value="0">{{ __('locale.Simple') }}</option>
+                    <option value="1">{{ __('locale.Variable') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter-category">{{ __('locale.Category') }}</label>
+                  <select class="form-control" id="filter-category">
+                    <option value="">{{ __('locale.All') }}</option>
+                    @foreach($categories as $category)
+                      <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter-subcategory">{{ __('locale.Subcategory') }}</label>
+                  <select class="form-control" id="filter-subcategory">
+                    <option value="">{{ __('locale.All') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter-subsubcategory">{{ __('locale.Sub Subcategory') }}</label>
+                  <select class="form-control" id="filter-subsubcategory">
+                    <option value="">{{ __('locale.All') }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <div class="row mb-1">
               <div class="col-md-4">
                 <div class="form-group">
@@ -104,6 +146,82 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     $(document).ready(function() {
+      var categoryFilterTree = @json($categoryFilterTree);
+      var allSubcategories = @json($allSubcategories);
+      var allSubsubcategories = @json($allSubsubcategories);
+
+      function fillSelectOptions(selector, options) {
+        var $select = $(selector);
+        var currentValue = $select.val();
+        var baseOption = '<option value="">{{ __('locale.All') }}</option>';
+        var optionsHtml = options.map(function (item) {
+          return '<option value="' + item.id + '">' + item.name + '</option>';
+        }).join('');
+
+        $select.html(baseOption + optionsHtml);
+
+        if (currentValue && $select.find('option[value="' + currentValue + '"]').length) {
+          $select.val(currentValue);
+        }
+      }
+
+      function getSubcategoriesByCategory(categoryId) {
+        if (!categoryId) {
+          return allSubcategories;
+        }
+
+        var category = categoryFilterTree.find(function (item) {
+          return String(item.id) === String(categoryId);
+        });
+
+        return category ? category.subcategories : [];
+      }
+
+      function getSubsubcategories(categoryId, subcategoryId) {
+        var selectedSubcategoryId = String(subcategoryId || '');
+        var subcategories = getSubcategoriesByCategory(categoryId);
+
+        if (selectedSubcategoryId) {
+          var subcategory = subcategories.find(function (item) {
+            return String(item.id) === selectedSubcategoryId;
+          });
+
+          return subcategory ? subcategory.sub_subcategories : [];
+        }
+
+        if (!categoryId) {
+          return allSubsubcategories;
+        }
+
+        return subcategories.reduce(function (accumulator, item) {
+          return accumulator.concat(item.sub_subcategories || []);
+        }, []);
+      }
+
+      function refreshSubcategoryOptions(resetValue) {
+        var categoryId = $('#filter-category').val();
+        if (resetValue) {
+          $('#filter-subcategory').val('');
+        }
+
+        var subcategories = getSubcategoriesByCategory(categoryId);
+        fillSelectOptions('#filter-subcategory', subcategories);
+      }
+
+      function refreshSubsubcategoryOptions(resetValue) {
+        var categoryId = $('#filter-category').val();
+        var subcategoryId = $('#filter-subcategory').val();
+        if (resetValue) {
+          $('#filter-subsubcategory').val('');
+        }
+
+        var subsubcategories = getSubsubcategories(categoryId, subcategoryId);
+        fillSelectOptions('#filter-subsubcategory', subsubcategories);
+      }
+
+      refreshSubcategoryOptions(false);
+      refreshSubsubcategoryOptions(false);
+
       @if(session('success'))
         if (window.Swal) {
           Swal.fire({
@@ -140,6 +258,10 @@
               d.company = $('#filter-company').val();
               d.status = $('#filter-status').val();
               d.inventory = $('#filter-inventory').val();
+              d.typeProduct = $('#filter-type').val();
+              d.category = $('#filter-category').val();
+              d.subcategory = $('#filter-subcategory').val();
+              d.subsubcategory = $('#filter-subsubcategory').val();
             }
           },
           columns: [
@@ -176,6 +298,44 @@
 
       $('#filter-company, #filter-status, #filter-inventory').on('change', function () {
         productsTable.ajax.reload();
+      });
+
+      $('#filter-type').on('change', function () {
+        productsTable.ajax.reload();
+      });
+
+      $('#filter-category').on('change', function () {
+        refreshSubcategoryOptions(true);
+        refreshSubsubcategoryOptions(true);
+        productsTable.ajax.reload();
+      });
+
+      $('#filter-subcategory').on('change', function () {
+        refreshSubsubcategoryOptions(true);
+        productsTable.ajax.reload();
+      });
+
+      $('#filter-subsubcategory').on('change', function () {
+        productsTable.ajax.reload();
+      });
+
+      $('#btn-export-products').on('click', function (e) {
+        e.preventDefault();
+
+        var searchValue = $('#products-table_filter input[type="search"]').val() || '';
+        var form = $('<form method="POST" action="{{ route('products.export') }}" style="display:none;"></form>');
+        form.append('<input type="hidden" name="_token" value="{{ csrf_token() }}">');
+        form.append('<input type="hidden" name="company" value="' + ($('#filter-company').val() || '') + '">');
+        form.append('<input type="hidden" name="status" value="' + ($('#filter-status').val() || '') + '">');
+        form.append('<input type="hidden" name="inventory" value="' + ($('#filter-inventory').val() || '') + '">');
+        form.append('<input type="hidden" name="typeProduct" value="' + ($('#filter-type').val() || '') + '">');
+        form.append('<input type="hidden" name="category" value="' + ($('#filter-category').val() || '') + '">');
+        form.append('<input type="hidden" name="subcategory" value="' + ($('#filter-subcategory').val() || '') + '">');
+        form.append('<input type="hidden" name="subsubcategory" value="' + ($('#filter-subsubcategory').val() || '') + '">');
+        form.append('<input type="hidden" name="search" value="' + $('<div/>').text(searchValue).html() + '">');
+
+        $('body').append(form);
+        form.submit();
       });
 
       const csrfToken = $('meta[name="csrf-token"]').attr('content');

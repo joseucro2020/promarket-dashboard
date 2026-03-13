@@ -727,6 +727,8 @@ return [
   "Select destination category" => "Seleccione la categoría destino",
   "ID" => "ID",
   "Type" => "Tipo",
+  "Simple" => "Simple",
+  "Variable" => "Variable",
   "Daily" => "Diario",
   "Weekly" => "Semanal",
   "Monthly" => "Mensual",
