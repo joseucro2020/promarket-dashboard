@@ -78,6 +78,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('productos/nuevo', [ProductController::class, 'create'])->name('products.create');
   Route::post('productos', [ProductController::class, 'store'])->name('products.store');
   Route::post('products/get', [ProductController::class, 'getProducts'])->name('products.get');
+  Route::post('products/indicators', [ProductController::class, 'indicators'])->name('products.indicators');
   Route::post('productos/export', [ProductController::class, 'exportExcel'])->name('products.export');
   Route::get('productos/{id}/editar', [ProductController::class, 'edit'])->name('products.edit');
   Route::put('productos/{id}', [ProductController::class, 'update'])->name('products.update');

@@ -510,6 +510,11 @@ class ProductController extends Controller
         ]);
     }
 
+    public function indicators(Request $request)
+    {
+        return response()->json($this->buildProductIndicators($request));
+    }
+
     // --- Private Helper Methods ---
 
     private function buildIndexQuery(Request $request, bool $applySearch = true)
@@ -559,6 +564,29 @@ class ProductController extends Controller
                 'images',
                 'taxe'
             ]);
+
+        $this->applyProductFilters($query, $request, $applySearch);
+
+        return $query;
+    }
+
+    private function normalizeSearchRequest(Request $request): void
+    {
+        $searchValue = $request->input('search');
+        if (is_array($searchValue)) {
+            $searchValue = $searchValue['value'] ?? null;
+        }
+
+        if (!empty($searchValue) && !$request->filled('search.value')) {
+            $request->merge([
+                'search' => ['value' => $searchValue],
+            ]);
+        }
+    }
+
+    private function applyProductFilters($query, Request $request, bool $applySearch = true)
+    {
+        $this->normalizeSearchRequest($request);
 
         // Apply Filters
         if ($request->filled('company')) {
@@ -639,7 +667,60 @@ class ProductController extends Controller
             });
         }
 
+        if ((string) $request->input('withoutImages') === '1') {
+            $query->whereDoesntHave('images');
+        }
+
         return $query;
+    }
+
+    private function buildProductIndicators(Request $request): array
+    {
+        $baseIndicatorsQuery = Product::query();
+        $this->applyProductFilters($baseIndicatorsQuery, $request, true);
+
+        $lowStockQuery = Product::query();
+        $this->applyProductFilters($lowStockQuery, $request, true);
+        $lowStockProductsCount = $lowStockQuery
+            ->whereHas('colors.amounts', function ($query) {
+                $query->where('product_amount.amount', '>', 0)
+                    ->whereColumn('product_amount.amount', '<=', 'product_amount.umbral')
+                    ->whereNull('product_amount.deleted_at');
+            })
+            ->count();
+
+        $productsByCompanyCounts = (clone $baseIndicatorsQuery)
+            ->selectRaw('COALESCE(products.company_id, 0) as company_id, COUNT(*) as total')
+            ->groupBy('products.company_id')
+            ->orderByDesc('total')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'company_id' => (string) $row->company_id,
+                    'total' => (int) $row->total,
+                ];
+            })
+            ->values();
+
+        $productsByStatusCounts = (clone $baseIndicatorsQuery)
+            ->selectRaw('products.status, COUNT(*) as total')
+            ->groupBy('products.status')
+            ->pluck('total', 'status');
+
+        $productsWithoutImagesCount = (clone $baseIndicatorsQuery)
+            ->whereDoesntHave('images')
+            ->count();
+
+        return [
+            'lowStockProductsCount' => (int) $lowStockProductsCount,
+            'productsByCompanyCounts' => $productsByCompanyCounts,
+            'productsByStatusCounts' => [
+                '0' => (int) ($productsByStatusCounts['0'] ?? 0),
+                '1' => (int) ($productsByStatusCounts['1'] ?? 0),
+                '2' => (int) ($productsByStatusCounts['2'] ?? 0),
+            ],
+            'productsWithoutImagesCount' => (int) $productsWithoutImagesCount,
+        ];
     }
 
     private function applySorting($query, Request $request)
@@ -765,6 +846,8 @@ class ProductController extends Controller
             ->orderBy('company_id')
             ->pluck('company_id');
 
+        $indicators = $this->buildProductIndicators(request());
+
         $categories = Category::select('id', 'name', 'name_english')
             ->where('status', '1')
             ->with([
@@ -829,6 +912,10 @@ class ProductController extends Controller
 
         return view('panel.products.index')->with([
             'companies' => $companies,
+            'lowStockProductsCount' => $indicators['lowStockProductsCount'],
+            'productsByCompanyCounts' => $indicators['productsByCompanyCounts'],
+            'productsByStatusCounts' => $indicators['productsByStatusCounts'],
+            'productsWithoutImagesCount' => $indicators['productsWithoutImagesCount'],
             'categories' => $categories,
             'collections' => $collections,
             'designs' => $designs,
