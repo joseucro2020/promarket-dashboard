@@ -695,7 +695,7 @@ class ProductController extends Controller
             $method = method_field('DELETE');
             $confirm = __('Are you sure?');
             
-            $statusUrl = route('products.status', $product->id);
+            $statusUrl = route('products.status', $product->id, false);
             $checked = $product->status === '1' ? 'checked' : '';
             $disabled = $product->status === '2' ? 'disabled' : '';
             $deletedBadge = $product->status === '2'
