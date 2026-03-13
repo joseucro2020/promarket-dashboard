@@ -253,8 +253,10 @@
           processing: true,
           serverSide: true,
           ajax: {
-            url: "{{ route('products.index') }}",
+            url: "{{ route('products.get') }}",
+            type: 'POST',
             data: function (d) {
+              d._token = '{{ csrf_token() }}';
               d.company = $('#filter-company').val();
               d.status = $('#filter-status').val();
               d.inventory = $('#filter-inventory').val();

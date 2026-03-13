@@ -441,6 +441,75 @@ class ProductController extends Controller
         }
     }
 
+    public function getProducts(Request $request)
+    {
+        if ($request->has('draw')) {
+            return $this->index($request);
+        }
+
+        $searchValue = $request->input('search');
+        if (is_array($searchValue)) {
+            $searchValue = $searchValue['value'] ?? null;
+        }
+
+        if (!empty($searchValue) && !$request->filled('search.value')) {
+            $request->merge([
+                'search' => ['value' => $searchValue],
+            ]);
+        }
+
+        $productsQuery = $this->buildIndexQuery($request, true)
+            ->with([
+                'colors' => function ($colors) use ($request) {
+                    $colors->select('id', 'name', 'name_english', 'product_id')
+                        ->where('status', '1')
+                        ->with([
+                            'amounts' => function ($q) use ($request) {
+                                $q->select('id as amount_id', 'amount', 'min', 'max', 'cost', 'umbral', 'price', 'unit', 'presentation', 'product_color_id', 'category_size_id', 'sku')
+                                    ->with([
+                                        'category_size' => function ($c) {
+                                            $c->select('id', 'category_id', 'size_id')
+                                                ->with([
+                                                    'size' => function ($s) {
+                                                        $s->select('id', 'name')
+                                                            ->where('status', '1');
+                                                    }
+                                                ]);
+                                        }
+                                    ])
+                                    ->when($request->filled('inventory'), function ($query) use ($request) {
+                                        $inventory = intval($request->inventory);
+                                        if ($inventory == 2) {
+                                            $query->where('product_amount.amount', '>', 0)
+                                                ->whereColumn('product_amount.amount', '<=', 'product_amount.umbral')
+                                                ->whereNull('product_amount.deleted_at');
+                                        } else if ($inventory == 1) {
+                                            $query->where('product_amount.amount', '>', 0)
+                                                ->whereColumn('product_amount.amount', '>', 'product_amount.umbral')
+                                                ->whereNull('product_amount.deleted_at');
+                                        } else {
+                                            $query->where('product_amount.amount', 0)
+                                                ->whereNull('product_amount.deleted_at');
+                                        }
+                                    });
+                            }
+                        ]);
+                }
+            ])
+            ->orderBy('products.id', 'DESC');
+
+        $perPage = intval($request->input('length', 10));
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
+
+        $products = $productsQuery->paginate($perPage);
+
+        return response()->json([
+            'products' => $products
+        ]);
+    }
+
     // --- Private Helper Methods ---
 
     private function buildIndexQuery(Request $request, bool $applySearch = true)
@@ -451,8 +520,38 @@ class ProductController extends Controller
             ->whereNull('product_amount.deleted_at')
             ->selectRaw('COALESCE(SUM(product_amount.amount), 0)');
 
+        $costSubquery = DB::table('product_colors')
+            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+            ->whereColumn('product_colors.product_id', 'products.id')
+            ->whereNull('product_amount.deleted_at')
+            ->orderByRaw('CASE WHEN product_amount.category_size_id = 1 THEN 0 ELSE 1 END')
+            ->orderBy('product_amount.id')
+            ->limit(1)
+            ->select('product_amount.cost');
+
+        $priceSubquery = DB::table('product_colors')
+            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+            ->whereColumn('product_colors.product_id', 'products.id')
+            ->whereNull('product_amount.deleted_at')
+            ->orderByRaw('CASE WHEN product_amount.category_size_id = 1 THEN 0 ELSE 1 END')
+            ->orderBy('product_amount.id')
+            ->limit(1)
+            ->select('product_amount.price');
+
+        $thresholdSubquery = DB::table('product_colors')
+            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+            ->whereColumn('product_colors.product_id', 'products.id')
+            ->whereNull('product_amount.deleted_at')
+            ->orderByRaw('CASE WHEN product_amount.category_size_id = 1 THEN 0 ELSE 1 END')
+            ->orderBy('product_amount.id')
+            ->limit(1)
+            ->select('product_amount.umbral');
+
         $query = Product::select('products.*')
             ->selectSub($stockSubquery, 'stock_total')
+            ->selectSub($costSubquery, 'cost_from_amount')
+            ->selectSub($priceSubquery, 'price_from_amount')
+            ->selectSub($thresholdSubquery, 'threshold_from_amount')
             ->with([
                 'categories:id,name,name_english',
                 'subcategories:id,name,name_english',
@@ -568,9 +667,16 @@ class ProductController extends Controller
     {
         $data = [];
         foreach ($products as $product) {
+            // dd($product);
             // Calculate profit/percentage
-            $profit = $product->price_1 - $product->price_2;
-            $percentage = $product->price_2 > 0 ? ($profit / $product->price_2) * 100 : 0;
+            $costValue = isset($product->cost_from_amount) && !is_null($product->cost_from_amount)
+                ? (float) $product->cost_from_amount
+                : (float) $product->price_2;
+            $priceValue = isset($product->price_from_amount) && !is_null($product->price_from_amount)
+                ? (float) $product->price_from_amount
+                : (float) $product->price_1;
+            $profit = $priceValue - $costValue;
+            $percentage = $costValue > 0 ? ($profit / $costValue) * 100 : 0;
 
             // Calculate Stock
             // Calculate Stock
@@ -634,10 +740,12 @@ class ProductController extends Controller
                 'category' => optional($product->categories)->name ?? '-',
                 'name' => $nameHtml,
                 'stock' => $stock,
-                'threshold' => $product->threshold ?? '-',
+                'threshold' => isset($product->threshold_from_amount) && !is_null($product->threshold_from_amount)
+                    ? $product->threshold_from_amount
+                    : ($product->threshold ?? '-'),
                 'tax' => optional($product->taxe)->name ?? '-',
-                'cost' => '$' . number_format($product->price_2, 2),
-                'price' => '$' . number_format($product->price_1, 2),
+                'cost' => '$' . number_format($costValue, 2),
+                'price' => '$' . number_format($priceValue, 2),
                 'profit' => '$' . number_format($profit, 2),
                 'percentage' => number_format($percentage, 1) . '%',
                 'created_at' => $product->created_at->format('d-m-y h:i A'),
