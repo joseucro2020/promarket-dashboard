@@ -93,9 +93,87 @@ class ProductController extends Controller
             ->get();
 
         $today = now()->format('d-m-Y h:i A');
-        $fileName = 'Reporte-Productos-' . now()->format('d-m-Y(His)') . '.xlsx';
+        $timestamp = now()->format('d-m-Y(His)');
+        $fileName = 'Reporte-Productos-' . $timestamp . '.xlsx';
 
-        return Excel::download(new ProductsExport($products, $today), $fileName);
+        try {
+            if (class_exists(Excel::class) && class_exists(ProductsExport::class)) {
+                return Excel::download(new ProductsExport($products, $today), $fileName);
+            }
+        } catch (\Throwable $exception) {
+            Log::error('Products XLSX export failed, fallback CSV', [
+                'message' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
+        }
+
+        return $this->exportProductsCsv($products, $timestamp);
+    }
+
+    private function exportProductsCsv($products, string $timestamp)
+    {
+        $fileName = 'Reporte-Productos-' . $timestamp . '.csv';
+
+        return response()->streamDownload(function () use ($products) {
+            $output = fopen('php://output', 'w');
+            fwrite($output, "\xEF\xBB\xBF");
+
+            fputcsv($output, [
+                'Código del Producto', 'Nombre', 'Presentación', 'Tipo', 'Existencia', 'Costo Unitario',
+                'Umbral', 'Mín. Venta', 'Máx. Venta', 'Precio ($)', 'Ganancia ($)', '% Utilidad',
+                'ID Categoría', 'Categoría', 'ID Subcategoría', 'Subcategoría', 'Referencia', 'SKU',
+                'Tags', 'Proveedor', 'Fecha ingreso', 'Fecha modificación', 'Proveedor', 'Padre', 'Compañía',
+            ]);
+
+            foreach ($products as $item) {
+                $presentations = $item->colors->flatMap(function ($color) {
+                    return $color->amounts;
+                });
+
+                $tags = $item->tags->pluck('name')->implode(', ');
+                $supplier = $item->supplier->pluck('nombre_prove')->filter()->implode(', ');
+                $supplier = $supplier !== '' ? $supplier : '-';
+
+                foreach ($presentations as $product) {
+                    $price = (int) $item->variable === 0 ? (float) $item->price_1 : (float) $product->price;
+                    $cost = (float) $product->cost;
+                    $ganancia = $price - $cost;
+                    $porcentaje = $cost > 0 ? number_format(($ganancia / $cost) * 100, 2, '.', ',') : 0;
+
+                    fputcsv($output, [
+                        $item->id,
+                        $item->name,
+                        (int) $item->variable === 1 ? ($product->presentation ?? '') : '',
+                        $item->type_variable,
+                        $product->amount,
+                        number_format($cost, 2, '.', ','),
+                        $product->umbral,
+                        $product->min,
+                        $product->max,
+                        number_format($price, 2, '.', ','),
+                        number_format($ganancia, 2, '.', ','),
+                        $porcentaje,
+                        optional($item->categories)->id ?? '',
+                        optional($item->categories)->name ?? '',
+                        optional($item->subcategories)->id ?? '',
+                        optional($item->subcategories)->name ?? '',
+                        $product->id,
+                        $product->sku,
+                        $tags,
+                        $supplier,
+                        $item->es_date,
+                        $item->es_update,
+                        $supplier,
+                        data_get($item, 'categories.id_father', '-'),
+                        $item->company_id ?? '-',
+                    ]);
+                }
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     public function store(StoreProductRequest $request)
