@@ -74,40 +74,87 @@ class ProductController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $request->merge([
-            'search' => ['value' => $request->input('search', '')],
-        ]);
-
-        $products = $this->buildIndexQuery($request, true)
-            ->with([
-                'categories:id,name,name_english',
-                'subcategories:id,name,name_english,category_id',
-                'colors.amounts' => function ($query) {
-                    $query->whereNull('deleted_at');
-                },
-                'tags:id,name',
-                'supplier:id,nombre_prove',
-            ])
-            ->orderBy('products.status', 'desc')
-            ->orderBy('products.id', 'desc')
-            ->get();
-
-        $today = now()->format('d-m-Y h:i A');
-        $timestamp = now()->format('d-m-Y(His)');
-        $fileName = 'Reporte-Productos-' . $timestamp . '.xlsx';
-
         try {
-            if (class_exists(Excel::class) && class_exists(ProductsExport::class)) {
-                return Excel::download(new ProductsExport($products, $today), $fileName);
+            $request->merge([
+                'search' => ['value' => $request->input('search', '')],
+            ]);
+
+            $products = $this->buildIndexQuery($request, true)
+                ->with([
+                    'categories:id,name,name_english',
+                    'subcategories:id,name,name_english,category_id',
+                    'colors.amounts' => function ($query) {
+                        $query->whereNull('deleted_at');
+                    },
+                    'tags:id,name',
+                    'supplier:id,nombre_prove',
+                ])
+                ->orderBy('products.status', 'desc')
+                ->orderBy('products.id', 'desc')
+                ->get();
+
+            $today = now()->format('d-m-Y h:i A');
+            $timestamp = now()->format('d-m-Y(His)');
+            $fileName = 'Reporte-Productos-' . $timestamp . '.xlsx';
+
+            try {
+                if (class_exists(Excel::class) && class_exists(ProductsExport::class)) {
+                    return Excel::download(new ProductsExport($products, $today), $fileName);
+                }
+            } catch (\Throwable $exception) {
+                Log::error('Products XLSX export failed, fallback CSV', [
+                    'message' => $exception->getMessage(),
+                    'trace' => $exception->getTraceAsString(),
+                ]);
             }
+
+            return $this->exportProductsCsv($products, $timestamp);
         } catch (\Throwable $exception) {
-            Log::error('Products XLSX export failed, fallback CSV', [
+            Log::error('Products export failed with full dataset, using emergency fallback', [
                 'message' => $exception->getMessage(),
                 'trace' => $exception->getTraceAsString(),
             ]);
-        }
 
-        return $this->exportProductsCsv($products, $timestamp);
+            $timestamp = now()->format('d-m-Y(His)');
+            $fallbackProducts = Product::query()
+                ->select('id', 'name', 'variable', 'price_1', 'price_2', 'company_id', 'created_at', 'updated_at')
+                ->orderByDesc('id')
+                ->limit(5000)
+                ->get();
+
+            return response()->streamDownload(function () use ($fallbackProducts) {
+                $output = fopen('php://output', 'w');
+                fwrite($output, "\xEF\xBB\xBF");
+
+                fputcsv($output, [
+                    'ID',
+                    'Nombre',
+                    'Tipo',
+                    'Costo',
+                    'Precio',
+                    'Compañía',
+                    'Fecha ingreso',
+                    'Fecha modificación',
+                ]);
+
+                foreach ($fallbackProducts as $item) {
+                    fputcsv($output, [
+                        $item->id,
+                        $item->name,
+                        (int) $item->variable === Product::TYPE_VARIABLE ? 'Variable' : 'Simple',
+                        number_format((float) $item->price_2, 2, '.', ','),
+                        number_format((float) $item->price_1, 2, '.', ','),
+                        $item->company_id ?? '-',
+                        optional($item->created_at)->format('d-m-Y H:i'),
+                        optional($item->updated_at)->format('d-m-Y H:i'),
+                    ]);
+                }
+
+                fclose($output);
+            }, 'Reporte-Productos-' . $timestamp . '-fallback.csv', [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+            ]);
+        }
     }
 
     private function exportProductsCsv($products, string $timestamp)
