@@ -52,18 +52,18 @@
 
                                     <div class="row mt-2">
                                         <div class="col-md-12 text-center mb-2">
-                                                <label class="custom-control-label"
-                                                    for="is_active_hours">{{ __('locale.Active Hours') }}</label>
-                                                <div class="custom-control custom-radio">
+                                            <p class="text-muted mb-1">{{ __('locale.Product Type') }}</p>
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <div class="custom-control custom-radio mr-2">
                                                     <input type="radio" id="typeSimple" name="type"
                                                         class="custom-control-input" value="simple" checked>
                                                     <label class="custom-control-label"
-                                                <label>{{ __('locale.Time From') }}</label>
+                                                        for="typeSimple">{{ __('locale.Simple Product') }}</label>
                                                 </div>
                                                 <div class="custom-control custom-radio">
                                                     <input type="radio" id="typeVariable" name="type"
                                                         class="custom-control-input" value="variable">
-                                                <label>{{ __('locale.Time To') }}</label>
+                                                    <label class="custom-control-label"
                                                         for="typeVariable">{{ __('locale.Variable Product') }}</label>
                                                 </div>
                                             </div>
@@ -128,25 +128,31 @@
                                         </div>
 
                                         <div class="col-md-12">
-                                            <div class="form-group">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input"
-                                                        id="is_active_hours" name="is_active_hours">
-                                                    <label class="custom-control-label"
-                                                        for="is_active_hours">{{ __('locale.Active Hours') }}</label>
+                                            <div class="border rounded p-2 mb-2 bg-light">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="form-group mb-1">
+                                                            <div class="custom-control custom-checkbox">
+                                                                <input type="checkbox" class="custom-control-input"
+                                                                    id="is_active_hours" name="is_active_hours">
+                                                                <label class="custom-control-label"
+                                                                    for="is_active_hours">{{ __('locale.Active Hours') }}</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>{{ __('locale.Time From') }}</label>
+                                                            <input type="time" class="form-control" name="active_hours_start">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label>{{ __('locale.Time To') }}</label>
+                                                            <input type="time" class="form-control" name="active_hours_end">
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>{{ __('locale.Time From') }}</label>
-                                                <input type="time" class="form-control" name="active_hours_start">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>{{ __('locale.Time To') }}</label>
-                                                <input type="time" class="form-control" name="active_hours_end">
                                             </div>
                                         </div>
 
