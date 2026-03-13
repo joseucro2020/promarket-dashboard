@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductsExport;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use File;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -68,6 +70,32 @@ class ProductController extends Controller
         $taxes = Taxe::where('status', Taxe::STATUS_ACTIVE)->get();
         $tags = Tag::orderBy('name', 'asc')->get();
         return view('panel.products.create', compact('categories', 'taxes', 'tags'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $request->merge([
+            'search' => ['value' => $request->input('search', '')],
+        ]);
+
+        $products = $this->buildIndexQuery($request, true)
+            ->with([
+                'categories:id,name,name_english,id_father',
+                'subcategories:id,name,name_english,category_id',
+                'colors.amounts' => function ($query) {
+                    $query->whereNull('deleted_at');
+                },
+                'tags:id,name',
+                'supplier:id,nombre_prove',
+            ])
+            ->orderBy('products.status', 'desc')
+            ->orderBy('products.id', 'desc')
+            ->get();
+
+        $today = now()->format('d-m-Y h:i A');
+        $fileName = 'Reporte-Productos-' . now()->format('d-m-Y(His)') . '.xlsx';
+
+        return Excel::download(new ProductsExport($products, $today), $fileName);
     }
 
     public function store(StoreProductRequest $request)
@@ -506,8 +534,53 @@ class ProductController extends Controller
 
         $categories = Category::select('id', 'name', 'name_english')
             ->where('status', '1')
+            ->with([
+                'subcategories' => function ($query) {
+                    $query->select('id', 'name', 'name_english', 'category_id')
+                        ->where('status', '1')
+                        ->with([
+                            'sub_subcategories' => function ($subQuery) {
+                                $subQuery->select('id', 'name', 'name_english', 'subcategory_id')
+                                    ->where('status', '1');
+                            }
+                        ]);
+                }
+            ])
             ->orderBy('name', 'DESC')
             ->get();
+
+        $categoryFilterTree = $categories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'subcategories' => $category->subcategories->map(function ($subcategory) {
+                    return [
+                        'id' => $subcategory->id,
+                        'name' => $subcategory->name,
+                        'sub_subcategories' => $subcategory->sub_subcategories->map(function ($subSubcategory) {
+                            return [
+                                'id' => $subSubcategory->id,
+                                'name' => $subSubcategory->name,
+                            ];
+                        })->values()->all(),
+                    ];
+                })->values()->all(),
+            ];
+        })->values();
+
+        $allSubcategories = $categoryFilterTree
+            ->flatMap(function ($category) {
+                return collect($category['subcategories']);
+            })
+            ->unique('id')
+            ->values();
+
+        $allSubsubcategories = $allSubcategories
+            ->flatMap(function ($subcategory) {
+                return collect($subcategory['sub_subcategories']);
+            })
+            ->unique('id')
+            ->values();
 
         $collections = Collection::select('id', 'name', 'name_english')
             ->where('status', '1')
@@ -529,6 +602,9 @@ class ProductController extends Controller
             'taxes' => $taxes,
             'tags' => $tags,
             'supplier' => $supplier,
+            'categoryFilterTree' => $categoryFilterTree,
+            'allSubcategories' => $allSubcategories,
+            'allSubsubcategories' => $allSubsubcategories,
         ]);
     }
 
