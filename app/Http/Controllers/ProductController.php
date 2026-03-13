@@ -80,7 +80,7 @@ class ProductController extends Controller
 
         $products = $this->buildIndexQuery($request, true)
             ->with([
-                'categories:id,name,name_english,id_father',
+                'categories:id,name,name_english',
                 'subcategories:id,name,name_english,category_id',
                 'colors.amounts' => function ($query) {
                     $query->whereNull('deleted_at');
@@ -164,7 +164,7 @@ class ProductController extends Controller
                         $item->es_date,
                         $item->es_update,
                         $supplier,
-                        data_get($item, 'categories.id_father', '-'),
+                        '-',
                         $item->company_id ?? '-',
                     ]);
                 }

@@ -81,7 +81,7 @@
                     <td>{{ $item->es_date }}</td>
                     <td>{{ $item->es_update }}</td>
                     <td>{{ $supplier }}</td>
-                    <td>{{ data_get($item, 'categories.id_father', '-') }}</td>
+                    <td>-</td>
                     <td>{{ $item->company_id ?? '-' }}</td>
                 </tr>
             @endforeach
