@@ -24,7 +24,7 @@
                         @endif
                         @if ($errors->any())
                             <div class="alert alert-danger" role="alert">
-                                <p class="mb-1">{{ __('Please check the form errors.') }}</p>
+                                <p class="mb-1">{{ __('locale.Please check the form errors.') }}</p>
                                 <ul class="mb-0 pl-1">
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -75,7 +75,7 @@
                                             </span>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        {{-- <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Mark as PRO Product?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
@@ -85,8 +85,8 @@
                                                         for="is_pro">{{ __('locale.Yes') }}</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
+                                        </div> --}}
+                                        <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Auto Update?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
@@ -136,7 +136,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-12">
+                                        {{-- <div class="col-md-12">
                                             <div class="border rounded p-2 mb-2 bg-light">
                                                 <div class="row">
                                                     <div class="col-12">
@@ -168,14 +168,14 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> --}}
 
                                         <!-- Categories -->
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>{{ __('Main Category') }}</label>
+                                                <label>{{ __('locale.Main Category') }}</label>
                                                 <select class="form-control" id="category_id" name="category_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                     @foreach ($categories as $category)
                                                         <option value="{{ $category->id }}"
                                                             {{ $product->category_id == $category->id ? 'selected' : '' }}>
@@ -186,19 +186,19 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>{{ __('Sub Category') }}</label>
+                                                <label>{{ __('locale.Sub Category') }}</label>
                                                 <select class="form-control" id="subcategory_id" name="subcategory_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                     <!-- Subcategories should be loaded via AJAX based on Category -->
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>{{ __('Sub-Sub Category') }}</label>
+                                                <label>{{ __('locale.Sub-Sub Category') }}</label>
                                                 <select class="form-control" id="subsubcategory_id"
                                                     name="subsubcategory_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -213,17 +213,17 @@
                                                         <i data-feather="plus" style="width: 16px; height: 16px;"></i>
                                                     </div>
                                                     <span
-                                                        style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('Add secondary category') }}</span>
+                                                        style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('locale.Add secondary category') }}</span>
                                                 </button>
                                             </div>
                                             <div id="secondary-category-form" class="border rounded p-2 mb-1 d-none">
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <div class="form-group">
-                                                            <label>{{ __('Secondary Category') }}</label>
+                                                            <label>{{ __('locale.Secondary Category') }}</label>
                                                             <div class="d-flex align-items-center">
                                                                 <select class="form-control" id="secondary_category_id">
-                                                                    <option value="">{{ __('Select') }}</option>
+                                                                    <option value="">{{ __('locale.Select') }}</option>
                                                                     @foreach ($categories as $category)
                                                                         <option value="{{ $category->id }}">
                                                                             {{ $category->name }}</option>
@@ -232,7 +232,7 @@
                                                                 <button type="button"
                                                                     class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1"
                                                                     id="add-secondary-category-item-btn"
-                                                                    aria-label="{{ __('Add secondary category') }}">
+                                                                    aria-label="{{ __('locale.Add secondary category') }}">
                                                                     <i data-feather="plus"></i>
                                                                 </button>
                                                             </div>
@@ -240,16 +240,16 @@
                                                     </div>
                                                     <div class="col-md-6 d-none" id="secondary_subcategory_wrap">
                                                         <div class="form-group">
-                                                            <label>{{ __('Secondary Subcategory') }}</label>
+                                                            <label>{{ __('locale.Secondary Subcategory') }}</label>
                                                             <div class="d-flex align-items-center">
                                                                 <select class="form-control"
                                                                     id="secondary_subcategory_id">
-                                                                    <option value="">{{ __('Select') }}</option>
+                                                                    <option value="">{{ __('locale.Select') }}</option>
                                                                 </select>
                                                                 <button type="button"
                                                                     class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1"
                                                                     id="add-secondary-subcategory-btn"
-                                                                    aria-label="{{ __('Add secondary subcategory') }}">
+                                                                    aria-label="{{ __('locale.Add secondary subcategory') }}">
                                                                     <i data-feather="plus"></i>
                                                                 </button>
                                                             </div>
@@ -260,15 +260,15 @@
                                             <div class="border rounded p-2 p-md-3 bg-white shadow-sm mt-1">
                                                 <div class="d-flex align-items-center mb-1">
                                                     <span
-                                                        class="text-uppercase small text-muted">{{ __('Secondary Subcategory') }}</span>
+                                                        class="text-uppercase small text-muted">{{ __('locale.Secondary Subcategory') }}</span>
                                                 </div>
                                                 <div id="secondary-subcategory-list" class="d-flex flex-wrap">
                                                     @if ($product->secondary_subcategories->isEmpty())
                                                         <p class="text-muted mb-0" data-empty>
-                                                            {{ __('No secondary subcategories selected') }}</p>
+                                                            {{ __('locale.No secondary subcategories selected') }}</p>
                                                     @else
                                                         <p class="text-muted mb-0" data-empty style="display: none;">
-                                                            {{ __('No secondary subcategories selected') }}</p>
+                                                            {{ __('locale.No secondary subcategories selected') }}</p>
                                                         @foreach ($product->secondary_subcategories as $secondarySubcategory)
                                                             <span
                                                                 class="badge badge-light-primary d-flex align-items-center mr-1 mb-1"
@@ -280,7 +280,7 @@
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-flat-danger p-0 ml-1"
                                                                     data-remove="secondary_subcategories"
-                                                                    aria-label="{{ __('Remove') }}">
+                                                                    aria-label="{{ __('locale.Remove') }}">
                                                                     <i data-feather="x"></i>
                                                                 </button>
                                                             </span>
@@ -289,15 +289,15 @@
                                                 </div>
                                                 <div class="mt-2">
                                                     <span
-                                                        class="text-uppercase small text-muted">{{ __('Secondary Categories') }}</span>
+                                                        class="text-uppercase small text-muted">{{ __('locale.Secondary Categories') }}</span>
                                                 </div>
                                                 <div id="secondary-category-list" class="d-flex flex-wrap mt-1">
                                                     @if ($product->secondary_categories->isEmpty())
                                                         <p class="text-muted mb-0" data-empty>
-                                                            {{ __('No secondary categories selected') }}</p>
+                                                            {{ __('locale.No secondary categories selected') }}</p>
                                                     @else
                                                         <p class="text-muted mb-0" data-empty style="display: none;">
-                                                            {{ __('No secondary categories selected') }}</p>
+                                                            {{ __('locale.No secondary categories selected') }}</p>
                                                         @foreach ($product->secondary_categories as $secondaryCategory)
                                                             <span
                                                                 class="badge badge-light-primary d-flex align-items-center mr-1 mb-1"
@@ -308,7 +308,7 @@
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-flat-danger p-0 ml-1"
                                                                     data-remove="secondary_categories"
-                                                                    aria-label="{{ __('Remove') }}">
+                                                                    aria-label="{{ __('locale.Remove') }}">
                                                                     <i data-feather="x"></i>
                                                                 </button>
                                                             </span>
@@ -320,13 +320,13 @@
 
                                         <div class="col-md-6 mt-2">
                                             <div class="form-group">
-                                                <label>{{ __('Description (Spanish)') }}</label>
+                                                <label>{{ __('locale.Description (Spanish)') }}</label>
                                                 <textarea class="form-control" name="description" rows="3">{{ $product->description }}</textarea>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mt-2">
                                             <div class="form-group">
-                                                <label>{{ __('Description (English)') }}</label>
+                                                <label>{{ __('locale.Description (English)') }}</label>
                                                 <textarea class="form-control" name="description_english" rows="3">{{ $product->description_english }}</textarea>
                                             </div>
                                         </div>
@@ -337,21 +337,21 @@
                                         @if ($product->variable == 0)
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{ __('Price') }} $</label>
+                                                    <label>{{ __('locale.Price') }} $</label>
                                                     <input type="number" step="0.01" class="form-control"
                                                         name="price_1" value="{{ $product->price_1 }}" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{ __('Min Sale') }}</label>
+                                                    <label>{{ __('locale.Min Sale') }}</label>
                                                     <input type="number" class="form-control" name="retail"
                                                         value="{{ $product->retail }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{ __('Max Sale') }}</label>
+                                                    <label>{{ __('locale.Max Sale') }}</label>
                                                     <input type="number" class="form-control" name="wholesale"
                                                         value="{{ $product->wholesale }}">
                                                 </div>
@@ -359,21 +359,21 @@
 
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{ __('Cost') }}</label>
+                                                    <label>{{ __('locale.Cost') }}</label>
                                                     <input type="number" step="0.01" class="form-control"
                                                         name="price_2" value="{{ $product->price_2 }}" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{ __('Threshold') }}</label>
+                                                    <label>{{ __('locale.Threshold') }}</label>
                                                     <input type="number" class="form-control" name="umbral"
                                                         value="{{ $simpleAmount ? $simpleAmount->umbral : '' }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label>{{ __('SKU') }}</label>
+                                                    <label>{{ __('locale.SKU') }}</label>
                                                     <input type="text" class="form-control" name="sku"
                                                         value="{{ $simpleAmount ? $simpleAmount->sku : '' }}">
                                                 </div>
@@ -381,9 +381,9 @@
                                         @endif
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>{{ __('Tax') }}</label>
+                                                <label>{{ __('locale.Tax') }}</label>
                                                 <select class="form-control" name="taxe_id">
-                                                    <option value="">{{ __('Select') }}</option>
+                                                    <option value="">{{ __('locale.Select') }}</option>
                                                     @foreach ($taxes as $tax)
                                                         <option value="{{ $tax->id }}"
                                                             {{ $product->taxe_id == $tax->id ? 'selected' : '' }}>
@@ -394,7 +394,7 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <label class="font-weight-bold">{{ __('Tags') }}</label>
+                                            <label class="font-weight-bold">{{ __('locale.Tags') }}</label>
                                             <div class="d-flex align-items-center mb-1">
                                                 <button type="button"
                                                     class="btn btn-flat-primary d-flex align-items-center p-0"
@@ -404,7 +404,7 @@
                                                         <i data-feather="plus" style="width: 16px; height: 16px;"></i>
                                                     </div>
                                                     <span
-                                                        style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('Add Tag') }}</span>
+                                                        style="font-size: 1rem; font-weight: 600; color: #000;">{{ __('locale.Add Tag') }}</span>
                                                 </button>
                                             </div>
                                             <div id="tag-form" class="row d-none">
@@ -412,7 +412,7 @@
                                                     <div class="form-group">
                                                         <div class="d-flex align-items-center">
                                                             <select class="form-control" id="tag_select">
-                                                                <option value="">{{ __('Select') }}</option>
+                                                                <option value="">{{ __('locale.Select') }}</option>
                                                                 @foreach ($tags as $tag)
                                                                     <option value="{{ $tag->id }}">{{ $tag->name }}
                                                                     </option>
@@ -420,7 +420,7 @@
                                                             </select>
                                                             <button type="button"
                                                                 class="btn btn-flat-primary d-flex align-items-center justify-content-center ml-1"
-                                                                id="add-tag-item-btn" aria-label="{{ __('Add Tag') }}">
+                                                                id="add-tag-item-btn" aria-label="{{ __('locale.Add Tag') }}">
                                                                 <i data-feather="plus"></i>
                                                             </button>
                                                         </div>
@@ -429,14 +429,14 @@
                                             </div>
                                             <div class="border rounded p-2 p-md-3 bg-white shadow-sm mt-1">
                                                 <div class="d-flex align-items-center mb-1">
-                                                    <span class="text-uppercase small text-muted">{{ __('Tags') }}</span>
+                                                    <span class="text-uppercase small text-muted">{{ __('locale.Tags') }}</span>
                                                 </div>
                                                 <div id="tag-list" class="d-flex flex-wrap">
                                                     @if ($product->tags->isEmpty())
-                                                        <p class="text-muted mb-0" data-empty>{{ __('No tags selected') }}</p>
+                                                        <p class="text-muted mb-0" data-empty>{{ __('locale.No tags selected') }}</p>
                                                     @else
                                                         <p class="text-muted mb-0" data-empty style="display: none;">
-                                                            {{ __('No tags selected') }}</p>
+                                                            {{ __('locale.No tags selected') }}</p>
                                                         @foreach ($product->tags as $tag)
                                                             <span
                                                                 class="badge badge-light-primary d-flex align-items-center mr-1 mb-1"
@@ -478,7 +478,7 @@
                                                         <div class="card-header d-flex justify-content-between align-items-center bg-white">
                                                             <div class="d-flex align-items-center">
                                                                 <span class="badge badge-primary mr-2">#{{ $index + 1 }}</span>
-                                                                <strong>{{ __('Presentation') }} {{ $index + 1 }}</strong>
+                                                                <strong>{{ __('locale.Presentation') }} {{ $index + 1 }}</strong>
                                                             </div>
                                                             <div>
                                                                 <button type="button" class="btn btn-sm btn-flat-danger" aria-label="Remove"
@@ -494,7 +494,7 @@
 
                                                             <div class="form-row">
                                                                 <div class="form-group col-md-2">
-                                                                    <label>{{ __('Unit') }}</label>
+                                                                    <label>{{ __('locale.Unit') }}</label>
                                                                     <select class="form-control"
                                                                         name="presentations[{{ $index }}][unit]">
                                                                         <option value="1" {{ $amount->unit == 1 ? 'selected' : '' }}>1 - Gr</option>
@@ -506,35 +506,35 @@
                                                                 </div>
 
                                                                 <div class="form-group col-md-2">
-                                                                    <label>{{ __('Presentation') }}</label>
+                                                                    <label>{{ __('locale.Presentation') }}</label>
                                                                     <input type="number" class="form-control"
                                                                         name="presentations[{{ $index }}][presentation]"
                                                                         value="{{ $amount->presentation }}" placeholder="250">
                                                                 </div>
 
                                                                 <div class="form-group col-md-2">
-                                                                    <label>{{ __('Quantity') }}</label>
+                                                                    <label>{{ __('locale.Quantity') }}</label>
                                                                     <input type="number" class="form-control"
                                                                         name="presentations[{{ $index }}][amount]"
                                                                         value="{{ $amount->amount }}" placeholder="101">
                                                                 </div>
 
                                                                 <div class="form-group col-md-2">
-                                                                    <label>{{ __('Price') }} $</label>
+                                                                    <label>{{ __('locale.Price') }} $</label>
                                                                     <input type="number" step="0.01" class="form-control"
                                                                         name="presentations[{{ $index }}][price]"
                                                                         value="{{ $amount->price }}" placeholder="4.99">
                                                                 </div>
 
                                                                 <div class="form-group col-md-2">
-                                                                    <label>{{ __('Cost') }}</label>
+                                                                    <label>{{ __('locale.Cost') }}</label>
                                                                     <input type="number" step="0.01" class="form-control"
                                                                         name="presentations[{{ $index }}][cost]"
                                                                         value="{{ $amount->cost }}" placeholder="3.99">
                                                                 </div>
 
                                                                 <div class="form-group col-md-2">
-                                                                    <label>{{ __('SKU') }}</label>
+                                                                    <label>{{ __('locale.SKU') }}</label>
                                                                     <input type="text" class="form-control"
                                                                         name="presentations[{{ $index }}][sku]"
                                                                         value="{{ $amount->sku }}" placeholder="4176">
@@ -543,19 +543,19 @@
 
                                                             <div class="form-row">
                                                                 <div class="form-group col-md-4">
-                                                                    <label>{{ __('Min. Sale') }}</label>
+                                                                    <label>{{ __('locale.Min. Sale') }}</label>
                                                                     <input type="number" class="form-control"
                                                                         name="presentations[{{ $index }}][min]"
                                                                         value="{{ $amount->min }}" placeholder="1">
                                                                 </div>
                                                                 <div class="form-group col-md-4">
-                                                                    <label>{{ __('Max. Sale') }}</label>
+                                                                    <label>{{ __('locale.Max. Sale') }}</label>
                                                                     <input type="number" class="form-control"
                                                                         name="presentations[{{ $index }}][max]"
                                                                         value="{{ $amount->max }}" placeholder="1">
                                                                 </div>
                                                                 <div class="form-group col-md-4">
-                                                                    <label>{{ __('Threshold') }}</label>
+                                                                    <label>{{ __('locale.Threshold') }}</label>
                                                                     <input type="number" class="form-control"
                                                                         name="presentations[{{ $index }}][umbral]"
                                                                         value="{{ $amount->umbral }}" placeholder="1">
@@ -577,7 +577,7 @@
                                 <div class="tab-pane" id="images" aria-labelledby="images-tab" role="tabpanel">
                                     <div class="row mt-2">
                                         <div class="col-12 text-center mb-2">
-                                            <h4>{{ __('Main Image') }}</h4>
+                                            <h4>{{ __('locale.Main Image') }}</h4>
                                         </div>
                                         <div class="col-12 d-flex justify-content-center mb-3">
                                             <div class="image-upload-container text-center border rounded p-3 bg-light"
@@ -588,7 +588,7 @@
                                                         $mainImage = $product->images->where('main', '1')->first();
                                                     @endphp
                                                     @if ($mainImage)
-                                                        <img src="{{ $mainImage->image_url }}" alt="Main Image"
+                                                        <img src="{{ $mainImage->image_url }}" alt="{{ __('locale.Main Image') }}"
                                                             class="img-fluid" style="max-height: 300px;">
                                                     @else
                                                         <i data-feather="image"
@@ -650,9 +650,9 @@
 
                                     <div class="mt-4 d-flex justify-content-end">
                                         <a href="{{ route('products.index') }}"
-                                            class="btn btn-outline-secondary mr-2">{{ __('Back') }}</a>
+                                            class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
                                         <button type="submit" id="products-submit"
-                                            class="btn btn-primary">{{ isset($products) ? __('Update') : __('Save') }}</button>
+                                            class="btn btn-primary">{{ isset($products) ? __('locale.Update') : __('locale.Save') }}</button>
                                     </div>
 
                                 </div>
@@ -689,8 +689,8 @@
                 const $subcat = $('#subcategory_id');
                 const $subsub = $('#subsubcategory_id');
 
-                $subcat.empty().append('<option value="">{{ __('Select') }}</option>');
-                $subsub.empty().append('<option value="">{{ __('Select') }}</option>');
+                $subcat.empty().append('<option value="">{{ __('locale.Select') }}</option>');
+                $subsub.empty().append('<option value="">{{ __('locale.Select') }}</option>');
 
                 if (!categoryId) {
                     return;
@@ -767,7 +767,7 @@
                 badge.innerHTML =
                     '<span class="mr-1">' + label + '</span>' +
                     '<input type="hidden" name="' + inputName + '[]" value="' + id + '">' +
-                    '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="' + inputName + '" aria-label="{{ __('Remove') }}">' +
+                    '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="' + inputName + '" aria-label="{{ __('locale.Remove') }}">' +
                     '<i data-feather="x"></i>' +
                     '</button>';
 
@@ -801,7 +801,7 @@
                 badge.innerHTML =
                     '<span class="mr-1">' + label + '</span>' +
                     '<input type="hidden" name="secondary_categories[]" value="' + id + '">' +
-                    '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="secondary_categories" aria-label="{{ __('Remove') }}">' +
+                    '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="secondary_categories" aria-label="{{ __('locale.Remove') }}">' +
                     '<i data-feather="x"></i>' +
                     '</button>';
 
@@ -828,17 +828,17 @@
                     '';
 
                 if (!categorySelect || !categorySelect.value) {
-                    showToast('warning', '{{ __('Select a secondary category') }}');
+                    showToast('warning', '{{ __('locale.Select a secondary category') }}');
                     return;
                 }
 
                 if (!id) {
-                    showToast('warning', '{{ __('Select a secondary subcategory') }}');
+                    showToast('warning', '{{ __('locale.Select a secondary subcategory') }}');
                     return;
                 }
 
                 if (!list || list.querySelector('[data-id="' + id + '"]')) {
-                    showToast('warning', '{{ __('Secondary subcategory already added') }}');
+                    showToast('warning', '{{ __('locale.Secondary subcategory already added') }}');
                     return;
                 }
 
@@ -925,12 +925,12 @@
                     const list = document.getElementById('tag-list');
 
                     if (!selectedId) {
-                        showToast('warning', '{{ __('Select a tag') }}');
+                        showToast('warning', '{{ __('locale.Select a tag') }}');
                         return;
                     }
 
                     if (list && list.querySelector('[data-id="' + selectedId + '"]')) {
-                        showToast('warning', '{{ __('Tag already added') }}');
+                        showToast('warning', '{{ __('locale.Tag already added') }}');
                         return;
                     }
 
@@ -969,7 +969,7 @@
                             <i data-feather="image" style="width: 32px; height: 32px; color: #ccc;"></i>
                         </div>
                         <input type="file" name="secondary_images[]" id="sec_input_${index}" class="d-none" accept="image/*" onchange="previewImage(this, 'sec_preview_${index}')">
-                        <label class="btn btn-sm btn-outline-primary mb-0" for="sec_input_${index}">{{ __('Select Image') }}</label>
+                        <label class="btn btn-sm btn-outline-primary mb-0" for="sec_input_${index}">{{ __('locale.Select Image') }}</label>
                     </div>
                 </div>
             </div>
@@ -996,7 +996,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Unit') }}</label>
+                                <label>{{ __('locale.Unit') }}</label>
                                 <select class="form-control" name="presentations[${index}][unit]">
                                     <option value="1">1 - Gr</option>
                                     <option value="2">2 - Kg</option>
@@ -1008,51 +1008,51 @@
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Presentation') }}</label>
+                                <label>{{ __('locale.Presentation') }}</label>
                                 <input type="number" class="form-control" name="presentations[${index}][presentation]" placeholder="250">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Quantity') }}</label>
+                                <label>{{ __('locale.Quantity') }}</label>
                                 <input type="number" class="form-control" name="presentations[${index}][amount]" placeholder="101">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Price') }} $</label>
+                                <label>{{ __('locale.Price') }} $</label>
                                 <input type="number" step="0.01" class="form-control" name="presentations[${index}][price]" placeholder="4.99">
                             </div>
                         </div>
                         
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Cost') }}</label>
+                                <label>{{ __('locale.Cost') }}</label>
                                 <input type="number" step="0.01" class="form-control" name="presentations[${index}][cost]" placeholder="3.99">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Min. Sale') }}</label>
+                                <label>{{ __('locale.Min. Sale') }}</label>
                                 <input type="number" class="form-control" name="presentations[${index}][min]" placeholder="1">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Max. Sale') }}</label>
+                                <label>{{ __('locale.Max. Sale') }}</label>
                                 <input type="number" class="form-control" name="presentations[${index}][max]" placeholder="1">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('Threshold') }}</label>
+                                <label>{{ __('locale.Threshold') }}</label>
                                 <input type="number" class="form-control" name="presentations[${index}][umbral]" placeholder="1">
                             </div>
                         </div>
                         
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>{{ __('SKU') }}</label>
+                                <label>{{ __('locale.SKU') }}</label>
                                 <input type="text" class="form-control" name="presentations[${index}][sku]" placeholder="4176">
                             </div>
                         </div>

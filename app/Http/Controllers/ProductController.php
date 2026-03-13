@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Libraries\SetNameImage;
 use App\Exports\ProductsExport;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
@@ -25,8 +26,8 @@ use App\Models\ProductProveedor;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
-use File;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
@@ -976,6 +977,33 @@ class ProductController extends Controller
         return public_path('img/products');
     }
 
+    private function ensureProductImageDiskPath(?string $preferredPath = null): string
+    {
+        $paths = array_filter([
+            $preferredPath,
+            public_path('img/products'),
+        ]);
+
+        foreach ($paths as $path) {
+            try {
+                if (!File::exists($path)) {
+                    File::makeDirectory($path, 0755, true);
+                }
+
+                if (is_dir($path) && is_writable($path)) {
+                    return $path;
+                }
+            } catch (\Throwable $exception) {
+                Log::warning('Unable to prepare product image directory', [
+                    'path' => $path,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        throw new \RuntimeException('Unable to prepare writable image directory.');
+    }
+
     private function getProductImagePublicPath(): string
     {
         $path = env('ECOMMERCE_IMAGE_PUBLIC_PATH', 'img/products');
@@ -983,20 +1011,44 @@ class ProductController extends Controller
         return rtrim($path, '/\\') . '/';
     }
 
+    private function buildProductImageUrl(Request $request, string $fileName): string
+    {
+        $publicPathTrim = trim($this->getProductImagePublicPath(), '/');
+        $requestBase = rtrim($request->getSchemeAndHttpHost() . $request->getBasePath(), '/');
+        $envBase = config('app.asset_url') ?: config('app.url') ?: env('APP_URL') ?: env('ASSET_URL');
+        $baseUrlTrim = rtrim(($envBase ?: $requestBase), '/');
+
+        $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
+
+        if ($endsWithPublic) {
+            return $baseUrlTrim . '/' . ltrim($fileName, '/');
+        }
+
+        return $baseUrlTrim . '/' . $publicPathTrim . '/' . ltrim($fileName, '/');
+    }
+
+    private function extractImageFileName(?string $value): string
+    {
+        $value = (string) $value;
+        if ($value === '') {
+            return '';
+        }
+
+        $pathPart = parse_url($value, PHP_URL_PATH);
+        return basename($pathPart ?: $value);
+    }
+
     private function handleImageUpload(Request $request, Product $product, $isUpdate = false)
     {
-        $diskPath = $this->getProductImageDiskPath();
+        $diskPath = $this->ensureProductImageDiskPath($this->getProductImageDiskPath());
         $publicPath = $this->getProductImagePublicPath();
         Log::info('handleImageUpload start for product: ' . $product->id . ' hasFile(image): ' . ($request->hasFile('image') ? 'yes' : 'no') . ' secondary_count: ' . (count($request->file('secondary_images') ?? [])));
-
-        if (!File::exists($diskPath)) {
-            File::makeDirectory($diskPath, 0755, true);
-        }
 
         // Main image
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $file_name = time() . '_main.' . $file->getClientOriginalExtension();
+            $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
+            $imageUrl = $this->buildProductImageUrl($request, $file_name);
             try {
                 $file->move($diskPath, $file_name);
                 Log::info('Main image moved: ' . $file_name);
@@ -1017,18 +1069,18 @@ class ProductController extends Controller
                 $productImage = $product->images()->where('main', '1')->first();
                 if ($productImage) {
                     // delete old file
-                    $old = $productImage->file;
+                    $old = $this->extractImageFileName($productImage->file);
                     $oldPath = $diskPath . DIRECTORY_SEPARATOR . $old;
                     if ($old && File::exists($oldPath)) {
                         try { File::delete($oldPath); } catch (\Exception $e) { Log::error('Error deleting old main image: '.$e->getMessage()); }
                         Log::info('Deleted old main image: ' . $old);
                     }
-                    $productImage->update(['file' => $file_name]);
+                    $productImage->update(['file' => $imageUrl]);
                 } else {
-                    ProductImage::create(['product_id' => $product->id, 'file' => $file_name, 'main' => '1']);
+                    ProductImage::create(['product_id' => $product->id, 'file' => $imageUrl, 'main' => '1']);
                 }
             } else {
-                ProductImage::create(['product_id' => $product->id, 'file' => $file_name, 'main' => '1']);
+                ProductImage::create(['product_id' => $product->id, 'file' => $imageUrl, 'main' => '1']);
             }
         }
 
@@ -1036,7 +1088,8 @@ class ProductController extends Controller
         if ($request->hasFile('secondary_images')) {
             foreach ($request->file('secondary_images') as $file) {
                 try {
-                    $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $imageName = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
+                    $imageUrl = $this->buildProductImageUrl($request, $imageName);
                     try {
                         $file->move($diskPath, $imageName);
                         Log::info('Secondary image moved: ' . $imageName);
@@ -1052,7 +1105,7 @@ class ProductController extends Controller
                         }
                     }
 
-                    $img = ProductImage::create(['product_id' => $product->id, 'file' => $imageName, 'main' => '0']);
+                    $img = ProductImage::create(['product_id' => $product->id, 'file' => $imageUrl, 'main' => '0']);
                     Log::info('Created secondary image record id: ' . $img->id . ' file: ' . $imageName);
                 } catch (\Exception $e) {
                     Log::error('Error creating secondary image: ' . $e->getMessage());
@@ -1066,10 +1119,11 @@ class ProductController extends Controller
             if (is_array($ids) && count($ids) > 0) {
                 $items = ProductImage::whereIn('id', $ids)->get();
                 foreach ($items as $item) {
-                    $itemPath = $diskPath . DIRECTORY_SEPARATOR . $item->file;
-                    if ($item->file && File::exists($itemPath)) {
-                        try { File::delete($itemPath); } catch (\Exception $e) { Log::error('Delete file error: '.$e->getMessage()); }
-                    }
+                        $itemFileName = $this->extractImageFileName($item->file);
+                        $itemPath = $diskPath . DIRECTORY_SEPARATOR . $itemFileName;
+                        if ($itemFileName && File::exists($itemPath)) {
+                            try { File::delete($itemPath); } catch (\Exception $e) { Log::error('Delete file error: '.$e->getMessage()); }
+                        }
                 }
                 ProductImage::whereIn('id', $ids)->delete();
             }
@@ -1078,21 +1132,17 @@ class ProductController extends Controller
 
     public function updateImage(Request $request)
     {
-        $diskPath = $this->getProductImageDiskPath();
+        $diskPath = $this->ensureProductImageDiskPath($this->getProductImageDiskPath());
         $publicPath = $this->getProductImagePublicPath();
         $hasMain = ProductImage::where('product_id', $request->product_id)->where('main', '1')->exists();
         $fileId = null;
         $file_name = null;
-
-        if (!File::exists($diskPath)) {
-            File::makeDirectory($diskPath, 0755, true);
-        }
+        $imageUrl = null;
 
         if (!$hasMain) {
             $file = $request->file('file');
-            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
-                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
-                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
+            $imageUrl = $this->buildProductImageUrl($request, $file_name);
 
             $file->move($diskPath, $file_name);
 
@@ -1101,21 +1151,20 @@ class ProductController extends Controller
             }
 
             $detail = new ProductImage;
-            $detail->file = $file_name;
+            $detail->file = $imageUrl;
             $detail->main = '1';
             $detail->product_id = $request->product_id;
             $detail->save();
             $fileId = $detail->id;
-            return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name]);
+            return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name, 'url' => $imageUrl]);
         }
 
         if ($request->id == NULL || $request->id == 'null') {
             $item = ProductImage::where('product_id', $request->product_id)->where('main', '1')->first();
-            $odlFile = $item->file;
+            $odlFile = $this->extractImageFileName($item->file);
             $file = $request->file('file');
-            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
-                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
-                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
+            $imageUrl = $this->buildProductImageUrl($request, $file_name);
 
             $file->move($diskPath, $file_name);
 
@@ -1128,14 +1177,13 @@ class ProductController extends Controller
                 File::delete($oldPath);
             }
 
-            $item->file = $file_name;
+            $item->file = $imageUrl;
             $item->save();
             $fileId = $item->id;
         } else if ($request->id == 0) {
             $file = $request->file('file');
-            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
-                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
-                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
+            $imageUrl = $this->buildProductImageUrl($request, $file_name);
             $file->move($diskPath, $file_name);
 
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
@@ -1143,17 +1191,16 @@ class ProductController extends Controller
             }
 
             $detail = new ProductImage;
-            $detail->file = $file_name;
+            $detail->file = $imageUrl;
             $detail->product_id = $request->product_id;
             $detail->save();
             $fileId = $detail->id;
         } else {
             $item = ProductImage::find($request->id);
-            $odlFile = $item->file;
+            $odlFile = $this->extractImageFileName($item->file);
             $file = $request->file('file');
-            $file_name = function_exists('SetNameImage') || class_exists('SetNameImage')
-                ? SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension())
-                : time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file_name = SetNameImage::set($file->getClientOriginalName(), $file->getClientOriginalExtension());
+            $imageUrl = $this->buildProductImageUrl($request, $file_name);
             $file->move($diskPath, $file_name);
 
             if (function_exists('ResizeImage') || class_exists('ResizeImage')) {
@@ -1164,11 +1211,11 @@ class ProductController extends Controller
             if ($odlFile && File::exists($oldPath)) {
                 File::delete($oldPath);
             }
-            $item->file = $file_name;
+            $item->file = $imageUrl;
             $item->save();
             $fileId = $request->id;
         }
 
-        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name]);
+        return response()->json(['result' => true, 'id' => $fileId, 'file' => $file_name, 'url' => $imageUrl]);
     }
 }

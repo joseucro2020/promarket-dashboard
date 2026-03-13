@@ -69,7 +69,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        {{-- <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Mark as PRO Product?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
@@ -79,8 +79,8 @@
                                                         for="is_pro">{{ __('locale.Yes') }}</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
+                                        </div> --}}
+                                        <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Auto Update?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
@@ -127,7 +127,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-12">
+                                        {{-- <div class="col-md-12">
                                             <div class="border rounded p-2 mb-2 bg-light">
                                                 <div class="row">
                                                     <div class="col-12">
@@ -154,7 +154,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> --}}
 
                                         <!-- Categories -->
                                         <div class="col-md-4">
