@@ -241,7 +241,7 @@
       // Header: select/deselect all rows (all pages)
       $('#kromi-select-all').on('change', function() {
         var checked = $(this).is(':checked');
-        var allNodes = kromiTable.rows().nodes();
+        var allNodes = kromiTable.rows({ search: 'applied' }).nodes();
         $(allNodes).each(function() {
           var $row = $(this);
           $row.find('input[type="checkbox"]').prop('checked', checked);
