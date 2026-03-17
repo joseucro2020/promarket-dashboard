@@ -224,7 +224,9 @@ Route::group(['prefix' => 'panel'], function () {
 
   // Special Categories (sin Admin)
   Route::get('categorias-especiales', [SpecialCategoryController::class, 'index'])->name('special-categories.index');
+  Route::get('categorias-especiales/nuevo', [SpecialCategoryController::class, 'create'])->name('special-categories.create');
   Route::post('categorias-especiales', [SpecialCategoryController::class, 'store'])->name('special-categories.store');
+  Route::get('categorias-especiales/{id}/editar', [SpecialCategoryController::class, 'edit'])->name('special-categories.edit');
   Route::put('categorias-especiales/{id}', [SpecialCategoryController::class, 'update'])->name('special-categories.update');
   Route::delete('categorias-especiales/{id}', [SpecialCategoryController::class, 'destroy'])->name('special-categories.destroy');
   Route::post('categorias-especiales/{id}/status', [SpecialCategoryController::class, 'status'])->name('special-categories.status');

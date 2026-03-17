@@ -18,8 +18,8 @@ class SpecialCategoryRequest extends FormRequest
             'order' => ['nullable', 'integer', 'min:1'],
             'status' => ['nullable', 'in:0,1'],
             'slider_quantity' => ['nullable', 'integer', 'min:1'],
-            'tipo_order' => ['nullable'],
-            'tipo_special' => ['nullable'],
+            'tipo_order' => ['nullable', 'in:1,2'],
+            'tipo_special' => ['nullable', 'in:1,2,3,4'],
             'products' => ['nullable', 'string'],
         ];
     }

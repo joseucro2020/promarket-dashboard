@@ -6,7 +6,6 @@ use App\Http\Requests\SpecialCategoryRequest;
 use App\Models\Category;
 use App\Models\SpecialCategory;
 use App\Models\SpecialCategoryDetail;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -30,58 +29,51 @@ class SpecialCategoryController extends Controller
             ->whereNull('special_categories.deleted_at')
             ->get();
 
-        $normalCategories = Category::select('id', 'name', 'name_english')
-            ->where('status', '1')
-            ->with([
-                'subcategories' => function ($sql) {
-                    $sql->select('id', 'name', 'name_english', 'category_id')
-                        ->with(['sub_subcategories' => function ($r) {
-                            $r->select('id', 'name', 'subcategory_id')
-                                ->where('status', '1');
-                        }])
-                        ->where('status', '1');
-                },
-                'sizes' => function ($sizes) {
-                    $sizes->select('category_sizes.id', 'name');
-                },
-            ])
-            ->orderBy('name', 'DESC')
-            ->get();
-
-        $products = DB::table('products')
-            ->select(
-                'products.id',
-                'products.name',
-                'products.category_id',
-                'products.subcategory_id',
-                'products.subsubcategory_id'
-            )
-            ->where('status', '1')
-            ->get();
-
         return view('panel.special-categories.index')->with([
             'categories' => $categories,
-            'products' => $products,
-            'normalCategories' => $normalCategories,
         ]);
+    }
+
+    public function create()
+    {
+        return view('panel.special-categories.form', $this->getFormViewData());
+    }
+
+    public function edit($id)
+    {
+        $category = SpecialCategory::with(['products' => function ($query) {
+            $query->select('products.id');
+        }])->findOrFail($id);
+
+        return view('panel.special-categories.form', $this->getFormViewData($category));
     }
 
     public function store(SpecialCategoryRequest $request)
     {
-        $category = SpecialCategory::create($request->all());
+        $payload = $request->all();
+        $payload['tipo_special'] = $this->normalizeSpecialTypeValue($request->input('tipo_special'));
+        $payload['tipo_order'] = $this->normalizeOrderTypeValue($request->input('tipo_order'));
+
+        $category = SpecialCategory::create($payload);
         $category->slug = Str::slug($request->name);
         $category->save();
 
         $this->syncProducts($category->id, $request->products);
         $this->reorderExcept($category->id, (int) $request->order);
 
-        return response()->json(['ok' => true]);
+        return redirect()
+            ->route('special-categories.index')
+            ->with('success', __('locale.Special category saved successfully.'));
     }
 
     public function update(SpecialCategoryRequest $request, $id)
     {
         $category = SpecialCategory::findOrFail($id);
-        $category->fill($request->all());
+        $payload = $request->all();
+        $payload['tipo_special'] = $this->normalizeSpecialTypeValue($request->input('tipo_special'));
+        $payload['tipo_order'] = $this->normalizeOrderTypeValue($request->input('tipo_order'));
+
+        $category->fill($payload);
         $category->slug = Str::slug($request->name);
         $category->save();
 
@@ -89,7 +81,9 @@ class SpecialCategoryController extends Controller
         $this->syncProducts($category->id, $request->products);
         $this->reorderExcept($category->id, (int) $request->order);
 
-        return response()->json(['ok' => true]);
+        return redirect()
+            ->route('special-categories.index')
+            ->with('success', __('locale.Special category updated successfully.'));
     }
 
     public function destroy($id)
@@ -166,5 +160,126 @@ class SpecialCategoryController extends Controller
             $category->order = $num;
             $category->save();
         }
+    }
+
+    private function getFormViewData(?SpecialCategory $specialCategory = null): array
+    {
+        $normalCategories = Category::select('id', 'name', 'name_english')
+            ->where('status', '1')
+            ->with([
+                'subcategories' => function ($sql) {
+                    $sql->select('id', 'name', 'name_english', 'category_id')
+                        ->with(['sub_subcategories' => function ($query) {
+                            $query->select('id', 'name', 'subcategory_id')
+                                ->where('status', '1');
+                        }])
+                        ->where('status', '1');
+                },
+            ])
+            ->orderBy('name', 'ASC')
+            ->get();
+
+        $products = DB::table('products')
+            ->select(
+                'products.id',
+                'products.name',
+                'products.category_id',
+                'products.subcategory_id',
+                'products.subsubcategory_id'
+            )
+            ->where('status', '1')
+            ->orderBy('name', 'ASC')
+            ->get();
+
+        return [
+            'specialCategory' => $specialCategory,
+            'nextSpecialCategoryOrder' => SpecialCategory::query()->count() + 1,
+            'normalCategories' => $normalCategories,
+            'products' => $products,
+            'selectedSpecialType' => $this->normalizeSpecialTypeValue(optional($specialCategory)->tipo_special),
+            'selectedOrderType' => $this->normalizeOrderTypeValue(optional($specialCategory)->tipo_order),
+            'specialTypeOptions' => $this->buildOptionMap(
+                [
+                    '1' => __('locale.Special Category Default'),
+                    '2' => __('locale.Special Category Offers'),
+                    '3' => __('locale.Special Category New'),
+                    '4' => __('locale.Special Category Best Sellers'),
+                ],
+                [],
+                $this->normalizeSpecialTypeValue(optional($specialCategory)->tipo_special)
+            ),
+            'orderTypeOptions' => $this->buildOptionMap(
+                [
+                    '1' => __('locale.Fixed'),
+                    '2' => __('locale.Random'),
+                ],
+                [],
+                $this->normalizeOrderTypeValue(optional($specialCategory)->tipo_order)
+            ),
+        ];
+    }
+
+    private function buildOptionMap(array $defaults, array $dbValues, ?string $currentValue = null): array
+    {
+        $options = $defaults;
+
+        foreach ($dbValues as $value) {
+            if (!array_key_exists($value, $options)) {
+                $options[$value] = $this->humanizeOptionValue($value);
+            }
+        }
+
+        if ($currentValue && !array_key_exists($currentValue, $options)) {
+            $options[$currentValue] = $this->humanizeOptionValue($currentValue);
+        }
+
+        return $options;
+    }
+
+    private function humanizeOptionValue(string $value): string
+    {
+        return Str::headline(str_replace(['_', '-'], ' ', $value));
+    }
+
+    private function normalizeSpecialTypeValue($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+
+        $map = [
+            '1' => '1',
+            '2' => '2',
+            '3' => '3',
+            '4' => '4',
+            'Categorias Especial' => '1',
+            'Categorias Ofertas' => '2',
+            'Categorias Nuevos' => '3',
+            'Categorias Mas Vendidos' => '4',
+        ];
+
+        return $map[$normalized] ?? null;
+    }
+
+    private function normalizeOrderTypeValue($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+
+        $map = [
+            '1' => '1',
+            '2' => '2',
+            'Fijo' => '1',
+            'Aleatorio' => '2',
+            'Manual' => '1',
+            'Secuencial' => '1',
+        ];
+
+        return $map[$normalized] ?? null;
     }
 }
