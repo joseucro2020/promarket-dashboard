@@ -367,7 +367,7 @@
         <div class="card-header">
           <h4 class="card-title">{{ __('locale.Transactions') }}</h4>
         </div>
-        <div class="card-body">
+        <div class="card-body" id="dashboard-transactions-body">
           @forelse($paymentMethodPercentages as $item)
             <div class="transaction-item">
               <div class="media">
@@ -731,6 +731,57 @@
         var $ordersValue = $('#dashboard-orders-value');
         var $revenueValue = $('#dashboard-revenue-value');
         var $profitValue = $('#dashboard-profit-value');
+        var $transactionsBody = $('#dashboard-transactions-body');
+        var paymentShareLabel = "{{ __('locale.Payment Method Share') }}";
+        var noRecordsLabel = "{{ __('locale.No records found.') }}";
+
+        var escapeHtml = function (value) {
+          return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        };
+
+        var renderTransactions = function (items) {
+          if (!$transactionsBody.length) {
+            return;
+          }
+
+          if (!Array.isArray(items) || !items.length) {
+            $transactionsBody.html('<div class="text-center text-muted py-2">' + escapeHtml(noRecordsLabel) + '</div>');
+            return;
+          }
+
+          var html = items.map(function (item) {
+            var percent = typeof item.percent === 'number' ? item.percent : parseFloat(item.percent || 0);
+            if (isNaN(percent)) {
+              percent = 0;
+            }
+
+            return '' +
+              '<div class="transaction-item">' +
+                '<div class="media">' +
+                  '<div class="avatar ' + escapeHtml(item.bg_class || '') + ' rounded">' +
+                    '<div class="avatar-content">' +
+                      '<i data-feather="' + escapeHtml(item.icon || 'circle') + '" class="avatar-icon font-medium-3"></i>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="media-body">' +
+                    '<h6 class="transaction-title">' + escapeHtml(item.label || '') + '</h6>' +
+                    '<small>' + escapeHtml(paymentShareLabel) + '</small>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="font-weight-bolder ' + escapeHtml(item.text_class || '') + '">' + percent + '%</div>' +
+              '</div>';
+          }).join('');
+
+          $transactionsBody.html(html);
+          if (window.feather) {
+            feather.replace({ width: 14, height: 14 });
+          }
+        };
 
         $dateForm.on('submit', function (event) {
           event.preventDefault();
@@ -766,6 +817,9 @@
               if ($profitValue.length) {
                 $profitValue.text(payload.profit_formatted);
                 $profitValue.attr('title', payload.profit_full);
+              }
+              if (payload.payment_method_percentages) {
+                renderTransactions(payload.payment_method_percentages);
               }
               if ($dateFromInput.length && payload.date_from) {
                 $dateFromInput.val(payload.date_from);

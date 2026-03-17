@@ -204,98 +204,7 @@ class DashboardController extends Controller
       $topProducts = $buildTopProductsBase();
     }
 
-    // Porcentaje de uso por metodo de pago (desde deposits)
-    $depositBase = Deposit::query()->select('id', 'method_code', 'status', 'account', 'gateway', 'fields', 'detail');
-    $totalDeposits = (clone $depositBase)->count();
-
-    $bankFromDeposit = function ($deposit) {
-      $bank = data_get($deposit->account, 'banco')
-        ?? data_get($deposit->account, 'bank')
-        ?? data_get($deposit->gateway, 'banco')
-        ?? data_get($deposit->gateway, 'bank')
-        ?? data_get($deposit->fields, 'banco')
-        ?? data_get($deposit->fields, 'bank')
-        ?? '';
-
-      if (!empty($bank)) {
-        return strtolower((string) $bank);
-      }
-
-      return strtolower((string) $deposit->detail);
-    };
-
-    $stats = [
-      'banesco_mobile' => 0,
-      'provincial_mobile' => 0,
-      'banesco_transfer' => 0,
-      'provincial_transfer' => 0,
-      'cashea' => 0,
-      'zelle' => 0,
-      'stripe' => 0,
-      'paypal' => 0,
-      'cash' => 0,
-    ];
-
-    foreach ($depositBase->get() as $deposit) {
-      $method = strtolower((string) (
-        data_get($deposit->gateway, 'code')
-        ?? data_get($deposit->account, 'code')
-        ?? $deposit->method_code
-        ?? data_get($deposit->gateway, 'name')
-        ?? data_get($deposit->account, 'name')
-        ?? ''
-      ));
-      $bank = $bankFromDeposit($deposit);
-
-      if ($method === 'pago_movil') {
-        if (strpos($bank, 'banesco') !== false) {
-          $stats['banesco_mobile']++;
-        } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
-          $stats['provincial_mobile']++;
-        }
-        continue;
-      }
-
-      if ($method === 'transferencia') {
-        if (strpos($bank, 'banesco') !== false) {
-          $stats['banesco_transfer']++;
-        } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
-          $stats['provincial_transfer']++;
-        }
-        continue;
-      }
-
-      if ($method === 'cashea') {
-        $stats['cashea']++;
-      } elseif ($method === 'zelle') {
-        $stats['zelle']++;
-      } elseif ($method === 'stripe') {
-        $stats['stripe']++;
-      } elseif ($method === 'paypal') {
-        $stats['paypal']++;
-      } elseif ($method === 'efectivo') {
-        $stats['cash']++;
-      }
-    }
-
-    $toPercent = function ($value) use ($totalDeposits) {
-      if ($totalDeposits <= 0) {
-        return 0;
-      }
-      return round(((int) $value / $totalDeposits) * 100, 1);
-    };
-
-    $paymentMethodPercentages = [
-      (object) ['label' => __('Banesco (Mobile Payment)'), 'percent' => $toPercent($stats['banesco_mobile']), 'icon' => 'smartphone', 'bg_class' => 'bg-light-info', 'text_class' => 'text-primary'],
-      (object) ['label' => __('Provincial (Mobile Payment)'), 'percent' => $toPercent($stats['provincial_mobile']), 'icon' => 'smartphone', 'bg_class' => 'bg-light-info', 'text_class' => 'text-primary'],
-      (object) ['label' => __('Banesco (Transfer)'), 'percent' => $toPercent($stats['banesco_transfer']), 'icon' => 'repeat', 'bg_class' => 'bg-light-success', 'text_class' => 'text-success'],
-      (object) ['label' => __('Provincial (Transfer)'), 'percent' => $toPercent($stats['provincial_transfer']), 'icon' => 'repeat', 'bg_class' => 'bg-light-success', 'text_class' => 'text-success'],
-      (object) ['label' => __('Cashea'), 'percent' => $toPercent($stats['cashea']), 'icon' => 'shopping-bag', 'bg_class' => 'bg-light-warning', 'text_class' => 'text-warning'],
-      (object) ['label' => __('Zelle'), 'percent' => $toPercent($stats['zelle']), 'icon' => 'send', 'bg_class' => 'bg-light-info', 'text_class' => 'text-info'],
-      (object) ['label' => __('Stripe'), 'percent' => $toPercent($stats['stripe']), 'icon' => 'credit-card', 'bg_class' => 'bg-light-primary', 'text_class' => 'text-primary'],
-      (object) ['label' => __('PayPal'), 'percent' => $toPercent($stats['paypal']), 'icon' => 'dollar-sign', 'bg_class' => 'bg-light-secondary', 'text_class' => 'text-secondary'],
-      (object) ['label' => __('Cash'), 'percent' => $toPercent($stats['cash']), 'icon' => 'pocket', 'bg_class' => 'bg-light-danger', 'text_class' => 'text-danger'],
-    ];
+    $paymentMethodPercentages = $this->buildPaymentMethodPercentages($salesFrom, $salesTo);
 
     return view('panel.dashboard.dashboard', compact(
       'dateFrom',
@@ -349,6 +258,18 @@ class DashboardController extends Controller
       'profit' => (float) $profit,
       'profit_formatted' => \App\Helpers\Helper::abbreviateNumber($profit),
       'profit_full' => number_format($profit, 2),
+      'payment_method_percentages' => $this->buildPaymentMethodPercentages($salesFrom, $salesTo)
+        ->map(function ($item) {
+          return [
+            'label' => $item->label,
+            'percent' => $item->percent,
+            'icon' => $item->icon,
+            'bg_class' => $item->bg_class,
+            'text_class' => $item->text_class,
+          ];
+        })
+        ->values()
+        ->all(),
     ];
 
     if ($request->boolean('debug_sql')) {
@@ -509,5 +430,104 @@ class DashboardController extends Controller
       'total_earning_display' => \App\Helpers\Helper::abbreviateNumber($totalEarning),
       'net_display' => \App\Helpers\Helper::abbreviateNumber($net)
     ];
+  }
+
+  private function buildPaymentMethodPercentages(Carbon $salesFrom, Carbon $salesTo)
+  {
+    $depositBase = Deposit::query()
+      ->select('id', 'method_code', 'status', 'account', 'gateway', 'fields', 'detail', 'created_at')
+      ->whereBetween('created_at', [$salesFrom, $salesTo]);
+
+    $totalDeposits = (clone $depositBase)->count();
+
+    $bankFromDeposit = function ($deposit) {
+      $bank = data_get($deposit->account, 'banco')
+        ?? data_get($deposit->account, 'bank')
+        ?? data_get($deposit->gateway, 'banco')
+        ?? data_get($deposit->gateway, 'bank')
+        ?? data_get($deposit->fields, 'banco')
+        ?? data_get($deposit->fields, 'bank')
+        ?? '';
+
+      if (!empty($bank)) {
+        return strtolower((string) $bank);
+      }
+
+      return strtolower((string) $deposit->detail);
+    };
+
+    $stats = [
+      'banesco_mobile' => 0,
+      'provincial_mobile' => 0,
+      'banesco_transfer' => 0,
+      'provincial_transfer' => 0,
+      'cashea' => 0,
+      'zelle' => 0,
+      'stripe' => 0,
+      'paypal' => 0,
+      'cash' => 0,
+    ];
+
+    foreach ($depositBase->get() as $deposit) {
+      $method = strtolower((string) (
+        data_get($deposit->gateway, 'code')
+        ?? data_get($deposit->account, 'code')
+        ?? $deposit->method_code
+        ?? data_get($deposit->gateway, 'name')
+        ?? data_get($deposit->account, 'name')
+        ?? ''
+      ));
+      $bank = $bankFromDeposit($deposit);
+
+      if ($method === 'pago_movil') {
+        if (strpos($bank, 'banesco') !== false) {
+          $stats['banesco_mobile']++;
+        } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
+          $stats['provincial_mobile']++;
+        }
+        continue;
+      }
+
+      if ($method === 'transferencia') {
+        if (strpos($bank, 'banesco') !== false) {
+          $stats['banesco_transfer']++;
+        } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
+          $stats['provincial_transfer']++;
+        }
+        continue;
+      }
+
+      if ($method === 'cashea') {
+        $stats['cashea']++;
+      } elseif ($method === 'zelle') {
+        $stats['zelle']++;
+      } elseif ($method === 'stripe') {
+        $stats['stripe']++;
+      } elseif ($method === 'paypal') {
+        $stats['paypal']++;
+      } elseif ($method === 'efectivo') {
+        $stats['cash']++;
+      }
+    }
+
+    $toPercent = function ($value) use ($totalDeposits) {
+      if ($totalDeposits <= 0) {
+        return 0;
+      }
+
+      return round(((int) $value / $totalDeposits) * 100, 1);
+    };
+
+    return collect([
+      (object) ['label' => __('Banesco (Mobile Payment)'), 'percent' => $toPercent($stats['banesco_mobile']), 'icon' => 'smartphone', 'bg_class' => 'bg-light-info', 'text_class' => 'text-primary'],
+      (object) ['label' => __('Provincial (Mobile Payment)'), 'percent' => $toPercent($stats['provincial_mobile']), 'icon' => 'smartphone', 'bg_class' => 'bg-light-info', 'text_class' => 'text-primary'],
+      (object) ['label' => __('Banesco (Transfer)'), 'percent' => $toPercent($stats['banesco_transfer']), 'icon' => 'repeat', 'bg_class' => 'bg-light-success', 'text_class' => 'text-success'],
+      (object) ['label' => __('Provincial (Transfer)'), 'percent' => $toPercent($stats['provincial_transfer']), 'icon' => 'repeat', 'bg_class' => 'bg-light-success', 'text_class' => 'text-success'],
+      (object) ['label' => __('Cashea'), 'percent' => $toPercent($stats['cashea']), 'icon' => 'shopping-bag', 'bg_class' => 'bg-light-warning', 'text_class' => 'text-warning'],
+      (object) ['label' => __('Zelle'), 'percent' => $toPercent($stats['zelle']), 'icon' => 'send', 'bg_class' => 'bg-light-info', 'text_class' => 'text-info'],
+      (object) ['label' => __('Stripe'), 'percent' => $toPercent($stats['stripe']), 'icon' => 'credit-card', 'bg_class' => 'bg-light-primary', 'text_class' => 'text-primary'],
+      (object) ['label' => __('PayPal'), 'percent' => $toPercent($stats['paypal']), 'icon' => 'dollar-sign', 'bg_class' => 'bg-light-secondary', 'text_class' => 'text-secondary'],
+      (object) ['label' => __('Cash'), 'percent' => $toPercent($stats['cash']), 'icon' => 'pocket', 'bg_class' => 'bg-light-danger', 'text_class' => 'text-danger'],
+    ]);
   }
 }
