@@ -170,6 +170,8 @@ Route::group(['prefix' => 'panel'], function () {
   // Clients (Customers)
   Route::get('clientes', [App\Http\Controllers\ClientController::class, 'index'])->name('clients.index');
   Route::get('clientes/all', [App\Http\Controllers\ClientController::class, 'getAll'])->name('clients.getAll');
+  Route::get('clientes/{id}/editar', [App\Http\Controllers\ClientController::class, 'edit'])->name('clients.edit');
+  Route::get('clientes/municipios/{id}/sectores', [App\Http\Controllers\ClientController::class, 'getParishes'])->name('clients.parishes');
   Route::post('clientes/{id}/status', [App\Http\Controllers\ClientController::class, 'changeStatus'])->name('clients.changeStatus');
   Route::post('clientes/{id}/delete', [App\Http\Controllers\ClientController::class, 'delete'])->name('clients.delete');
   Route::post('clientes/{id}/convert-to-pro', [App\Http\Controllers\ClientController::class, 'convertToPro'])->name('clients.convertToPro');

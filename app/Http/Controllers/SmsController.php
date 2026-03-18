@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Libraries\Centaurosms;
+use App\Facades\WasenderApi;
 use App\Models\User;
 
 class SmsController extends Controller
@@ -49,6 +50,7 @@ class SmsController extends Controller
         $message = $request->input('description');
         $numerocell = $request->input('numerocell');
         $tipo = $request->input('tipo');
+        $provider = $request->input('provider', 'centauro');
 
         if ($tipo == 0) { // Todos
             $destinatariosArr = [];
@@ -58,6 +60,26 @@ class SmsController extends Controller
             $destinatarios = json_encode($destinatariosArr);
         } else { // Individual
             $destinatarios = json_encode(['id' => 0, 'cel' => $numerocell, 'nom' => 'Individual']);
+        }
+
+        // If provider is wasender, send via Wasender WhatsApp API
+        if ($provider === 'wasender') {
+            try {
+                // use the Wasender facade which returns array response
+                $to = $numerocell ?: json_decode($destinatarios, true)[0]['cel'] ?? null;
+                $wasenderResult = WasenderApi::sendText($to, $message);
+
+                return response()->json([
+                    'provider' => 'wasender',
+                    'to' => $to,
+                    'result' => $wasenderResult
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'provider' => 'wasender',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         }
 
         return response()->json([

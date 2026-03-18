@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eba09e945e0712cf088a993e62a1fa68",
+    "content-hash": "d9c46185d91b6e334631ca0adf32f5ce",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -6677,6 +6677,53 @@
             "time": "2022-01-24T18:55:24+00:00"
         },
         {
+            "name": "wapi2/whatsapp-php-sdk",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wapi2/whatsapp-php-sdk.git",
+                "reference": "986604acde51ae39183504d796673e4ce2a7616a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wapi2/whatsapp-php-sdk/zipball/986604acde51ae39183504d796673e4ce2a7616a",
+                "reference": "986604acde51ae39183504d796673e4ce2a7616a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Wapi2\\WhatsApp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "SDK PHP para la API de WhatsApp Web",
+            "homepage": "https://github.com/wapi2/whatsapp-php-sdk",
+            "keywords": [
+                "api",
+                "php",
+                "sdk",
+                "wapi2",
+                "whatsapp"
+            ],
+            "support": {
+                "issues": "https://github.com/wapi2/whatsapp-php-sdk/issues",
+                "source": "https://github.com/wapi2/whatsapp-php-sdk/tree/v1.1.0"
+            },
+            "time": "2025-01-27T05:06:26+00:00"
+        },
+        {
             "name": "yajra/laravel-datatables-oracle",
             "version": "v9.21.2",
             "source": {
@@ -9204,5 +9251,5 @@
         "php": "^7.3|^8.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

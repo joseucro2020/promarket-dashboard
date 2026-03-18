@@ -19,6 +19,7 @@
     "laravel/ui": "^3.0",
     "league/flysystem-sftp": "^1.1",
     "maatwebsite/excel": "^3.1",
+    "wapi2/whatsapp-php-sdk": "^1.1",
     "yajra/laravel-datatables-oracle": "^9.21"
   },
   "require-dev": {

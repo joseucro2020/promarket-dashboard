@@ -177,6 +177,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         // custom theme menu provider
         App\Providers\MenuServiceProvider::class,
+        App\Services\WasenderApi\WasenderServiceProvider::class,
     ],
 
     /*
@@ -234,6 +235,7 @@ return [
         'CalcPrice' => App\Libraries\CalcPrice::class,
         'Money' => App\Libraries\Money::class,
         'Total' => App\Libraries\Total::class,
+        'WasenderApi' => App\Facades\WasenderApi::class,
     ],
 
 ];

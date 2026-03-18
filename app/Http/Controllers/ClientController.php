@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Pais;
 use App\Models\Estado;
+use App\Models\Municipality;
+use App\Models\Parish;
 use Carbon\Carbon;
 use Hash;
 use Lang;
@@ -31,6 +33,8 @@ class ClientController extends Controller
             ->where('pro_seller', User::IS_NOT_PRO)
             ->latest()
             ->get();
+
+            // dd($clients);
 
         $states = Estado::where('pais_id', Pais::VENEZUELA_ID)->get();
 
@@ -81,6 +85,42 @@ class ClientController extends Controller
         $clients = User::where('nivel', '1')->where('pro_seller', User::IS_NOT_PRO)
             ->with('pais', 'estado', 'pedidos_lastest.details', 'pedidos_lastest.exchange')->get();
         return $clients;
+    }
+
+    public function edit($id)
+    {
+        $client = User::with(['estado', 'municipality', 'parish'])
+            ->where('nivel', '1')
+            ->where('pro_seller', User::IS_NOT_PRO)
+            ->findOrFail($id);
+
+        $states = Estado::where('pais_id', Pais::VENEZUELA_ID)
+            ->orderBy('nombre', 'asc')
+            ->get();
+
+        $municipalities = Municipality::where('estado_id', $client->estado_id)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $parishes = Parish::where('municipality_id', $client->municipality_id)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('panel.clients.edit', [
+            'client' => $client,
+            'states' => $states,
+            'municipalities' => $municipalities,
+            'parishes' => $parishes,
+        ]);
+    }
+
+    public function getParishes($municipalityId)
+    {
+        $parishes = Parish::where('municipality_id', $municipalityId)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json($parishes);
     }
 
     public function update(Request $request)
