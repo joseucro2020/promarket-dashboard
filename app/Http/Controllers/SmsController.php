@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Libraries\Centaurosms;
 use App\Facades\WasenderApi;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class SmsController extends Controller
 {
@@ -67,7 +68,26 @@ class SmsController extends Controller
             try {
                 // use the Wasender facade which returns array response
                 $to = $numerocell ?: json_decode($destinatarios, true)[0]['cel'] ?? null;
+
+                Log::channel('whatsapp')->info('wasender_panel_send_requested', [
+                    'source' => 'panel_sms',
+                    'user_id' => optional($request->user())->id,
+                    'ip' => $request->ip(),
+                    'to' => $to,
+                    'message_length' => mb_strlen((string) $message),
+                    'tipo' => $tipo,
+                ]);
+
                 $wasenderResult = WasenderApi::sendText($to, $message);
+
+                Log::channel('whatsapp')->info('wasender_panel_send_success', [
+                    'source' => 'panel_sms',
+                    'user_id' => optional($request->user())->id,
+                    'ip' => $request->ip(),
+                    'to' => $to,
+                    'message_length' => mb_strlen((string) $message),
+                    'result' => $wasenderResult,
+                ]);
 
                 return response()->json([
                     'provider' => 'wasender',
@@ -75,6 +95,15 @@ class SmsController extends Controller
                     'result' => $wasenderResult
                 ]);
             } catch (\Exception $e) {
+                Log::channel('whatsapp')->error('wasender_panel_send_error', [
+                    'source' => 'panel_sms',
+                    'user_id' => optional($request->user())->id,
+                    'ip' => $request->ip(),
+                    'to' => $to ?? null,
+                    'message_length' => mb_strlen((string) $message),
+                    'error' => $e->getMessage(),
+                ]);
+
                 return response()->json([
                     'provider' => 'wasender',
                     'error' => $e->getMessage()

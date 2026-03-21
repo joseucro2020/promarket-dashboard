@@ -30,7 +30,7 @@ class FetchBcvRates extends Command
      * @var array
      */
     protected $currencies = [
-        'USD','EUR','CNY','TRY','RUB','GBP','BRL','ARS','CLP','PEN'
+        'USD'
     ];
 
     public function handle()

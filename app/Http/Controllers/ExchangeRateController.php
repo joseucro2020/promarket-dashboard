@@ -11,8 +11,10 @@ class ExchangeRateController extends Controller
 {
     public function index()
     {
-        // show all rates ordered descending
-        $rates = ExchangeRate::orderBy('created_at', 'desc')->get();
+        // show USD rates ordered descending
+        $rates = ExchangeRate::where('currency_from', 'USD')
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('panel.exchange_rates.index', compact('rates'));
     }
 
