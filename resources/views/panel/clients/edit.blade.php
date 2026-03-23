@@ -7,9 +7,10 @@
   <div class="row">
     <div class="col-12">
       <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">{{ __('locale.Update Client') }}</h4>
+        </div>
         <div class="card-body">
-          {{-- <h1 class="text-center font-italic mb-3">{{ __('locale.Update Client') }} {{ $client->name }}</h1> --}}
-
           <div id="client-edit-alert" class="alert alert-danger d-none"></div>
 
           <form id="clientEditForm" method="POST" action="{{ route('clients.update') }}">
@@ -18,128 +19,148 @@
 
             <div class="row">
               <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Name') }}</label>
-                  <input type="text" name="name" class="form-control" value="{{ old('name', $client->name) }}" required>
+                <div class="card h-100">
+                  <div class="card-header">
+                    <h5 class="mb-0">{{ __('locale.Customer Details') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group">
+                      <label>{{ __('locale.Name') }}</label>
+                      <input type="text" name="name" class="form-control" value="{{ old('name', $client->name) }}" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label>{{ __('locale.Email') }}</label>
+                      <input type="email" name="email" class="form-control" value="{{ old('email', $client->email) }}" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label>{{ __('locale.Personality Type') }}</label>
+                      <select name="type" id="client_type" class="form-control" required>
+                        <option value="1" {{ old('type', $client->persona) == 1 ? 'selected' : '' }}>{{ __('locale.Natural') }}</option>
+                        <option value="2" {{ old('type', $client->persona) == 2 ? 'selected' : '' }}>{{ __('locale.Legal') }}</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group mb-0">
+                      <label>{{ __('locale.ID / RIF') }}</label>
+                      <input type="text" name="identificacion" class="form-control" value="{{ old('identificacion', $client->identificacion) }}" required>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Email') }}</label>
-                  <input type="email" name="email" class="form-control" value="{{ old('email', $client->email) }}" required>
+                <div class="card h-100">
+                  <div class="card-header">
+                    <h5 class="mb-0">{{ __('locale.Contact Information') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group">
+                      <label>{{ __('locale.Phone') }}</label>
+                      <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $client->telefono) }}">
+                    </div>
+
+                    <div class="form-group">
+                      <label>{{ __('locale.Password') }}</label>
+                      <input type="password" name="password" class="form-control" autocomplete="new-password">
+                    </div>
+
+                    <div class="form-group mb-0">
+                      <label>{{ __('locale.Repeat Password') }}</label>
+                      <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Personality Type') }}</label>
-                  <select name="type" id="client_type" class="form-control" required>
-                    <option value="1" {{ old('type', $client->persona) == 1 ? 'selected' : '' }}>{{ __('locale.Natural') }}</option>
-                    <option value="2" {{ old('type', $client->persona) == 2 ? 'selected' : '' }}>{{ __('locale.Legal') }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.ID / RIF') }}</label>
-                  <input type="text" name="identificacion" class="form-control" value="{{ old('identificacion', $client->identificacion) }}" required>
-                </div>
-              </div>
-            </div>
-
-            <div class="row" id="legal-fields" style="display:none;">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Company') }}</label>
-                  <input type="text" name="empresa" class="form-control" value="{{ old('empresa', $client->empresa) }}">
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Fiscal Address') }}</label>
-                  <input type="text" name="fiscal" class="form-control" value="{{ old('fiscal', $client->fiscal) }}">
+            <div class="row mt-3" id="legal-fields" style="display:none;">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">{{ __('locale.Legal') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group mb-md-0">
+                          <label>{{ __('locale.Company') }}</label>
+                          <input type="text" name="empresa" class="form-control" value="{{ old('empresa', $client->empresa) }}">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group mb-0">
+                          <label>{{ __('locale.Fiscal Address') }}</label>
+                          <input type="text" name="fiscal" class="form-control" value="{{ old('fiscal', $client->fiscal) }}">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="row">
+            <div class="row mt-3">
               <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.State') }}</label>
-                  <select name="estado_id" id="estado_id" class="form-control" required>
-                    <option value="">{{ __('locale.Select') }}</option>
-                    @foreach($states as $state)
-                      <option value="{{ $state->id }}" {{ old('estado_id', $client->estado_id) == $state->id ? 'selected' : '' }}>{{ $state->nombre }}</option>
-                    @endforeach
-                  </select>
+                <div class="card h-100">
+                  <div class="card-header">
+                    <h5 class="mb-0">{{ __('locale.Address') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group">
+                      <label>{{ __('locale.State') }}</label>
+                      <select name="estado_id" id="estado_id" class="form-control" required>
+                        <option value="">{{ __('locale.Select') }}</option>
+                        @foreach($states as $state)
+                          <option value="{{ $state->id }}" {{ old('estado_id', $client->estado_id) == $state->id ? 'selected' : '' }}>{{ $state->nombre }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label>{{ __('locale.Municipality') }}</label>
+                      <select name="municipality_id" id="municipality_id" class="form-control" required>
+                        <option value="">{{ __('locale.Select') }}</option>
+                        @foreach($municipalities as $municipality)
+                          <option value="{{ $municipality->id }}" {{ old('municipality_id', $client->municipality_id) == $municipality->id ? 'selected' : '' }}>{{ $municipality->name }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+
+                    <div class="form-group mb-0">
+                      <label>{{ __('locale.Sector') }}</label>
+                      <select name="parish_id" id="parish_id" class="form-control" required>
+                        <option value="">{{ __('locale.Select') }}</option>
+                        @foreach($parishes as $parish)
+                          <option value="{{ $parish->id }}" {{ old('parish_id', $client->parish_id) == $parish->id ? 'selected' : '' }}>{{ $parish->name }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Municipality') }}</label>
-                  <select name="municipality_id" id="municipality_id" class="form-control" required>
-                    <option value="">{{ __('locale.Select') }}</option>
-                    @foreach($municipalities as $municipality)
-                      <option value="{{ $municipality->id }}" {{ old('municipality_id', $client->municipality_id) == $municipality->id ? 'selected' : '' }}>{{ $municipality->name }}</option>
-                    @endforeach
-                  </select>
+                <div class="card h-100">
+                  <div class="card-header">
+                    <h5 class="mb-0">{{ __('locale.Address') }}</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-group">
+                      <label>{{ __('locale.Address') }}</label>
+                      <textarea name="direccion" class="form-control" rows="4" required>{{ old('direccion', $client->direccion) }}</textarea>
+                    </div>
+
+                    <div class="form-group mb-0">
+                      <label>{{ __('locale.Reference Point') }}</label>
+                      <textarea name="referencia" class="form-control" rows="4">{{ old('referencia', $client->referencia) }}</textarea>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Sector') }}</label>
-                  <select name="parish_id" id="parish_id" class="form-control" required>
-                    <option value="">{{ __('locale.Select') }}</option>
-                    @foreach($parishes as $parish)
-                      <option value="{{ $parish->id }}" {{ old('parish_id', $client->parish_id) == $parish->id ? 'selected' : '' }}>{{ $parish->name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Phone') }}</label>
-                  <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $client->telefono) }}">
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Password') }}</label>
-                  <input type="password" name="password" class="form-control" autocomplete="new-password">
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Repeat Password') }}</label>
-                  <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Address') }}</label>
-                  <textarea name="direccion" class="form-control" rows="4" required>{{ old('direccion', $client->direccion) }}</textarea>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label>{{ __('locale.Reference Point') }}</label>
-                  <textarea name="referencia" class="form-control" rows="4">{{ old('referencia', $client->referencia) }}</textarea>
-                </div>
-              </div>
-            </div>
-
-            <div class="text-center mt-2">
+            <div class="mt-4 d-flex justify-content-end">
+              <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary mr-2">{{ __('locale.Back') }}</a>
               <button type="submit" id="btn-update-client" class="btn btn-primary">{{ __('locale.Update') }}</button>
             </div>
           </form>

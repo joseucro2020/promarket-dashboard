@@ -5,44 +5,7 @@
 @section('vendor-style')
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap4.min.css')) }}">
   <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap4.min.css')) }}">
-@endsection
-
-@section('page-style')
-<style>
-  .clients-title {
-    text-align: center;
-    font-style: italic;
-    font-weight: 700;
-  }
-  .clients-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  .clients-search {
-    display: flex;
-    align-items: center;
-    min-width: 320px;
-    gap: .75rem;
-  }
-  .clients-search .form-control {
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
-    border-radius: 0;
-    padding-left: .5rem;
-  }
-  .clients-search .form-control:focus {
-    box-shadow: none;
-  }
-  .clients-table thead th {
-    border-top: 0;
-  }
-  .clients-table tbody td {
-    vertical-align: middle;
-  }
-</style>
+  <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap4.min.css')) }}">
 @endsection
 
 @section('content')
@@ -51,18 +14,30 @@
     <div class="col-12">
       {{-- <h1 class="clients-title mb-2">{{ __('locale.Customers') }}</h1> --}}
       <div class="card">
-        <div class="card-body">
-          <div class="clients-toolbar">
-            <a href="#" class="btn btn-primary" id="btn-export">
-              {{ __('locale.Export') }}
-            </a>
-            <div class="clients-search">
-              <i data-feather="search" title="{{ __('locale.Search') }}" aria-label="{{ __('locale.Search') }}"></i>
-              <input type="text" id="clients-custom-search" class="form-control" placeholder="{{ __('locale.Search') }}">
+        <div class="card-header border-bottom p-1">
+            <div class="head-label">
+            <h4 class="mb-0">{{ __('locale.Customers') }}</h4>
+          </div>
+          <div class="dt-action-buttons text-right">
+            <div class="dt-buttons d-inline-flex">
+                <a href="#" id="btn-export" class="dt-button create-new btn btn-primary">
+                <i data-feather="download"></i> {{ __('locale.Export') }}
+              </a>
             </div>
           </div>
+        </div>
+        <div class="card-body">
+          {{-- <div class="clients-toolbar">
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <div class="clients-length-placeholder"></div>
+              <a href="#" class="btn btn-primary" id="btn-export">
+                {{ __('locale.Export') }}
+              </a>
+            </div>
+
+          </div> --}}
           <div class="table-responsive">
-            <table class="table table-hover w-100 clients-table" id="clientsTable">
+            <table class="table table-striped table-bordered table-hover w-100 module-list-table  clients-table" id="clientsTable">
               <thead>
                 <tr>
                   <th>{{ __('locale.Name') }}</th>
@@ -111,12 +86,48 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="clientOrdersModal" tabindex="-1" role="dialog" aria-labelledby="clientOrdersModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title text-primary" id="clientOrdersModalLabel">{{ __('locale.Pedidos') }} - <span id="orders_client_name"></span></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-striped" id="ordersTable">
+            <thead>
+              <tr>
+                <th>{{ __('locale.Order Number') }}</th>
+                <th>{{ __('locale.Date') }}</th>
+                <th>{{ __('locale.Total') }}</th>
+                <th>{{ __('locale.Payment Method') }}</th>
+                <th>{{ __('locale.Status') }}</th>
+                <th>{{ __('locale.Actions') }}</th>
+              </tr>
+            </thead>
+            <tbody id="client_orders_tbody">
+              <!-- Content loaded via AJAX -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('locale.Close') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('vendor-script')
   <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
   <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
   <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
 
 @section('page-script')
@@ -137,16 +148,17 @@
     // Render static icons (search/export/header) on initial load
     renderFeatherIcons();
 
-    // Initialize DataTable with AJAX source
+    // Initialize DataTable with AJAX source (server-side processing)
     var table = $('#clientsTable').DataTable({
       responsive: true,
-      processing: false,
-      serverSide: false,
-      dom: 't<"d-flex justify-content-between align-items-center mt-1"<"small"i><"small"p>>',
+      processing: true,
+      serverSide: true,
+      pagingType: 'simple_numbers',
+      dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
       ajax: {
         url: "{{ url('panel/clientes/all') }}",
         type: 'GET',
-        dataSrc: ''
+        dataSrc: 'data'
       },
       columns: [
         { data: 'name' },
@@ -191,8 +203,8 @@
           html += '<a class="btn btn-sm btn-icon btn-flat-success mr-1" href="{{ url('panel/clientes') }}/'+id+'/editar" title="{{ __('locale.Edit') }}" aria-label="{{ __('locale.Edit') }}">'
             + '<i data-feather="edit" title="{{ __('locale.Edit') }}"></i></a> ';
           // invoice/details
-          html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-invoice" data-id="'+id+'" title="{{ __('locale.Details') }}" aria-label="{{ __('locale.Details') }}">'
-            + '<i data-feather="file-text" title="{{ __('locale.Details') }}"></i></button> ';
+          html += '<button class="btn btn-sm btn-icon btn-flat-primary mr-1 btn-invoice" data-id="'+id+'" title="{{ __('locale.Pedidos') }}" aria-label="{{ __('locale.Pedidos') }}">'
+            + '<i data-feather="file-text" title="{{ __('locale.Pedidos') }}"></i></button> ';
           // delete
           html += '<button class="btn btn-sm btn-icon btn-flat-danger mr-1 btn-delete" data-id="'+id+'" title="{{ __('locale.Delete') }}" aria-label="{{ __('locale.Delete') }}">'
             + '<i data-feather="trash" title="{{ __('locale.Delete') }}"></i></button> ';
@@ -205,6 +217,8 @@
       drawCallback: function(){ renderFeatherIcons(); }
     });
 
+    // Uses module-list layout: DataTables places length (left) and filter (right) in a toolbar row.
+
     // Re-render icons when responsive plugin moves content to child rows
     $('#clientsTable').on('responsive-display.dt responsive-resize.dt column-visibility.dt', function(){
       renderFeatherIconsDeferred();
@@ -214,17 +228,31 @@
       renderFeatherIconsDeferred();
     });
 
-    $('#clients-custom-search').on('keyup', function(){
-      table.search(this.value).draw();
-    });
+    // No custom search handler — DataTables filter input handles searches.
 
-    // Export form
+    // Export: submit current filters/order; backend rebuilds dataset from DB
     $('#btn-export').on('click', function(e){
       e.preventDefault();
+      var $btn = $(this);
+      $btn.prop('disabled', true);
+      var order = table.order();
+      var $filterInput = $('.dataTables_filter input');
+
       var form = $('<form method="POST" action="{{ route('clients.export') }}" style="display:none;"></form>');
-        form.append('<input name="_token" value="{{ csrf_token() }}">');
+      form.append('<input name="_token" value="{{ csrf_token() }}">');
+
+      if (order && order.length) {
+        form.append('<input name="order_column" value="' + order[0][0] + '">');
+        form.append('<input name="order_dir" value="' + order[0][1] + '">');
+      }
+
+      if ($filterInput.length) {
+        form.append('<input name="search_value" value="' + $('<div/>').text($filterInput.val() || '').html() + '">');
+      }
+
       $('body').append(form);
       form.submit();
+      $btn.prop('disabled', false);
     });
 
     // Handlers: delegated events on table body
@@ -239,10 +267,52 @@
     // convert to pro
     $('#clientsTable').on('click', '.btn-convert', function(){
       var id = $(this).data('id');
-      if(!confirm('{{ __('locale.Convert to Pro?') }}')) return;
-      $.post('{{ url('panel/clientes') }}/'+id+'/convert-to-pro', {_token:'{{ csrf_token() }}'}, function(res){
-        if(res && res.result){ table.ajax.reload(null, false); }
-      }, 'json');
+      var tr = $(this).closest('tr');
+      var row = table.row(tr);
+      if (tr.hasClass('child')) {
+        row = table.row(tr.prev());
+      }
+      var data = row.data() || {};
+      var clientName = data.name || '';
+
+      if (typeof Swal === 'undefined') {
+        if(!confirm('¿ Realmente deseas Convertir el Usuario ' + clientName + ' en Vendedor PRO ?')) return;
+        $.post('{{ url('panel/clientes') }}/'+id+'/convert-to-pro', {_token:'{{ csrf_token() }}'}, function(res){
+          if(res && res.result){
+            table.ajax.reload(null, false);
+          }
+        }, 'json');
+        return;
+      }
+
+      Swal.fire({
+        title: '',
+        html: '<div class="text-center mb-2"><i data-feather="alert-circle" style="width: 3rem; height: 3rem; color: #5e5873;"></i></div>' +
+              '<h4 style="font-weight: 400;">¿ Realmente deseas <b>Convertir</b> el Usuario <b>' + clientName + '</b> en Vendedor PRO ?</h4>',
+        showCancelButton: true,
+        confirmButtonText: 'ACEPTAR',
+        cancelButtonText: 'CANCELAR',
+        customClass: {
+          confirmButton: 'btn btn-link text-primary font-weight-bold p-0 mr-4',
+          cancelButton: 'btn btn-link text-dark font-weight-bold p-0',
+          actions: 'justify-content-end pr-2 pb-1',
+          popup: 'rounded-0'
+        },
+        buttonsStyling: false,
+        onRender: function() {
+          if (window.feather) {
+            feather.replace({ width: 48, height: 48 });
+          }
+        }
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          $.post('{{ url('panel/clientes') }}/'+id+'/convert-to-pro', {_token:'{{ csrf_token() }}'}, function(res){
+            if(res && res.result){ 
+              table.ajax.reload(null, false); 
+            }
+          }, 'json');
+        }
+      });
     });
 
     // delete
@@ -254,10 +324,55 @@
       }, 'json');
     });
 
-    // details button (no backend route yet) - open profile
+    // details button (open orders modal)
     $('#clientsTable').on('click', '.btn-invoice', function(){
       var id = $(this).data('id');
-      window.location.href = '{{ url('panel/clientes') }}/'+id;
+      var tr = $(this).closest('tr');
+      var row = table.row(tr);
+      if (tr.hasClass('child')) {
+        row = table.row(tr.prev());
+      }
+      var data = row.data() || {};
+      $('#orders_client_name').text(data.name || '');
+      $('#client_orders_tbody').html('<tr><td colspan="6" class="text-center"><div class="spinner-border text-primary" role="status"></div></td></tr>');
+      $('#clientOrdersModal').modal('show');
+
+      $.get('{{ url('panel/clientes') }}/'+id+'/pedidos', function(res){
+        if(res && res.result){
+          var html = '';
+          if(res.data && res.data.length > 0){
+            res.data.forEach(function(order){
+              var date = new Date(order.created_at);
+              var formattedDate = date.toLocaleDateString();
+              var statusText = '';
+              var statusClass = '';
+              
+              switch(parseInt(order.status)) {
+                case 0: statusText = '{{ __('locale.Pending') }}'; statusClass = 'badge-light-warning'; break;
+                case 1: statusText = '{{ __('locale.Processing') }}'; statusClass = 'badge-light-info'; break;
+                case 2: statusText = '{{ __('locale.Rejected') }}'; statusClass = 'badge-light-danger'; break;
+                case 3: statusText = '{{ __('locale.Completed') }}'; statusClass = 'badge-light-success'; break;
+                default: statusText = order.status; statusClass = 'badge-light-secondary';
+              }
+
+              html += '<tr>'
+                + '<td>' + (order.id || '') + '</td>'
+                + '<td>' + formattedDate + '</td>'
+                + '<td>' + (order.total || '0.00') + '</td>'
+                + '<td>' + (order.text_payment_type || '') + '</td>'
+                + '<td><span class="badge badge-pill ' + statusClass + '">' + statusText + '</span></td>'
+                + '<td>'
+                + '<a href="{{ url('panel/pedidos') }}/' + order.id + '" class="btn btn-sm btn-icon btn-flat-primary" title="{{ __('locale.View') }}"><i data-feather="eye"></i></a>'
+                + '</td>'
+                + '</tr>';
+            });
+          } else {
+            html = '<tr><td colspan="6" class="text-center">{{ __('locale.No data found') }}</td></tr>';
+          }
+          $('#client_orders_tbody').html(html);
+          renderFeatherIcons();
+        }
+      });
     });
 
     // view button - open modal with client details

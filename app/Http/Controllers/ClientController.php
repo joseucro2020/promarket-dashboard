@@ -87,6 +87,59 @@ class ClientController extends Controller
         return $clients;
     }
 
+    public function getAllServer(Request $request)
+    {
+        $columns = [
+            0 => 'name',
+            1 => 'identificacion',
+            2 => 'persona',
+            3 => 'created_at',
+            4 => 'telefono',
+            5 => 'status'
+        ];
+
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $draw = intval($request->input('draw'));
+
+        $baseQuery = User::where('nivel', '1')->where('pro_seller', User::IS_NOT_PRO);
+
+        $recordsTotal = $baseQuery->count();
+
+        // Apply search
+        $search = $request->input('search.value');
+        if (!empty($search)) {
+            $baseQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('identificacion', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('telefono', 'like', "%{$search}%");
+            });
+        }
+
+        $recordsFiltered = $baseQuery->count();
+
+        // Ordering
+        $orderColumnIndex = $request->input('order.0.column');
+        $orderDir = $request->input('order.0.dir', 'desc');
+        if ($orderColumnIndex !== null && isset($columns[intval($orderColumnIndex)])) {
+            $orderColumn = $columns[intval($orderColumnIndex)];
+            $baseQuery->orderBy($orderColumn, $orderDir);
+        } else {
+            $baseQuery->latest();
+        }
+
+        $data = $baseQuery->offset($start)->limit($length)
+            ->get(['id', 'name', 'identificacion', 'persona', 'created_at', 'telefono', 'status']);
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
+    }
+
     public function edit($id)
     {
         $client = User::with(['estado', 'municipality', 'parish'])
@@ -121,6 +174,19 @@ class ClientController extends Controller
             ->get();
 
         return response()->json($parishes);
+    }
+
+    public function getOrders($id)
+    {
+        $orders = \App\Models\Purchase::where('user_id', $id)
+            ->with(['details', 'exchange'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'result' => true,
+            'data' => $orders
+        ]);
     }
 
     public function update(Request $request)
@@ -213,7 +279,54 @@ class ClientController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $data = $request->input('data', []);
+        $columns = [
+            0 => 'name',
+            1 => 'identificacion',
+            2 => 'persona',
+            3 => 'created_at',
+            4 => 'telefono',
+            5 => 'status'
+        ];
+
+        $query = User::where('nivel', '1')
+            ->where('pro_seller', User::IS_NOT_PRO)
+            ->with(['estado', 'municipality', 'parish']);
+
+        $search = $request->input('search.value', $request->input('search_value'));
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('identificacion', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('telefono', 'like', "%{$search}%");
+            });
+        }
+
+        $orderColumnIndex = $request->input('order.0.column', $request->input('order_column'));
+        $orderDir = $request->input('order.0.dir', $request->input('order_dir', 'desc'));
+        $orderDir = strtolower($orderDir) === 'asc' ? 'asc' : 'desc';
+
+        if ($orderColumnIndex !== null && isset($columns[intval($orderColumnIndex)])) {
+            $query->orderBy($columns[intval($orderColumnIndex)], $orderDir);
+        } else {
+            $query->latest();
+        }
+
+        $data = $query->get([
+            'id',
+            'name',
+            'identificacion',
+            'persona',
+            'created_at',
+            'telefono',
+            'status',
+            'email',
+            'direccion',
+            'estado_id',
+            'municipality_id',
+            'parish_id'
+        ]);
+
         $today = now()->format('d-m-Y h:i A');
 
         return Excel::download(new ClientExport($data, $today), 'Reporte_Clientes.xls');
