@@ -199,6 +199,7 @@ class ClientController extends Controller
             'empresa' => 'required_if:type,2',
             'fiscal' => 'required_if:type,2',
             'email' => 'required|email',
+            'telefono_country_code' => 'nullable|in:58,1,52,57,54,56,51,593,595,598,591,34,507,506,503,502,504,505,53',
             'telefono' => 'nullable|string|max:30',
             'estado_id' => 'required',
             'municipality_id' => 'required',
@@ -255,12 +256,13 @@ class ClientController extends Controller
         }
 
         $normalizedPhone = null;
+        $telefonoCountryCode = $request->input('telefono_country_code', '58');
         if ($request->filled('telefono')) {
-            $normalizedPhone = app(PhoneNormalizationService::class)->normalizeWhatsappVe($request->telefono);
+            $normalizedPhone = app(PhoneNormalizationService::class)->normalizeWhatsappVe($request->telefono, $telefonoCountryCode);
 
             if ($normalizedPhone === null) {
                 return response()->json([
-                    'error' => 'El teléfono debe tener un formato válido para WhatsApp. Ejemplo: 584244470584'
+                    'error' => 'El teléfono debe tener un formato válido para WhatsApp internacional.'
                 ], 422);
             }
         }
@@ -271,7 +273,7 @@ class ClientController extends Controller
         $client->persona = $request->type == '2' ? USER::JURIDICO : USER::NATURAL;
         $client->type = USER::NATURAL;
         $client->identificacion = $request->identificacion;
-        $client->telefono = $request->telefono;
+        $client->telefono = $normalizedPhone ?: $request->telefono;
         $client->telefono_whatsapp = $normalizedPhone;
         $client->pais_id = Pais::VENEZUELA_ID;
         $client->estado_id = $request->estado_id;

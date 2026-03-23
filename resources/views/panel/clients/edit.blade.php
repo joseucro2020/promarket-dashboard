@@ -57,7 +57,47 @@
                   <div class="card-body">
                     <div class="form-group">
                       <label>{{ __('locale.Phone') }}</label>
-                      <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $client->telefono) }}">
+                      <div class="input-group">
+                        <div class="input-group-prepend" style="max-width: 120px;">
+                          @php
+                            $defaultPhoneCode = old('telefono_country_code');
+                            $phoneCountryCodes = ['58', '1', '52', '57', '54', '56', '51', '593', '595', '598', '591', '34', '507', '506', '503', '502', '504', '505', '53'];
+                            if (!$defaultPhoneCode) {
+                              $phoneDigits = preg_replace('/\D+/', '', (string) ($client->telefono_whatsapp ?? $client->telefono ?? ''));
+                              $defaultPhoneCode = '58';
+                              foreach ($phoneCountryCodes as $code) {
+                                if (strpos($phoneDigits, $code) === 0) {
+                                  $defaultPhoneCode = $code;
+                                  break;
+                                }
+                              }
+                            }
+                          @endphp
+                          <select name="telefono_country_code" class="form-control">
+                            <option value="58" {{ $defaultPhoneCode === '58' ? 'selected' : '' }}>+58</option>
+                            <option value="1" {{ $defaultPhoneCode === '1' ? 'selected' : '' }}>+1</option>
+                            <option value="52" {{ $defaultPhoneCode === '52' ? 'selected' : '' }}>+52</option>
+                            <option value="57" {{ $defaultPhoneCode === '57' ? 'selected' : '' }}>+57</option>
+                            <option value="54" {{ $defaultPhoneCode === '54' ? 'selected' : '' }}>+54</option>
+                            <option value="56" {{ $defaultPhoneCode === '56' ? 'selected' : '' }}>+56</option>
+                            <option value="51" {{ $defaultPhoneCode === '51' ? 'selected' : '' }}>+51</option>
+                            <option value="593" {{ $defaultPhoneCode === '593' ? 'selected' : '' }}>+593</option>
+                            <option value="595" {{ $defaultPhoneCode === '595' ? 'selected' : '' }}>+595</option>
+                            <option value="598" {{ $defaultPhoneCode === '598' ? 'selected' : '' }}>+598</option>
+                            <option value="591" {{ $defaultPhoneCode === '591' ? 'selected' : '' }}>+591</option>
+                            <option value="34" {{ $defaultPhoneCode === '34' ? 'selected' : '' }}>+34</option>
+                            <option value="507" {{ $defaultPhoneCode === '507' ? 'selected' : '' }}>+507</option>
+                            <option value="506" {{ $defaultPhoneCode === '506' ? 'selected' : '' }}>+506</option>
+                            <option value="503" {{ $defaultPhoneCode === '503' ? 'selected' : '' }}>+503</option>
+                            <option value="502" {{ $defaultPhoneCode === '502' ? 'selected' : '' }}>+502</option>
+                            <option value="504" {{ $defaultPhoneCode === '504' ? 'selected' : '' }}>+504</option>
+                            <option value="505" {{ $defaultPhoneCode === '505' ? 'selected' : '' }}>+505</option>
+                            <option value="53" {{ $defaultPhoneCode === '53' ? 'selected' : '' }}>+53</option>
+                          </select>
+                        </div>
+                        <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $client->telefono) }}" placeholder="4244470584">
+                      </div>
+                      <small class="text-muted">Formato WhatsApp internacional (código de país + número)</small>
                     </div>
 
                     <div class="form-group">
