@@ -17,6 +17,7 @@ use Validator;
 use App\Models\Referral;
 use App\Models\Coupon;
 use App\Exports\ClientExport;
+use App\Services\PhoneNormalizationService;
 
 class ClientController extends Controller
 {
@@ -198,7 +199,7 @@ class ClientController extends Controller
             'empresa' => 'required_if:type,2',
             'fiscal' => 'required_if:type,2',
             'email' => 'required|email',
-            'telefono' => 'nullable|numeric',
+            'telefono' => 'nullable|string|max:30',
             'estado_id' => 'required',
             'municipality_id' => 'required',
             'parish_id' => 'required',
@@ -252,6 +253,18 @@ class ClientController extends Controller
                 }
             }
         }
+
+        $normalizedPhone = null;
+        if ($request->filled('telefono')) {
+            $normalizedPhone = app(PhoneNormalizationService::class)->normalizeWhatsappVe($request->telefono);
+
+            if ($normalizedPhone === null) {
+                return response()->json([
+                    'error' => 'El teléfono debe tener un formato válido para WhatsApp. Ejemplo: 584244470584'
+                ], 422);
+            }
+        }
+
         $client = User::find($request->id);
         $client->name = $request->name;
         $client->email = $request->email;
@@ -259,6 +272,7 @@ class ClientController extends Controller
         $client->type = USER::NATURAL;
         $client->identificacion = $request->identificacion;
         $client->telefono = $request->telefono;
+        $client->telefono_whatsapp = $normalizedPhone;
         $client->pais_id = Pais::VENEZUELA_ID;
         $client->estado_id = $request->estado_id;
         $client->municipality_id = $request->municipality_id;
