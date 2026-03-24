@@ -17,6 +17,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Excel;
 use App\Traits\FCMTrait;
@@ -80,13 +81,13 @@ class PurchaseController extends Controller
 
     public function notifications(Request $request)
     {
-        $lastSeenId = (int) $request->input('last_seen_id', 0);
+        $lastSeenId = (int) $this->getNotificationsLastSeenId();
 
         $latestOrderId = (int) Purchase::max('id');
 
         $pendingCount = Purchase::where('status', Purchase::STATUS_ONHOLD)->count();
 
-        $newOrdersCount = Purchase::where('status', Purchase::STATUS_ONHOLD)
+        $unseenCount = Purchase::where('status', Purchase::STATUS_ONHOLD)
             ->where('id', '>', $lastSeenId)
             ->count();
 
@@ -107,9 +108,30 @@ class PurchaseController extends Controller
         return response()->json([
             'latest_order_id' => $latestOrderId,
             'pending_count' => $pendingCount,
-            'new_orders_count' => $newOrdersCount,
+            'unseen_count' => $unseenCount,
             'items' => $items,
         ]);
+    }
+
+    public function markNotificationsSeen()
+    {
+        $latestOrderId = (int) Purchase::max('id');
+        Cache::put($this->notificationsSeenCacheKey(), $latestOrderId, now()->addDays(30));
+
+        return response()->json([
+            'last_seen_id' => $latestOrderId,
+            'unseen_count' => 0,
+        ]);
+    }
+
+    private function notificationsSeenCacheKey()
+    {
+        return 'purchase_notifications.last_seen.' . auth()->id();
+    }
+
+    private function getNotificationsLastSeenId()
+    {
+        return (int) Cache::get($this->notificationsSeenCacheKey(), 0);
     }
 
     public function date(Request $request)

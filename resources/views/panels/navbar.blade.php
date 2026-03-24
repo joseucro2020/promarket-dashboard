@@ -213,7 +213,7 @@
             <a class="nav-link" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
                 aria-expanded="false">
                 <i class="ficon" data-feather="bell"></i>
-                <span class="badge badge-pill badge-danger badge-up" id="purchase-notifications-count">0</span>
+                <span class="badge badge-pill badge-danger badge-up d-none" id="purchase-notifications-count">0</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-media dropdown-menu-right" id="purchase-notifications-menu">
                 <li class="dropdown-menu-header">
@@ -226,6 +226,7 @@
                     <div class="dropdown-item text-center text-muted py-2">{{ __('locale.No records found.') }}</div>
                 </li>
                 <li class="dropdown-menu-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-block mb-50 d-none" id="purchase-mark-seen-btn">{{ __('locale.Mark as seen') }}</button>
                     <a class="btn btn-primary btn-block" href="{{ route('purchases.index') }}">{{ __('locale.View Orders') }}</a>
                 </li>
             </ul>
@@ -424,12 +425,15 @@
         var headerCount = document.getElementById('purchase-notifications-header-count');
         var listContainer = document.getElementById('purchase-notifications-list');
         var endpoint = "{{ route('purchases.notifications') }}";
+        var markSeenEndpoint = "{{ route('purchases.notifications.seen') }}";
         var ordersUrl = "{{ route('purchases.index') }}";
+        var markSeenBtn = document.getElementById('purchase-mark-seen-btn');
         var noRecordsLabel = "{{ __('locale.No records found.') }}";
         var orderLabel = "{{ __('locale.Order') }}";
         var customerLabel = "{{ __('locale.Client') }}";
         var newOrderLabel = "{{ __('locale.New order received') }}";
         var lastSeenId = 0;
+        var csrfToken = "{{ csrf_token() }}";
 
         if (!countBadge || !headerCount || !listContainer) {
             return;
@@ -488,6 +492,30 @@
             }
         };
 
+        var toggleMarkSeenButton = function(unseenCount) {
+            if (!markSeenBtn) {
+                return;
+            }
+
+            if ((parseInt(unseenCount || 0, 10) || 0) > 0) {
+                markSeenBtn.classList.remove('d-none');
+            } else {
+                markSeenBtn.classList.add('d-none');
+            }
+        };
+
+        var toggleBellBadge = function(unseenCount) {
+            if (!countBadge) {
+                return;
+            }
+
+            if ((parseInt(unseenCount || 0, 10) || 0) > 0) {
+                countBadge.classList.remove('d-none');
+            } else {
+                countBadge.classList.add('d-none');
+            }
+        };
+
         var syncNotifications = function(isFirstLoad) {
             fetch(endpoint + '?last_seen_id=' + encodeURIComponent(lastSeenId), {
                 headers: {
@@ -505,12 +533,14 @@
                     return;
                 }
 
-                countBadge.textContent = payload.pending_count || 0;
-                headerCount.textContent = payload.pending_count || 0;
+                countBadge.textContent = payload.unseen_count || 0;
+                headerCount.textContent = payload.unseen_count || 0;
+                toggleBellBadge(payload.unseen_count || 0);
+                toggleMarkSeenButton(payload.unseen_count || 0);
                 renderList(payload.items || []);
 
                 var latestId = parseInt(payload.latest_order_id || 0, 10);
-                var newOrders = parseInt(payload.new_orders_count || 0, 10);
+                var newOrders = parseInt(payload.unseen_count || 0, 10);
 
                 if (!isFirstLoad && newOrders > 0) {
                     playAlertSound();
@@ -522,6 +552,38 @@
             }).catch(function() {
             });
         };
+
+        if (markSeenBtn) {
+            markSeenBtn.addEventListener('click', function() {
+                fetch(markSeenEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                }).then(function(response) {
+                    if (!response.ok) {
+                        return null;
+                    }
+                    return response.json();
+                }).then(function(payload) {
+                    if (!payload) {
+                        return;
+                    }
+
+                    countBadge.textContent = payload.unseen_count || 0;
+                    headerCount.textContent = payload.unseen_count || 0;
+                    toggleBellBadge(payload.unseen_count || 0);
+                    toggleMarkSeenButton(payload.unseen_count || 0);
+                    if (payload.last_seen_id) {
+                        lastSeenId = parseInt(payload.last_seen_id, 10) || lastSeenId;
+                    }
+                }).catch(function() {
+                });
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             syncNotifications(true);

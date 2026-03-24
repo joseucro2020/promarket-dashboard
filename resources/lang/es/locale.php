@@ -107,6 +107,7 @@ return [
   "Logout" => "Cerrar sesión",
   "Notifications" => "Notificaciones",
   "View Orders" => "Ver pedidos",
+  "Mark as seen" => "Marcar como visto",
   "Client" => "Cliente",
   "New order received" => "Nuevo pedido recibido",
   "FAQ" => "Preguntas frecuentes",

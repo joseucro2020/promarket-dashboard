@@ -162,6 +162,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::get('pedidos/{purchase}/print', [App\Http\Controllers\PurchaseController::class, 'pdfview'])->name('purchases.print');
   Route::get('pedidos', [App\Http\Controllers\PurchaseController::class, 'index'])->name('purchases.index');
   Route::get('pedidos/notificaciones', [App\Http\Controllers\PurchaseController::class, 'notifications'])->name('purchases.notifications');
+  Route::post('pedidos/notificaciones/marcar-visto', [App\Http\Controllers\PurchaseController::class, 'markNotificationsSeen'])->name('purchases.notifications.seen');
   Route::post('pedidos/date', [App\Http\Controllers\PurchaseController::class, 'date'])->name('purchases.date');
   Route::post('pedidos/details', [App\Http\Controllers\PurchaseController::class, 'getDetails'])->name('purchases.getDetails');
   Route::post('pedidos/details-company', [App\Http\Controllers\PurchaseController::class, 'getDetailsCompany'])->name('purchases.getDetailsCompany');

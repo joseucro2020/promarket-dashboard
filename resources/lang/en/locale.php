@@ -108,6 +108,7 @@ return [
   "Logout" => "Logout",
   "Notifications" => "Notifications",
   "View Orders" => "View orders",
+  "Mark as seen" => "Mark as seen",
   "Client" => "Client",
   "New order received" => "New order received",
   "FAQ" => "FAQ",
