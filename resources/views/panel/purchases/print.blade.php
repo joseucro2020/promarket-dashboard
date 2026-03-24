@@ -90,7 +90,11 @@
   @endphp
   <div class="header">
     <div class="img">
-      <img class="logo" src="{{ $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png' }}">
+      @if (file_exists($logoPath ?? ''))
+        <img class="logo" src="{{ $logoPath }}">
+      @else
+        <img class="logo" src="{{ $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png' }}">
+      @endif
     </div>
   </div>
   <div class="invoice-box">
