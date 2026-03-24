@@ -96,8 +96,8 @@
             @if(!empty($reportYear))
               <input type="hidden" name="year" value="{{ $reportYear }}">
             @endif
-            <div class="col-md-4 col-sm-12 col-12 mb-1">
-              <button type="submit" class="btn btn-primary" id="dashboard-consult-button">
+            <div class="col-md-4 col-sm-12 col-12 mb-1 d-flex">
+              <button type="submit" class="btn btn-primary mr-1" id="dashboard-consult-button">
                 {{ __('locale.Consult') }}
               </button>
             </div>
@@ -364,8 +364,18 @@
     <!-- Transaction Card -->
     <div class="col-lg-4 col-md-6 col-12">
       <div class="card card-transaction">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
           <h4 class="card-title">{{ __('locale.Transactions') }}</h4>
+          <button
+            type="button"
+            class="btn btn-outline-success btn-sm"
+            id="dashboard-export-transactions"
+            data-export-endpoint="{{ route('dashboard.export') }}"
+            title="{{ __('locale.Export') }}"
+            aria-label="{{ __('locale.Export') }}"
+          >
+            <i data-feather="download"></i>
+          </button>
         </div>
         <div class="card-body" id="dashboard-transactions-body">
           @forelse($paymentMethodPercentages as $item)
@@ -433,226 +443,7 @@
         </div>
       </div>
     </div>
-    <!--/ Top Products Table Card -->
-
-    <!-- Developer Meetup Card -->
-    {{-- <div class="col-lg-4 col-md-6 col-12">
-      <div class="card card-developer-meetup">
-        <div class="meetup-img-wrapper rounded-top text-center">
-          <img src="{{asset('images/illustration/email.svg')}}" alt="Meeting Pic" height="170" />
-        </div>
-        <div class="card-body">
-          <div class="meetup-header d-flex align-items-center">
-            <div class="meetup-day">
-              <h6 class="mb-0">THU</h6>
-              <h3 class="mb-0">24</h3>
-            </div>
-            <div class="my-auto">
-              <h4 class="card-title mb-25">Developer Meetup</h4>
-              <p class="card-text mb-0">Meet world popular developers</p>
-            </div>
-          </div>
-          <div class="media">
-            <div class="avatar bg-light-primary rounded mr-1">
-              <div class="avatar-content">
-                <i data-feather="calendar" class="avatar-icon font-medium-3"></i>
-              </div>
-            </div>
-            <div class="media-body">
-              <h6 class="mb-0">Sat, May 25, 2020</h6>
-              <small>10:AM to 6:PM</small>
-            </div>
-          </div>
-          <div class="media mt-2">
-            <div class="avatar bg-light-primary rounded mr-1">
-              <div class="avatar-content">
-                <i data-feather="map-pin" class="avatar-icon font-medium-3"></i>
-              </div>
-            </div>
-            <div class="media-body">
-              <h6 class="mb-0">Central Park</h6>
-              <small>Manhattan, New york City</small>
-            </div>
-          </div>
-          <div class="avatar-group">
-            <div
-              data-toggle="tooltip"
-              data-popup="tooltip-custom"
-              data-placement="bottom"
-              data-original-title="Billy Hopkins"
-              class="avatar pull-up"
-            >
-              <img src="{{asset('images/portrait/small/avatar-s-9.jpg')}}" alt="Avatar" width="33" height="33" />
-            </div>
-            <div
-              data-toggle="tooltip"
-              data-popup="tooltip-custom"
-              data-placement="bottom"
-              data-original-title="Amy Carson"
-              class="avatar pull-up"
-            >
-              <img src="{{asset('images/portrait/small/avatar-s-6.jpg')}}" alt="Avatar" width="33" height="33" />
-            </div>
-            <div
-              data-toggle="tooltip"
-              data-popup="tooltip-custom"
-              data-placement="bottom"
-              data-original-title="Brandon Miles"
-              class="avatar pull-up"
-            >
-              <img src="{{asset('images/portrait/small/avatar-s-8.jpg')}}" alt="Avatar" width="33" height="33" />
-            </div>
-            <div
-              data-toggle="tooltip"
-              data-popup="tooltip-custom"
-              data-placement="bottom"
-              data-original-title="Daisy Weber"
-              class="avatar pull-up"
-            >
-              <img
-                src="{{asset('images/portrait/small/avatar-s-20.jpg')}}"
-                alt="Avatar"
-                width="33"
-                height="33"
-              />
-            </div>
-            <div
-              data-toggle="tooltip"
-              data-popup="tooltip-custom"
-              data-placement="bottom"
-              data-original-title="Jenny Looper"
-              class="avatar pull-up"
-            >
-              <img
-                src="{{asset('images/portrait/small/avatar-s-20.jpg')}}"
-                alt="Avatar"
-                width="33"
-                height="33"
-              />
-            </div>
-            <h6 class="align-self-center cursor-pointer ml-50 mb-0">+42</h6>
-          </div>
-        </div>
-      </div>
-    </div> --}}
-    <!--/ Developer Meetup Card -->
-
-    <!-- Browser States Card -->
-    {{-- <div class="col-lg-4 col-md-6 col-12">
-      <div class="card card-browser-states">
-        <div class="card-header">
-          <div>
-            <h4 class="card-title">Browser States</h4>
-            <p class="card-text font-small-2">Counter August 2020</p>
-          </div>
-          <div class="dropdown chart-dropdown">
-            <i data-feather="more-vertical" class="font-medium-3 cursor-pointer" data-toggle="dropdown"></i>
-            <div class="dropdown-menu dropdown-menu-right">
-              <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="browser-states">
-            <div class="media">
-              <img
-                src="{{asset('images/icons/google-chrome.png')}}"
-                class="rounded mr-1"
-                height="30"
-                alt="Google Chrome"
-              />
-              <h6 class="align-self-center mb-0">Google Chrome</h6>
-            </div>
-            <div class="d-flex align-items-center">
-              <div class="font-weight-bold text-body-heading mr-1">54.4%</div>
-              <div id="browser-state-chart-primary"></div>
-            </div>
-          </div>
-          <div class="browser-states">
-            <div class="media">
-              <img
-                src="{{asset('images/icons/mozila-firefox.png')}}"
-                class="rounded mr-1"
-                height="30"
-                alt="Mozila Firefox"
-              />
-              <h6 class="align-self-center mb-0">Mozila Firefox</h6>
-            </div>
-            <div class="d-flex align-items-center">
-              <div class="font-weight-bold text-body-heading mr-1">6.1%</div>
-              <div id="browser-state-chart-warning"></div>
-            </div>
-          </div>
-          <div class="browser-states">
-            <div class="media">
-              <img
-                src="{{asset('images/icons/apple-safari.png')}}"
-                class="rounded mr-1"
-                height="30"
-                alt="Apple Safari"
-              />
-              <h6 class="align-self-center mb-0">Apple Safari</h6>
-            </div>
-            <div class="d-flex align-items-center">
-              <div class="font-weight-bold text-body-heading mr-1">14.6%</div>
-              <div id="browser-state-chart-secondary"></div>
-            </div>
-          </div>
-          <div class="browser-states">
-            <div class="media">
-              <img
-                src="{{asset('images/icons/internet-explorer.png')}}"
-                class="rounded mr-1"
-                height="30"
-                alt="Internet Explorer"
-              />
-              <h6 class="align-self-center mb-0">Internet Explorer</h6>
-            </div>
-            <div class="d-flex align-items-center">
-              <div class="font-weight-bold text-body-heading mr-1">4.2%</div>
-              <div id="browser-state-chart-info"></div>
-            </div>
-          </div>
-          <div class="browser-states">
-            <div class="media">
-              <img src="{{asset('images/icons/opera.png')}}" class="rounded mr-1" height="30" alt="Opera Mini" />
-              <h6 class="align-self-center mb-0">Opera Mini</h6>
-            </div>
-            <div class="d-flex align-items-center">
-              <div class="font-weight-bold text-body-heading mr-1">8.4%</div>
-              <div id="browser-state-chart-danger"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> --}}
-    <!--/ Browser States Card -->
-
-    <!-- Goal Overview Card -->
-    {{-- <div class="col-lg-4 col-md-6 col-12">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="card-title">Goal Overview</h4>
-          <i data-feather="help-circle" class="font-medium-3 text-muted cursor-pointer"></i>
-        </div>
-        <div class="card-body p-0">
-          <div id="goal-overview-radial-bar-chart" class="my-2"></div>
-          <div class="row border-top text-center mx-0">
-            <div class="col-6 border-right py-1">
-              <p class="card-text text-muted mb-0">Completed</p>
-              <h3 class="font-weight-bolder mb-0">786,617</h3>
-            </div>
-            <div class="col-6 py-1">
-              <p class="card-text text-muted mb-0">In Progress</p>
-              <h3 class="font-weight-bolder mb-0">13,561</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> --}}
-    <!--/ Goal Overview Card -->
+   
 
     
   </div>
@@ -724,6 +515,7 @@
       var $dateForm = $('#dashboard-date-range-form');
       if ($dateForm.length) {
         var metricsEndpoint = $dateForm.data('metrics-endpoint');
+        var $exportTransactionsButton = $('#dashboard-export-transactions');
         var $consultButton = $('#dashboard-consult-button');
         var $dateFromInput = $('#dashboard-date-from');
         var $dateToInput = $('#dashboard-date-to');
@@ -782,6 +574,29 @@
             feather.replace({ width: 14, height: 14 });
           }
         };
+
+        if ($exportTransactionsButton.length) {
+          $exportTransactionsButton.on('click', function () {
+            var exportEndpoint = $(this).data('export-endpoint');
+            if (!exportEndpoint) {
+              return;
+            }
+
+            var params = new URLSearchParams();
+            var dateFrom = $dateFromInput.val();
+            var dateTo = $dateToInput.val();
+
+            if (dateFrom) {
+              params.set('date_from', dateFrom);
+            }
+            if (dateTo) {
+              params.set('date_to', dateTo);
+            }
+
+            var exportUrl = exportEndpoint + (params.toString() ? ('?' + params.toString()) : '');
+            window.location.href = exportUrl;
+          });
+        }
 
         $dateForm.on('submit', function (event) {
           event.preventDefault();

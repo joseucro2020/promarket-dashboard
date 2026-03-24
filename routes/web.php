@@ -62,6 +62,7 @@ Route::get('/panel/test', function () {
 Route::get('/panel', [DashboardController::class,'index'])->name('dashboard-home');
 Route::get('/panel/revenue-report', [DashboardController::class, 'revenueReport'])->name('dashboard.revenue-report');
 Route::get('/panel/dashboard-metrics', [DashboardController::class, 'metrics'])->name('dashboard.metrics');
+Route::get('/panel/dashboard-export', [DashboardController::class, 'export'])->name('dashboard.export');
 // Routes para el módulo de Tasa de cambio
 Route::group(['prefix' => 'panel'], function () {
   Route::get('tasa-de-cambios', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
@@ -160,6 +161,7 @@ Route::group(['prefix' => 'panel'], function () {
   // Orders (site purchases)
   Route::get('pedidos/{purchase}/print', [App\Http\Controllers\PurchaseController::class, 'pdfview'])->name('purchases.print');
   Route::get('pedidos', [App\Http\Controllers\PurchaseController::class, 'index'])->name('purchases.index');
+  Route::get('pedidos/notificaciones', [App\Http\Controllers\PurchaseController::class, 'notifications'])->name('purchases.notifications');
   Route::post('pedidos/date', [App\Http\Controllers\PurchaseController::class, 'date'])->name('purchases.date');
   Route::post('pedidos/details', [App\Http\Controllers\PurchaseController::class, 'getDetails'])->name('purchases.getDetails');
   Route::post('pedidos/details-company', [App\Http\Controllers\PurchaseController::class, 'getDetailsCompany'])->name('purchases.getDetailsCompany');

@@ -78,6 +78,40 @@ class PurchaseController extends Controller
         return view('panel.purchases.index');
     }
 
+    public function notifications(Request $request)
+    {
+        $lastSeenId = (int) $request->input('last_seen_id', 0);
+
+        $latestOrderId = (int) Purchase::max('id');
+
+        $pendingCount = Purchase::where('status', Purchase::STATUS_ONHOLD)->count();
+
+        $newOrdersCount = Purchase::where('status', Purchase::STATUS_ONHOLD)
+            ->where('id', '>', $lastSeenId)
+            ->count();
+
+        $items = Purchase::with('user:id,name')
+            ->where('status', Purchase::STATUS_ONHOLD)
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($purchase) {
+                return [
+                    'id' => $purchase->id,
+                    'customer_name' => data_get($purchase, 'user.name', 'Cliente'),
+                    'created_at' => optional($purchase->created_at)->format('d-m-Y h:i A'),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'latest_order_id' => $latestOrderId,
+            'pending_count' => $pendingCount,
+            'new_orders_count' => $newOrdersCount,
+            'items' => $items,
+        ]);
+    }
+
     public function date(Request $request)
     {
         $dateFromValue = $request->input('date_from', $request->input('init'));

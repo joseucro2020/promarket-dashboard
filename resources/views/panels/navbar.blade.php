@@ -209,114 +209,36 @@
               </li>
             </ul>
           </li> --}}
-        <li class="nav-item dropdown dropdown-notification mr-25"><a class="nav-link" href="javascript:void(0);"
-                data-toggle="dropdown"><i class="ficon" data-feather="bell"></i><span
-                    class="badge badge-pill badge-danger badge-up">0</span></a>
-            {{-- <ul class="dropdown-menu dropdown-menu-media dropdown-menu-right">
+        <li class="nav-item dropdown dropdown-notification mr-25">
+            <a class="nav-link" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                <i class="ficon" data-feather="bell"></i>
+                <span class="badge badge-pill badge-danger badge-up" id="purchase-notifications-count">0</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-media dropdown-menu-right" id="purchase-notifications-menu">
                 <li class="dropdown-menu-header">
                     <div class="dropdown-header d-flex">
-                        <h4 class="notification-title mb-0 mr-auto">Notifications</h4>
-                        <div class="badge badge-pill badge-light-primary">6 New</div>
+                        <h4 class="notification-title mb-0 mr-auto">{{ __('locale.Notifications') }}</h4>
+                        <div class="badge badge-pill badge-light-primary" id="purchase-notifications-header-count">0</div>
                     </div>
                 </li>
-                <li class="scrollable-container media-list"><a class="d-flex" href="javascript:void(0)">
-                        <div class="media d-flex align-items-start">
-                            <div class="media-left">
-                                <div class="avatar"><img src="{{ asset('images/portrait/small/avatar-s-15.jpg') }}"
-                                        alt="avatar" width="32" height="32"></div>
-                            </div>
-                            <div class="media-body">
-                                <p class="media-heading"><span class="font-weight-bolder">Congratulation Sam
-                                        🎉</span>winner!</p><small class="notification-text"> Won the monthly best
-                                    seller badge.</small>
-                            </div>
-                        </div>
-                    </a><a class="d-flex" href="javascript:void(0)">
-                        <div class="media d-flex align-items-start">
-                            <div class="media-left">
-                                <div class="avatar"><img src="{{ asset('images/portrait/small/avatar-s-3.jpg') }}"
-                                        alt="avatar" width="32" height="32"></div>
-                            </div>
-                            <div class="media-body">
-                                <p class="media-heading"><span class="font-weight-bolder">New
-                                        message</span>&nbsp;received</p><small class="notification-text"> You have 10
-                                    unread messages</small>
-                            </div>
-                        </div>
-                    </a><a class="d-flex" href="javascript:void(0)">
-                        <div class="media d-flex align-items-start">
-                            <div class="media-left">
-                                <div class="avatar bg-light-danger">
-                                    <div class="avatar-content">MD</div>
-                                </div>
-                            </div>
-                            <div class="media-body">
-                                <p class="media-heading"><span class="font-weight-bolder">Revised Order
-                                        👋</span>&nbsp;checkout</p><small class="notification-text"> MD Inc. order
-                                    updated</small>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="media d-flex align-items-center">
-                        <h6 class="font-weight-bolder mr-auto mb-0">System Notifications</h6>
-                        <div class="custom-control custom-control-primary custom-switch">
-                            <input class="custom-control-input" id="systemNotification" type="checkbox"
-                                checked="">
-                            <label class="custom-control-label" for="systemNotification"></label>
-                        </div>
-                    </div><a class="d-flex" href="javascript:void(0)">
-                        <div class="media d-flex align-items-start">
-                            <div class="media-left">
-                                <div class="avatar bg-light-danger">
-                                    <div class="avatar-content"><i class="avatar-icon" data-feather="x"></i></div>
-                                </div>
-                            </div>
-                            <div class="media-body">
-                                <p class="media-heading"><span class="font-weight-bolder">Server
-                                        down</span>&nbsp;registered</p><small class="notification-text"> USA Server is
-                                    down due to hight CPU usage</small>
-                            </div>
-                        </div>
-                    </a><a class="d-flex" href="javascript:void(0)">
-                        <div class="media d-flex align-items-start">
-                            <div class="media-left">
-                                <div class="avatar bg-light-success">
-                                    <div class="avatar-content"><i class="avatar-icon" data-feather="check"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="media-body">
-                                <p class="media-heading"><span class="font-weight-bolder">Sales
-                                        report</span>&nbsp;generated</p><small class="notification-text"> Last month
-                                    sales report generated</small>
-                            </div>
-                        </div>
-                    </a><a class="d-flex" href="javascript:void(0)">
-                        <div class="media d-flex align-items-start">
-                            <div class="media-left">
-                                <div class="avatar bg-light-warning">
-                                    <div class="avatar-content"><i class="avatar-icon"
-                                            data-feather="alert-triangle"></i></div>
-                                </div>
-                            </div>
-                            <div class="media-body">
-                                <p class="media-heading"><span class="font-weight-bolder">High
-                                        memory</span>&nbsp;usage</p><small class="notification-text"> BLR Server using
-                                    high memory</small>
-                            </div>
-                        </div>
-                    </a>
+                <li class="scrollable-container media-list" id="purchase-notifications-list">
+                    <div class="dropdown-item text-center text-muted py-2">{{ __('locale.No records found.') }}</div>
                 </li>
-                <li class="dropdown-menu-footer"><a class="btn btn-primary btn-block" href="javascript:void(0)">Read
-                        all notifications</a></li>
-            </ul> --}}
+                <li class="dropdown-menu-footer">
+                    <a class="btn btn-primary btn-block" href="{{ route('purchases.index') }}">{{ __('locale.View Orders') }}</a>
+                </li>
+            </ul>
         </li>
         <li class="nav-item dropdown dropdown-user">
             <a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="javascript:void(0);"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @php
+                    $authUser = auth()->user();
+                @endphp
                 <div class="user-nav d-sm-flex d-none">
-                    <span class="user-name font-weight-bolder">John Doe</span>
-                    <span class="user-status">Admin</span>
+                    <span class="user-name font-weight-bolder">{{ data_get($authUser, 'name', 'Usuario') }}</span>
+                    <span class="user-status">{{ data_get($authUser, 'email', '') }}</span>
                 </div>
                 <span class="avatar">
                     <img class="round" src="{{ asset('images/portrait/small/avatar-s-11.jpg') }}" alt="avatar"
@@ -325,7 +247,7 @@
                 </span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-user">
-                <a class="dropdown-item" href="{{ url('page/profile') }}">
+                {{-- <a class="dropdown-item" href="{{ url('page/profile') }}">
                     <i class="mr-50" data-feather="user"></i> Profile
                 </a>
                 <a class="dropdown-item" href="{{ url('app/email') }}">
@@ -346,10 +268,14 @@
                 </a>
                 <a class="dropdown-item" href="{{ url('page/faq') }}">
                     <i class="mr-50" data-feather="help-circle"></i> FAQ
+                </a> --}}
+                <a class="dropdown-item" href="{{ route('logout') }}"
+                    onclick="event.preventDefault(); document.getElementById('navbar-logout-form').submit();">
+                    <i class="mr-50" data-feather="power"></i> {{ __('locale.Logout') }}
                 </a>
-                <a class="dropdown-item" href="{{ url('auth/login-v2') }}">
-                    <i class="mr-50" data-feather="power"></i> Logout
-                </a>
+                <form id="navbar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
             </div>
         </li>
     </ul>
@@ -491,3 +417,117 @@
 </ul>
 {{-- Search Ends --}}
 <!-- END: Header-->
+
+<script>
+    (function() {
+        var countBadge = document.getElementById('purchase-notifications-count');
+        var headerCount = document.getElementById('purchase-notifications-header-count');
+        var listContainer = document.getElementById('purchase-notifications-list');
+        var endpoint = "{{ route('purchases.notifications') }}";
+        var ordersUrl = "{{ route('purchases.index') }}";
+        var noRecordsLabel = "{{ __('locale.No records found.') }}";
+        var orderLabel = "{{ __('locale.Order') }}";
+        var customerLabel = "{{ __('locale.Client') }}";
+        var newOrderLabel = "{{ __('locale.New order received') }}";
+        var lastSeenId = 0;
+
+        if (!countBadge || !headerCount || !listContainer) {
+            return;
+        }
+
+        var playAlertSound = function() {
+            var contextClass = window.AudioContext || window.webkitAudioContext;
+            if (!contextClass) {
+                return;
+            }
+
+            try {
+                var audioContext = new contextClass();
+                [0, 0.22].forEach(function(delay) {
+                    var oscillator = audioContext.createOscillator();
+                    var gainNode = audioContext.createGain();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime + delay);
+                    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime + delay);
+                    gainNode.gain.exponentialRampToValueAtTime(0.25, audioContext.currentTime + delay + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + delay + 0.18);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    oscillator.start(audioContext.currentTime + delay);
+                    oscillator.stop(audioContext.currentTime + delay + 0.2);
+                });
+            } catch (error) {
+            }
+        };
+
+        var renderList = function(items) {
+            if (!Array.isArray(items) || !items.length) {
+                listContainer.innerHTML = '<div class="dropdown-item text-center text-muted py-2">' + noRecordsLabel + '</div>';
+                return;
+            }
+
+            var html = items.map(function(item) {
+                return '' +
+                    '<a class="d-flex dropdown-item" href="' + ordersUrl + '">' +
+                    '<div class="media d-flex align-items-start w-100">' +
+                    '<div class="media-left"><div class="avatar bg-light-primary">' +
+                    '<div class="avatar-content"><i class="avatar-icon" data-feather="shopping-bag"></i></div>' +
+                    '</div></div>' +
+                    '<div class="media-body">' +
+                    '<p class="media-heading mb-0"><span class="font-weight-bolder">' + orderLabel + ' #' + item.id + '</span></p>' +
+                    '<small class="notification-text">' + newOrderLabel + '</small><br>' +
+                    '<small class="text-muted">' + customerLabel + ': ' + (item.customer_name || '—') + ' · ' + (item.created_at || '') + '</small>' +
+                    '</div>' +
+                    '</div>' +
+                    '</a>';
+            }).join('');
+
+            listContainer.innerHTML = html;
+            if (window.feather) {
+                feather.replace({ width: 14, height: 14 });
+            }
+        };
+
+        var syncNotifications = function(isFirstLoad) {
+            fetch(endpoint + '?last_seen_id=' + encodeURIComponent(lastSeenId), {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            }).then(function(response) {
+                if (!response.ok) {
+                    return null;
+                }
+                return response.json();
+            }).then(function(payload) {
+                if (!payload) {
+                    return;
+                }
+
+                countBadge.textContent = payload.pending_count || 0;
+                headerCount.textContent = payload.pending_count || 0;
+                renderList(payload.items || []);
+
+                var latestId = parseInt(payload.latest_order_id || 0, 10);
+                var newOrders = parseInt(payload.new_orders_count || 0, 10);
+
+                if (!isFirstLoad && newOrders > 0) {
+                    playAlertSound();
+                }
+
+                if (!isNaN(latestId) && latestId > 0) {
+                    lastSeenId = latestId;
+                }
+            }).catch(function() {
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            syncNotifications(true);
+            setInterval(function() {
+                syncNotifications(false);
+            }, 15000);
+        });
+    })();
+</script>

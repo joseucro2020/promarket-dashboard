@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DashboardExport;
 
 class DashboardController extends Controller
 {
@@ -296,6 +298,26 @@ class DashboardController extends Controller
     return response()->json(array_merge($revenueReportData, [
       'year' => $reportYear
     ]));
+  }
+
+  public function export(Request $request)
+  {
+    ['salesFrom' => $salesFrom, 'salesTo' => $salesTo, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo] = $this->resolveDashboardDateRange($request);
+
+    $paymentMethodPercentages = $this->buildPaymentMethodPercentages($salesFrom, $salesTo)->map(function ($item) {
+      return [
+        'label' => $item->label,
+        'percent' => $item->percent,
+      ];
+    })->values()->all();
+
+    $fileName = 'dashboard-' . now()->format('Ymd-His') . '.xlsx';
+
+    return Excel::download(new DashboardExport([
+      'date_from' => $dateFrom,
+      'date_to' => $dateTo,
+      'transactions' => $paymentMethodPercentages,
+    ]), $fileName);
   }
 
   // Dashboard - Analytics
