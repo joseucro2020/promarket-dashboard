@@ -22,13 +22,7 @@
       "name": "Kromi Market",
       "icon": "shopping-cart",
       "slug": "kromi-market"
-    },
-    {
-      "url": "panel/verificar-pedidos",
-      "name": "Verify Orders",
-      "icon": "check-circle",
-      "slug": "verificar-pedidos"
-    },
+    },    
     {
       "url": "panel/tasa-de-cambios",
       "name": "Exchange Rate",
