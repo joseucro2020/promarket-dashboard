@@ -284,6 +284,27 @@ class DashboardController extends Controller
       $response['orders_bindings'] = collect($ordersQuery->getBindings())->map(function ($binding) {
         return $binding instanceof \DateTimeInterface ? $binding->format('Y-m-d H:i:s') : $binding;
       })->values()->all();
+      // Extra debug: purchases by payment_type and deposits by method_code in the same range
+      $purchasesByType = Purchase::select('payment_type', DB::raw('COUNT(*) as cnt'))
+        ->whereBetween('created_at', [$salesFrom, $salesTo])
+        ->where('status', Purchase::STATUS_COMPLETED)
+        ->groupBy('payment_type')
+        ->get()
+        ->map(function ($r) { return ['payment_type' => $r->payment_type, 'count' => (int) $r->cnt]; });
+
+      $depositsByMethod = Deposit::select('method_code', DB::raw('COUNT(*) as cnt'))
+        ->whereBetween('created_at', [$salesFrom, $salesTo])
+        ->groupBy('method_code')
+        ->get()
+        ->map(function ($r) { return ['method_code' => $r->method_code, 'count' => (int) $r->cnt]; });
+
+      $totalPurchases = Purchase::whereBetween('created_at', [$salesFrom, $salesTo])
+        ->where('status', Purchase::STATUS_COMPLETED)
+        ->count();
+
+      $response['debug_purchases_by_type'] = $purchasesByType->values()->all();
+      $response['debug_deposits_by_method'] = $depositsByMethod->values()->all();
+      $response['debug_total_purchases'] = $totalPurchases;
     }
 
     return response()->json($response);
