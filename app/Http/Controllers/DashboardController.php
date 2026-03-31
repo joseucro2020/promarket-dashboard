@@ -460,7 +460,16 @@ class DashboardController extends Controller
       ->select('id', 'method_code', 'status', 'account', 'gateway', 'fields', 'detail', 'created_at')
       ->whereBetween('created_at', [$salesFrom, $salesTo]);
 
-    $totalDeposits = (clone $depositBase)->count();
+    $deposits = $depositBase->get();
+    $totalDeposits = $deposits->count();
+
+    // Also include purchases paid via Stripe which may not create a Deposit record
+    $stripePurchasesCount = Purchase::whereBetween('created_at', [$salesFrom, $salesTo])
+      ->where('payment_type', Purchase::PAYMENT_STRIPE)
+      ->count();
+
+    // Use combined total for percentage calculations
+    $totalPayments = $totalDeposits + $stripePurchasesCount;
 
     $bankFromDeposit = function ($deposit) {
       $bank = data_get($deposit->account, 'banco')
@@ -490,7 +499,7 @@ class DashboardController extends Controller
       'cash' => 0,
     ];
 
-    foreach ($depositBase->get() as $deposit) {
+    foreach ($deposits as $deposit) {
       $method = strtolower((string) (
         data_get($deposit->gateway, 'code')
         ?? data_get($deposit->account, 'code')
@@ -531,13 +540,15 @@ class DashboardController extends Controller
         $stats['cash']++;
       }
     }
+    // Add stripe purchases count (from purchases) to stats
+    $stats['stripe'] += $stripePurchasesCount;
 
-    $toPercent = function ($value) use ($totalDeposits) {
-      if ($totalDeposits <= 0) {
+    $toPercent = function ($value) use ($totalPayments) {
+      if ($totalPayments <= 0) {
         return 0;
       }
 
-      return round(((int) $value / $totalDeposits) * 100, 1);
+      return round(((int) $value / $totalPayments) * 100, 1);
     };
 
     return collect([
