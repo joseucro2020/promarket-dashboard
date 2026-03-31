@@ -477,14 +477,16 @@ class DashboardController extends Controller
 
   private function buildPaymentMethodPercentages(Carbon $salesFrom, Carbon $salesTo)
   {
-    // Primary source: purchases completed in the date range
-    $purchases = Purchase::with('deposits')
+    // Use deposits as primary source of truth, mapping each purchase_id to a single method
+    $purchaseIds = Purchase::query()
       ->whereBetween('created_at', [$salesFrom, $salesTo])
       ->where('status', Purchase::STATUS_COMPLETED)
-      ->get();
+      ->pluck('id')
+      ->all();
 
-    $totalPurchases = $purchases->count();
+    $totalPurchases = count($purchaseIds);
 
+    // Helper: determine bank string from deposit fields
     $bankFromDeposit = function ($deposit) {
       $bank = data_get($deposit, 'account.banco')
         ?? data_get($deposit, 'account.bank')
@@ -501,6 +503,7 @@ class DashboardController extends Controller
       return strtolower((string) data_get($deposit, 'detail', ''));
     };
 
+    // init counters
     $stats = [
       'banesco_mobile' => 0,
       'provincial_mobile' => 0,
@@ -513,65 +516,106 @@ class DashboardController extends Controller
       'cash' => 0,
     ];
 
-    foreach ($purchases as $purchase) {
-      $ptype = (string) data_get($purchase, 'payment_type');
+    // Fetch deposits linked to purchases in range
+    $deposits = Deposit::query()
+      ->whereBetween('created_at', [$salesFrom, $salesTo])
+      ->whereNotNull('purchase_id')
+      ->whereIn('purchase_id', $purchaseIds)
+      ->orderBy('created_at', 'asc')
+      ->get();
 
-      switch ($ptype) {
-        case Purchase::PAYMENT_MOBILE:
-          // classify based on first deposit bank if available
-          $deposit = $purchase->deposits->first();
-          $bank = $deposit ? $bankFromDeposit($deposit) : '';
-          if (strpos($bank, 'banesco') !== false) {
-            $stats['banesco_mobile']++;
-          } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
+    // Map purchase_id -> method (take first found deposit per purchase)
+    $purchaseMethod = [];
+    foreach ($deposits as $deposit) {
+      $pid = (int) $deposit->purchase_id;
+      if (isset($purchaseMethod[$pid])) {
+        continue; // already attributed
+      }
+
+      $methodCode = strtolower((string) ($deposit->method_code ?? ''));
+      // Normalize common method codes and map to internal buckets
+      if (str_contains($methodCode, 'pago_movil') || str_contains($methodCode, 'pago movil') || str_contains($methodCode, 'pago-movil')) {
+        $bank = $bankFromDeposit($deposit);
+        if (strpos($bank, 'banesco') !== false) {
+          $purchaseMethod[$pid] = 'banesco_mobile';
+        } else {
+          $purchaseMethod[$pid] = 'provincial_mobile';
+        }
+      } elseif (str_contains($methodCode, 'transfer') || str_contains($methodCode, 'transferencia')) {
+        $bank = $bankFromDeposit($deposit);
+        if (strpos($bank, 'banesco') !== false) {
+          $purchaseMethod[$pid] = 'banesco_transfer';
+        } else {
+          $purchaseMethod[$pid] = 'provincial_transfer';
+        }
+      } elseif (str_contains($methodCode, 'cashea')) {
+        $purchaseMethod[$pid] = 'cashea';
+      } elseif (str_contains($methodCode, 'zelle')) {
+        $purchaseMethod[$pid] = 'zelle';
+      } elseif (str_contains($methodCode, 'paypal')) {
+        $purchaseMethod[$pid] = 'paypal';
+      } elseif (str_contains($methodCode, 'tarjeta') || str_contains($methodCode, 'card') || str_contains($methodCode, 'card_payment')) {
+        // try to detect gateway provider
+        $gatewayCode = strtolower((string) (data_get($deposit, 'gateway.code') ?? data_get($deposit, 'gateway.name') ?? ''));
+        if (strpos($gatewayCode, 'stripe') !== false) {
+          $purchaseMethod[$pid] = 'stripe';
+        } else {
+          // default to stripe-like card
+          $purchaseMethod[$pid] = 'stripe';
+        }
+      } elseif (str_contains($methodCode, 'efectivo') || str_contains($methodCode, 'cash')) {
+        $purchaseMethod[$pid] = 'cash';
+      } else {
+        // fallback: inspect gateway/account
+        $gateway = strtolower((string) (data_get($deposit, 'gateway.code') ?? data_get($deposit, 'gateway.name') ?? ''));
+        if (strpos($gateway, 'stripe') !== false) {
+          $purchaseMethod[$pid] = 'stripe';
+        } elseif (strpos($gateway, 'paypal') !== false) {
+          $purchaseMethod[$pid] = 'paypal';
+        } else {
+          // unknown -> leave unmapped for now
+        }
+      }
+    }
+
+    // Count mapped purchases
+    foreach ($purchaseMethod as $m) {
+      if (isset($stats[$m])) {
+        $stats[$m]++;
+      }
+    }
+
+    // Fallback: purchases without deposits -> use payment_type
+    $mappedPurchaseIds = array_keys($purchaseMethod);
+    $unmapped = array_values(array_diff($purchaseIds, $mappedPurchaseIds));
+    if (!empty($unmapped)) {
+      $unpurchases = Purchase::whereIn('id', $unmapped)->get(['id', 'payment_type']);
+      foreach ($unpurchases as $p) {
+        $ptype = (string) data_get($p, 'payment_type');
+        switch ($ptype) {
+          case Purchase::PAYMENT_MOBILE:
+            // without deposit we cannot determine bank -> count as provincial_mobile
             $stats['provincial_mobile']++;
-          } else {
-            // fallback: treat as provincial_mobile if unknown
-            $stats['provincial_mobile']++;
-          }
-          break;
-        case Purchase::PAYMENT_TRANSFER:
-          $deposit = $purchase->deposits->first();
-          $bank = $deposit ? $bankFromDeposit($deposit) : '';
-          if (strpos($bank, 'banesco') !== false) {
-            $stats['banesco_transfer']++;
-          } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
+            break;
+          case Purchase::PAYMENT_TRANSFER:
             $stats['provincial_transfer']++;
-          } else {
-            $stats['provincial_transfer']++;
-          }
-          break;
-        case Purchase::PAYMENT_STRIPE:
-          $stats['stripe']++;
-          break;
-        case Purchase::PAYMENT_PAYPAL:
-          $stats['paypal']++;
-          break;
-        case Purchase::PAYMENT_ZELLE:
-          $stats['zelle']++;
-          break;
-        case Purchase::PAYMENT_EFECTIVO:
-          $stats['cash']++;
-          break;
-        default:
-          // if payment_type is other or null, try to inspect deposits
-          $deposit = $purchase->deposits->first();
-          if ($deposit) {
-            $method = strtolower((string) (
-              data_get($deposit, 'gateway.code')
-              ?? data_get($deposit, 'account.code')
-              ?? data_get($deposit, 'method_code')
-              ?? data_get($deposit, 'gateway.name')
-              ?? data_get($deposit, 'account.name')
-              ?? ''
-            ));
-            if ($method === 'stripe') {
-              $stats['stripe']++;
-            } elseif ($method === 'paypal') {
-              $stats['paypal']++;
-            }
-          }
-          break;
+            break;
+          case Purchase::PAYMENT_STRIPE:
+            $stats['stripe']++;
+            break;
+          case Purchase::PAYMENT_PAYPAL:
+            $stats['paypal']++;
+            break;
+          case Purchase::PAYMENT_ZELLE:
+            $stats['zelle']++;
+            break;
+          case Purchase::PAYMENT_EFECTIVO:
+            $stats['cash']++;
+            break;
+          default:
+            // unknown: ignore
+            break;
+        }
       }
     }
 
