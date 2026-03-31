@@ -456,35 +456,28 @@ class DashboardController extends Controller
 
   private function buildPaymentMethodPercentages(Carbon $salesFrom, Carbon $salesTo)
   {
-    $depositBase = Deposit::query()
-      ->select('id', 'method_code', 'status', 'account', 'gateway', 'fields', 'detail', 'created_at')
-      ->whereBetween('created_at', [$salesFrom, $salesTo]);
+    // Primary source: purchases completed in the date range
+    $purchases = Purchase::with('deposits')
+      ->whereBetween('created_at', [$salesFrom, $salesTo])
+      ->where('status', Purchase::STATUS_COMPLETED)
+      ->get();
 
-    $deposits = $depositBase->get();
-    $totalDeposits = $deposits->count();
-
-    // Also include purchases paid via Stripe which may not create a Deposit record
-    $stripePurchasesCount = Purchase::whereBetween('created_at', [$salesFrom, $salesTo])
-      ->where('payment_type', Purchase::PAYMENT_STRIPE)
-      ->count();
-
-    // Use combined total for percentage calculations
-    $totalPayments = $totalDeposits + $stripePurchasesCount;
+    $totalPurchases = $purchases->count();
 
     $bankFromDeposit = function ($deposit) {
-      $bank = data_get($deposit->account, 'banco')
-        ?? data_get($deposit->account, 'bank')
-        ?? data_get($deposit->gateway, 'banco')
-        ?? data_get($deposit->gateway, 'bank')
-        ?? data_get($deposit->fields, 'banco')
-        ?? data_get($deposit->fields, 'bank')
+      $bank = data_get($deposit, 'account.banco')
+        ?? data_get($deposit, 'account.bank')
+        ?? data_get($deposit, 'gateway.banco')
+        ?? data_get($deposit, 'gateway.bank')
+        ?? data_get($deposit, 'fields.banco')
+        ?? data_get($deposit, 'fields.bank')
         ?? '';
 
       if (!empty($bank)) {
         return strtolower((string) $bank);
       }
 
-      return strtolower((string) $deposit->detail);
+      return strtolower((string) data_get($deposit, 'detail', ''));
     };
 
     $stats = [
@@ -499,56 +492,74 @@ class DashboardController extends Controller
       'cash' => 0,
     ];
 
-    foreach ($deposits as $deposit) {
-      $method = strtolower((string) (
-        data_get($deposit->gateway, 'code')
-        ?? data_get($deposit->account, 'code')
-        ?? $deposit->method_code
-        ?? data_get($deposit->gateway, 'name')
-        ?? data_get($deposit->account, 'name')
-        ?? ''
-      ));
-      $bank = $bankFromDeposit($deposit);
+    foreach ($purchases as $purchase) {
+      $ptype = (string) data_get($purchase, 'payment_type');
 
-      if ($method === 'pago_movil') {
-        if (strpos($bank, 'banesco') !== false) {
-          $stats['banesco_mobile']++;
-        } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
-          $stats['provincial_mobile']++;
-        }
-        continue;
-      }
-
-      if ($method === 'transferencia') {
-        if (strpos($bank, 'banesco') !== false) {
-          $stats['banesco_transfer']++;
-        } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
-          $stats['provincial_transfer']++;
-        }
-        continue;
-      }
-
-      if ($method === 'cashea') {
-        $stats['cashea']++;
-      } elseif ($method === 'zelle') {
-        $stats['zelle']++;
-      } elseif ($method === 'stripe') {
-        $stats['stripe']++;
-      } elseif ($method === 'paypal') {
-        $stats['paypal']++;
-      } elseif ($method === 'efectivo') {
-        $stats['cash']++;
+      switch ($ptype) {
+        case Purchase::PAYMENT_MOBILE:
+          // classify based on first deposit bank if available
+          $deposit = $purchase->deposits->first();
+          $bank = $deposit ? $bankFromDeposit($deposit) : '';
+          if (strpos($bank, 'banesco') !== false) {
+            $stats['banesco_mobile']++;
+          } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
+            $stats['provincial_mobile']++;
+          } else {
+            // fallback: treat as provincial_mobile if unknown
+            $stats['provincial_mobile']++;
+          }
+          break;
+        case Purchase::PAYMENT_TRANSFER:
+          $deposit = $purchase->deposits->first();
+          $bank = $deposit ? $bankFromDeposit($deposit) : '';
+          if (strpos($bank, 'banesco') !== false) {
+            $stats['banesco_transfer']++;
+          } elseif (strpos($bank, 'provincial') !== false || strpos($bank, 'bbva') !== false) {
+            $stats['provincial_transfer']++;
+          } else {
+            $stats['provincial_transfer']++;
+          }
+          break;
+        case Purchase::PAYMENT_STRIPE:
+          $stats['stripe']++;
+          break;
+        case Purchase::PAYMENT_PAYPAL:
+          $stats['paypal']++;
+          break;
+        case Purchase::PAYMENT_ZELLE:
+          $stats['zelle']++;
+          break;
+        case Purchase::PAYMENT_EFECTIVO:
+          $stats['cash']++;
+          break;
+        default:
+          // if payment_type is other or null, try to inspect deposits
+          $deposit = $purchase->deposits->first();
+          if ($deposit) {
+            $method = strtolower((string) (
+              data_get($deposit, 'gateway.code')
+              ?? data_get($deposit, 'account.code')
+              ?? data_get($deposit, 'method_code')
+              ?? data_get($deposit, 'gateway.name')
+              ?? data_get($deposit, 'account.name')
+              ?? ''
+            ));
+            if ($method === 'stripe') {
+              $stats['stripe']++;
+            } elseif ($method === 'paypal') {
+              $stats['paypal']++;
+            }
+          }
+          break;
       }
     }
-    // Add stripe purchases count (from purchases) to stats
-    $stats['stripe'] += $stripePurchasesCount;
 
-    $toPercent = function ($value) use ($totalPayments) {
-      if ($totalPayments <= 0) {
+    $toPercent = function ($value) use ($totalPurchases) {
+      if ($totalPurchases <= 0) {
         return 0;
       }
 
-      return round(((int) $value / $totalPayments) * 100, 1);
+      return round(((int) $value / $totalPurchases) * 100, 1);
     };
 
     return collect([
