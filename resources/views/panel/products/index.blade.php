@@ -498,6 +498,8 @@
       var productsTable = $('#products-table').DataTable({
           processing: true,
           serverSide: true,
+          stateSave: true,
+          stateDuration: 86400,
           ajax: {
             url: "{{ route('products.get') }}",
             type: 'POST',

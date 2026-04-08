@@ -446,7 +446,7 @@
                                                                     value="{{ $tag->id }}">
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-flat-danger p-0 ml-1"
-                                                                    data-remove="tags" aria-label="{{ __('Remove') }}">
+                                                                    data-remove="tags" aria-label="{{ __('locale.Remove') }}">
                                                                     <i data-feather="x"></i>
                                                                 </button>
                                                             </span>
@@ -467,7 +467,7 @@
                                             <div class="col-12 mb-2">
                                                 <button type="button" class="btn btn-primary"
                                                     onclick="addPresentationField()">
-                                                    <i data-feather="plus"></i> {{ __('Add New') }}
+                                                    <i data-feather="plus"></i> {{ __('locale.Add New') }}
                                                 </button>
                                             </div>
 
@@ -481,7 +481,7 @@
                                                                 <strong>{{ __('locale.Presentation') }} {{ $index + 1 }}</strong>
                                                             </div>
                                                             <div>
-                                                                <button type="button" class="btn btn-sm btn-flat-danger" aria-label="Remove"
+                                                                <button type="button" class="btn btn-sm btn-flat-danger" aria-label="{{ __('locale.Remove') }}"
                                                                     onclick="removePresentationRow({{ $index }})">
                                                                     <i data-feather="x"></i>
                                                                 </button>
@@ -565,7 +565,7 @@
                                                     </div>
                                                 @empty
                                                     <div class="text-center text-muted py-3">
-                                                        {{ __('No presentations added yet. Use "Add New" to create one.') }}
+                                                        {{ __('locale.No presentations added yet') }}
                                                     </div>
                                                 @endforelse
                                             </div>
@@ -635,7 +635,7 @@
                                                         <i data-feather="plus" style="width: 20px; height: 20px;"></i>
                                                     </div>
                                                     <span
-                                                        style="font-size: 1.1rem; font-weight: 600; color: #000;">{{ __('Add new secondary image') }}</span>
+                                                        style="font-size: 1.1rem; font-weight: 600; color: #000;">{{ __('locale.Add new secondary image') }}</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -723,7 +723,7 @@
             function loadSecondarySubcategories(categoryId) {
                 const $subcat = $('#secondary_subcategory_id');
                 const $wrap = $('#secondary_subcategory_wrap');
-                $subcat.empty().append('<option value="">{{ __('Select') }}</option>');
+                $subcat.empty().append('<option value="">{{ __('locale.Select') }}</option>');
 
                 if (!categoryId) {
                     $wrap.addClass('d-none');
@@ -786,12 +786,12 @@
                 const label = select && select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : '';
 
                 if (!id) {
-                    showToast('warning', '{{ __('Select a secondary category') }}');
+                    showToast('warning', '{{ __('locale.Select a secondary category') }}');
                     return;
                 }
 
                 if (!list || list.querySelector('[data-id="' + id + '"]')) {
-                    showToast('warning', '{{ __('Secondary category already added') }}');
+                    showToast('warning', '{{ __('locale.Secondary category already added') }}');
                     return;
                 }
 
@@ -850,7 +850,7 @@
                 badge.innerHTML =
                     '<span class="mr-1">' + categoryLabel + ' / ' + label + '</span>' +
                     '<input type="hidden" name="secondary_subcategories[]" value="' + id + '">' +
-                    '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="secondary_subcategories" aria-label="{{ __('Remove') }}">' +
+                    '<button type="button" class="btn btn-sm btn-flat-danger p-0 ml-1" data-remove="secondary_subcategories" aria-label="{{ __('locale.Remove') }}">' +
                     '<i data-feather="x"></i>' +
                     '</button>';
 
