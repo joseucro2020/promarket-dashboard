@@ -603,7 +603,9 @@
       $('body').on('click', '.indicator-status-item', function () {
         var status = String($(this).data('status') || '');
         if (status !== '') {
-          $('#filter-status').val(status).trigger('change');
+          $('#filter-status').val(status);
+          refreshIndicatorActiveState();
+          productsTable.ajax.reload();
         }
       });
 

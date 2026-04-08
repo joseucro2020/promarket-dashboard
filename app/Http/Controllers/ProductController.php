@@ -585,31 +585,42 @@ class ProductController extends Controller
         }
     }
 
-    private function applyProductFilters($query, Request $request, bool $applySearch = true)
+    private function hasRequestValue(Request $request, string $key): bool
+    {
+        if (!$request->exists($key)) {
+            return false;
+        }
+
+        $value = $request->input($key);
+
+        return !is_null($value) && $value !== '';
+    }
+
+    private function applyProductFilters($query, Request $request, bool $applySearch = true, bool $applyDefaultStatusFilter = true)
     {
         $this->normalizeSearchRequest($request);
 
         // Apply Filters
-        if ($request->filled('company')) {
+        if ($this->hasRequestValue($request, 'company')) {
             $query->where('products.company_id', $request->company);
         }
         
-        if ($request->filled('status')) {
+        if ($this->hasRequestValue($request, 'status')) {
             $query->where('products.status', $request->status);
-        } else {
+        } elseif ($applyDefaultStatusFilter) {
             $query->whereIn('products.status', ['0', '1']);
         }
 
-        if ($request->filled('category')) {
+        if ($this->hasRequestValue($request, 'category')) {
             $query->where('products.category_id', $request->category);
         }
-        if ($request->filled('subcategory')) {
+        if ($this->hasRequestValue($request, 'subcategory')) {
             $query->where('products.subcategory_id', $request->subcategory);
         }
-        if ($request->filled('subsubcategory')) {
+        if ($this->hasRequestValue($request, 'subsubcategory')) {
             $query->where('products.subsubcategory_id', $request->subsubcategory);
         }
-        if ($request->filled('typeProduct')) {
+        if ($this->hasRequestValue($request, 'typeProduct')) {
             $query->where('products.variable', $request->typeProduct);
         }
 
@@ -650,7 +661,7 @@ class ProductController extends Controller
         }
 
         // Inventory Filter
-        if ($request->filled('inventory')) {
+        if ($this->hasRequestValue($request, 'inventory')) {
             $inventory = intval($request->inventory);
             $query->whereHas('colors.amounts', function ($qa) use ($inventory) {
                 if ($inventory == 2) { // Con Poca Existencia
@@ -680,6 +691,9 @@ class ProductController extends Controller
         $baseIndicatorsQuery = Product::query();
         $this->applyProductFilters($baseIndicatorsQuery, $request, true);
 
+        $statusIndicatorsQuery = Product::query();
+        $this->applyProductFilters($statusIndicatorsQuery, $request, true, false);
+
         $lowStockQuery = Product::query();
         $this->applyProductFilters($lowStockQuery, $request, true);
         $lowStockProductsCount = $lowStockQuery
@@ -703,7 +717,7 @@ class ProductController extends Controller
             })
             ->values();
 
-        $productsByStatusCounts = (clone $baseIndicatorsQuery)
+        $productsByStatusCounts = (clone $statusIndicatorsQuery)
             ->selectRaw('products.status, COUNT(*) as total')
             ->groupBy('products.status')
             ->pluck('total', 'status');
