@@ -602,7 +602,11 @@ class ProductController extends Controller
 
         // Apply Filters
         if ($this->hasRequestValue($request, 'company')) {
-            $query->where('products.company_id', $request->company);
+            if ((string) $request->company === '__NULL__') {
+                $query->whereNull('products.company_id');
+            } else {
+                $query->where('products.company_id', $request->company);
+            }
         }
         
         if ($this->hasRequestValue($request, 'status')) {
@@ -856,13 +860,11 @@ class ProductController extends Controller
     {
         $companies = Product::query()
             ->select('company_id')
-            ->whereNotNull('company_id')
             ->distinct()
+            ->orderByRaw('CASE WHEN company_id IS NULL THEN 0 ELSE 1 END')
             ->orderBy('company_id')
             ->pluck('company_id');
-
-            dd($companies);
-
+            
         $indicators = $this->buildProductIndicators(request());
 
         $categories = Category::select('id', 'name', 'name_english')

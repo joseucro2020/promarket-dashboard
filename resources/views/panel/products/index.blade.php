@@ -77,8 +77,19 @@
                   <label for="filter-company">{{ __('locale.Company') }}</label>
                   <select class="form-control" id="filter-company">
                     <option value="">{{ __('locale.All') }}</option>
+                    @if(collect($companies)->contains(function ($companyId) { return is_null($companyId); }))
+                      <option value="__NULL__">{{ __('locale.No company') }}</option>
+                    @endif
                     @foreach($companies as $companyId)
-                      <option value="{{ $companyId }}">{{ $companyId }}</option>
+                      @if(!is_null($companyId))
+                        @php
+                          $companyId = (string) $companyId;
+                          $companyLabel = $companyId === '1'
+                            ? __('locale.Others')
+                            : ($companyId === '2' ? 'Kromit Market' : ($companyId === '0' ? __('locale.No company') : __('locale.Company')));
+                        @endphp
+                        <option value="{{ $companyId }}">{{ $companyLabel }}</option>
+                      @endif
                     @endforeach
                   </select>
                 </div>
@@ -133,7 +144,7 @@
                           $companyId = (string) $companyCount['company_id'];
                           $companyLabel = $companyId === '1'
                             ? __('locale.Others')
-                            : ($companyId === '2' ? __('locale.Kromi Market') : ($companyId === '0' ? __('locale.No company') : $companyId));
+                            : ($companyId === '2' ? 'Kromit Market' : ($companyId === '0' ? __('locale.No company') : __('locale.Company')));
                         @endphp
                         <div class="d-flex justify-content-between align-items-center mb-25 indicator-company-item"
                              data-company-id="{{ $companyId }}"
@@ -390,7 +401,8 @@
         var noCompanyText = @json(__('locale.No company'));
         var noDataText = @json(__('locale.No data'));
         var othersText = @json(__('locale.Others'));
-        var kromiMarketText = @json(__('locale.Kromi Market'));
+        var kromitMarketText = 'Kromit Market';
+        var companyText = @json(__('locale.Company'));
         var filterTitleText = @json(__('locale.Filter'));
         var html = '';
 
@@ -401,7 +413,7 @@
             var companyId = String(item.company_id);
             var companyLabel = companyId === '1'
               ? othersText
-              : (companyId === '2' ? kromiMarketText : (companyId === '0' ? noCompanyText : companyId));
+              : (companyId === '2' ? kromitMarketText : (companyId === '0' ? noCompanyText : companyText));
 
             return '<div class="d-flex justify-content-between align-items-center mb-25 indicator-company-item" role="button" data-company-id="' + companyId + '" title="' + filterTitleText + '">'
               + '<span class="text-truncate mr-50">' + companyLabel + '</span>'
@@ -582,11 +594,14 @@
       });
 
       $('body').on('click', '.indicator-company-item', function () {
-        var companyId = String($(this).data('company-id') || '');
+        var companyRaw = $(this).data('company-id');
+        var companyId = companyRaw === undefined || companyRaw === null ? '' : String(companyRaw);
         var $companyFilter = $('#filter-company');
 
         if ($companyFilter.find('option[value="' + companyId + '"]').length) {
           $companyFilter.val(companyId).trigger('change');
+        } else if (companyId === '0' && $companyFilter.find('option[value="__NULL__"]').length) {
+          $companyFilter.val('__NULL__').trigger('change');
         }
       });
 
@@ -601,7 +616,8 @@
       });
 
       $('body').on('click', '.indicator-status-item', function () {
-        var status = String($(this).data('status') || '');
+        var statusRaw = $(this).data('status');
+        var status = statusRaw === undefined || statusRaw === null ? '' : String(statusRaw);
         if (status !== '') {
           $('#filter-status').val(status);
           refreshIndicatorActiveState();
