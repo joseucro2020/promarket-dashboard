@@ -861,6 +861,8 @@ class ProductController extends Controller
             ->orderBy('company_id')
             ->pluck('company_id');
 
+            dd($companies);
+
         $indicators = $this->buildProductIndicators(request());
 
         $categories = Category::select('id', 'name', 'name_english')
