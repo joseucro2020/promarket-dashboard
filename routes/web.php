@@ -66,6 +66,7 @@ Route::get('/panel/dashboard-export', [DashboardController::class, 'export'])->n
 // Routes para el módulo de Tasa de cambio
 Route::group(['prefix' => 'panel'], function () {
   Route::get('tasa-de-cambios', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
+  Route::get('tasa-de-cambios/diagnostico', [ExchangeRateController::class, 'diagnose'])->name('exchange-rates.diagnose');
   Route::get('tasa-de-cambios/nuevo', [ExchangeRateController::class, 'create'])->name('exchange-rates.create');
   Route::post('tasa-de-cambios', [ExchangeRateController::class, 'store'])->name('exchange-rates.store');
   Route::get('tasa-de-cambios/{id}/editar', [ExchangeRateController::class, 'edit'])->name('exchange-rates.edit');
