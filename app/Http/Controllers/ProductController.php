@@ -662,10 +662,47 @@ class ProductController extends Controller
             }
 
             if ($searchValueForName !== '') {
-                $query->where(function($q) use ($searchValueForName) {
-                    $q->where('products.name', 'like', "%{$searchValueForName}%")
-                      ->orWhere('products.name_english', 'like', "%{$searchValueForName}%")
-                      ->orWhere('products.id', 'like', "%{$searchValueForName}%");
+                $searchTerms = preg_split('/\s+/', trim($searchValueForName)) ?: [];
+                $searchTerms = array_values(array_filter($searchTerms, function ($term) {
+                    return $term !== '';
+                }));
+
+                if (empty($searchTerms)) {
+                    $searchTerms = [$searchValueForName];
+                }
+
+                $query->where(function ($outerQuery) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $like = '%' . $term . '%';
+
+                        $outerQuery->where(function ($innerQuery) use ($term, $like) {
+                            $innerQuery->where('products.name', 'like', $like)
+                                ->orWhere('products.name_english', 'like', $like)
+                                ->orWhere('products.description', 'like', $like)
+                                ->orWhere('products.description_english', 'like', $like)
+                                ->orWhere('products.slug', 'like', $like)
+                                ->orWhere('products.id', 'like', $like)
+                                ->orWhereHas('categories', function ($categoryQuery) use ($like) {
+                                    $categoryQuery->where('name', 'like', $like)
+                                        ->orWhere('name_english', 'like', $like);
+                                })
+                                ->orWhereHas('subcategories', function ($subcategoryQuery) use ($like) {
+                                    $subcategoryQuery->where('name', 'like', $like)
+                                        ->orWhere('name_english', 'like', $like);
+                                })
+                                ->orWhereHas('subsubcategories', function ($subsubcategoryQuery) use ($like) {
+                                    $subsubcategoryQuery->where('name', 'like', $like)
+                                        ->orWhere('name_english', 'like', $like);
+                                })
+                                ->orWhereHas('colors.amounts', function ($amountQuery) use ($like) {
+                                    $amountQuery->where('sku', 'like', $like);
+                                });
+
+                            if (is_numeric($term)) {
+                                $innerQuery->orWhere('products.id', (int) $term);
+                            }
+                        });
+                    }
                 });
             }
         }
