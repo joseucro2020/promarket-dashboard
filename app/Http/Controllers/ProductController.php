@@ -142,7 +142,7 @@ class ProductController extends Controller
                     fputcsv($output, [
                         $item->id,
                         $item->name,
-                        (int) $item->variable === Product::TYPE_VARIABLE ? 'Variable' : 'Simple',
+                        $this->getProductTypeLabel((int) $item->variable),
                         number_format((float) $item->price_2, 2, '.', ','),
                         number_format((float) $item->price_1, 2, '.', ','),
                         $item->company_id ?? '-',
@@ -183,7 +183,7 @@ class ProductController extends Controller
                 $supplier = $supplier !== '' ? $supplier : '-';
 
                 foreach ($presentations as $product) {
-                    $price = (int) $item->variable === 0 ? (float) $item->price_1 : (float) $product->price;
+                    $price = (int) $item->variable === Product::TYPE_VARIABLE ? (float) $product->price : (float) $item->price_1;
                     $cost = (float) $product->cost;
                     $ganancia = $price - $cost;
                     $porcentaje = $cost > 0 ? number_format(($ganancia / $cost) * 100, 2, '.', ',') : 0;
@@ -191,7 +191,7 @@ class ProductController extends Controller
                     fputcsv($output, [
                         $item->id,
                         $item->name,
-                        (int) $item->variable === 1 ? ($product->presentation ?? '') : '',
+                        (int) $item->variable === Product::TYPE_VARIABLE ? ($product->presentation ?? '') : '',
                         $item->type_variable,
                         $product->amount,
                         number_format($cost, 2, '.', ','),
@@ -636,18 +636,24 @@ class ProductController extends Controller
             $typeFilter = null;
 
             if (in_array($searchLower, ['simple', 'simple product', 'producto simple'], true)) {
-                $typeFilter = 0;
+                $typeFilter = Product::TYPE_SIMPLE;
                 $searchValueForName = '';
             } elseif (in_array($searchLower, ['variable', 'variable product', 'producto variable'], true)) {
-                $typeFilter = 1;
+                $typeFilter = Product::TYPE_VARIABLE;
+                $searchValueForName = '';
+            } elseif (in_array($searchLower, ['bulk', 'bulk product', 'producto a granel'], true)) {
+                $typeFilter = Product::TYPE_BULK;
                 $searchValueForName = '';
             } else {
                 if (Str::contains($searchLower, ['simple product', 'producto simple'])) {
-                    $typeFilter = 0;
+                    $typeFilter = Product::TYPE_SIMPLE;
                     $searchValueForName = trim(str_ireplace(['simple product', 'producto simple'], '', $searchValueForName));
                 } elseif (Str::contains($searchLower, ['variable product', 'producto variable'])) {
-                    $typeFilter = 1;
+                    $typeFilter = Product::TYPE_VARIABLE;
                     $searchValueForName = trim(str_ireplace(['variable product', 'producto variable'], '', $searchValueForName));
+                } elseif (Str::contains($searchLower, ['bulk product', 'producto a granel'])) {
+                    $typeFilter = Product::TYPE_BULK;
+                    $searchValueForName = trim(str_ireplace(['bulk product', 'producto a granel'], '', $searchValueForName));
                 }
             }
 
@@ -820,10 +826,20 @@ class ProductController extends Controller
                     </form>
                 </div>';
 
-            $isVariable = (int) $product->variable === 1;
-            $typeBadgeClass = $isVariable ? 'badge-light-primary' : 'badge-light-secondary';
-            $typeIcon = $isVariable ? 'layers' : 'box';
-            $typeLabel = $isVariable ? __('Variable Product') : __('Simple Product');
+            $typeValue = (int) $product->variable;
+            if ($typeValue === Product::TYPE_VARIABLE) {
+                $typeBadgeClass = 'badge-light-primary';
+                $typeIcon = 'layers';
+                $typeLabel = __('Variable Product');
+            } elseif ($typeValue === Product::TYPE_BULK) {
+                $typeBadgeClass = 'badge-light-warning';
+                $typeIcon = 'archive';
+                $typeLabel = __('Bulk Product');
+            } else {
+                $typeBadgeClass = 'badge-light-secondary';
+                $typeIcon = 'box';
+                $typeLabel = __('Simple Product');
+            }
             $typeHtml = '<span class="badge '.$typeBadgeClass.' d-inline-flex align-items-center">'
                 .'<i data-feather="'.$typeIcon.'" class="mr-25"></i>'
                 .'<span>'.$typeLabel.'</span>'
@@ -961,20 +977,43 @@ class ProductController extends Controller
         $product->retail = $request->filled('retail') ? $request->retail : $product->retail;
         $product->wholesale = $request->filled('wholesale') ? $request->wholesale : $product->wholesale;
 
-        $variable = $request->input('variable', $product->variable ?? 0);
+        $type = $request->input('type');
+        if (is_string($type) && $type !== '') {
+            switch (Str::lower($type)) {
+                case 'variable':
+                    $variable = Product::TYPE_VARIABLE;
+                    break;
+                case 'bulk':
+                    $variable = Product::TYPE_BULK;
+                    break;
+                case 'simple':
+                default:
+                    $variable = Product::TYPE_SIMPLE;
+                    break;
+            }
+        } else {
+            $variable = (int) $request->input('variable', $product->variable ?? Product::TYPE_SIMPLE);
+        }
         $product->variable = $variable;
 
-        if ((int) $variable === 0) {
-            $product->price_1 = $request->price_1;
-            $product->price_2 = $request->price_2;
-        } else {
+        if ((int) $variable === Product::TYPE_VARIABLE) {
             if ($request->filled('price_1')) {
                 $product->price_1 = $request->price_1;
             }
             if ($request->filled('price_2')) {
                 $product->price_2 = $request->price_2;
             }
+        } else {
+            $product->price_1 = $request->price_1;
+            $product->price_2 = $request->price_2;
         }
+
+        if ((int) $variable === Product::TYPE_BULK) {
+            $product->bulk_unit = $request->input('bulk_unit');
+            $product->bulk_min_sale = $request->filled('bulk_min_sale') ? $request->input('bulk_min_sale') : ($product->bulk_min_sale ?? 1.000);
+            $product->bulk_step = $request->filled('bulk_step') ? $request->input('bulk_step') : ($product->bulk_step ?? 0.100);
+        }
+
         // Map form fields to DB columns
         if ($request->has('min_stock_deactivate')) {
             $product->minexi = $request->input('min_stock_deactivate');
@@ -993,6 +1032,18 @@ class ProductController extends Controller
         }
 
         return public_path('img/products');
+    }
+
+    private function getProductTypeLabel(int $variable): string
+    {
+        switch ($variable) {
+            case Product::TYPE_VARIABLE:
+                return 'Variable';
+            case Product::TYPE_BULK:
+                return 'Bulk';
+            default:
+                return 'Simple';
+        }
     }
 
     private function ensureProductImageDiskPath(?string $preferredPath = null): string

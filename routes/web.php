@@ -212,7 +212,10 @@ Route::group(['prefix' => 'panel'], function () {
   // Inventory Replenishment
   Route::get('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'index'])->name('inventory.index');
   Route::get('reposicion-de-inventario/nuevo', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'create'])->name('inventory.create');
+  Route::get('reposicion-de-inventario/product-search', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'searchProducts'])->name('inventory.products.search');
   Route::post('reposicion-de-inventario', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'store'])->name('inventory.store');
+  Route::post('reposicion-de-inventario/export/excel', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'exportExcel'])->name('inventory.export.excel');
+  Route::get('reposicion-de-inventario/export/pdf', [App\Http\Controllers\Admin\InventoryReplenishmentController::class, 'exportPdf'])->name('inventory.export.pdf');
 
   // Batch Category Change (sin Admin)
   Route::get('cambios-productos-lotes', [CategoryBlocksController::class, 'index'])->name('categoryblocks.index');

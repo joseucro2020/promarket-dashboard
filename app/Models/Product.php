@@ -14,6 +14,7 @@ class Product extends Model
 
     const TYPE_SIMPLE = 0;
     const TYPE_VARIABLE = 1;
+    const TYPE_BULK = 2;
 
     const STATUS_ACTIVE = '1';
     const STATUS_INACTIVE = '0';
@@ -30,6 +31,9 @@ class Product extends Model
         'variable',
         'price_1',
         'price_2',
+        'bulk_unit',
+        'bulk_min_sale',
+        'bulk_step',
         'category_id',
         'subcategory_id',
         'collection_id',
@@ -118,6 +122,10 @@ class Product extends Model
                 return 'Simple';
             case static::TYPE_VARIABLE:
                 return 'Variable';
+            case static::TYPE_BULK:
+                return 'Bulk';
+            default:
+                return 'Simple';
         }
     }
 

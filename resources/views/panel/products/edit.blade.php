@@ -71,7 +71,13 @@
                                         <div class="col-md-12 text-center mb-2">
                                             <p class="text-muted mb-1">{{ __('locale.Product Type') }}</p>
                                             <span class="badge badge-light-primary px-2 py-1">
-                                                {{ $product->variable == 1 ? __('locale.Variable Product') : __('locale.Simple Product') }}
+                                                @if ((int) $product->variable === \App\Models\Product::TYPE_VARIABLE)
+                                                    {{ __('locale.Variable Product') }}
+                                                @elseif ((int) $product->variable === \App\Models\Product::TYPE_BULK)
+                                                    {{ __('locale.Bulk Product') }}
+                                                @else
+                                                    {{ __('locale.Simple Product') }}
+                                                @endif
                                             </span>
                                         </div>
 
@@ -334,7 +340,7 @@
                                         @php
                                             $simpleAmount = $amounts->first();
                                         @endphp
-                                        @if ($product->variable == 0)
+                                        @if (in_array((int) $product->variable, [\App\Models\Product::TYPE_SIMPLE, \App\Models\Product::TYPE_BULK], true))
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{ __('locale.Price') }} $</label>
@@ -378,6 +384,58 @@
                                                         value="{{ $simpleAmount ? $simpleAmount->sku : '' }}">
                                                 </div>
                                             </div>
+
+                                            @if ((int) $product->variable === \App\Models\Product::TYPE_BULK)
+                                                <div class="col-12">
+                                                    <div class="border rounded p-2 p-md-3 mb-1 bg-light">
+                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                            <h5 class="mb-0">{{ __('locale.Bulk Configuration') }}</h5>
+                                                            <span class="badge badge-light-warning">{{ __('locale.Bulk Product') }}</span>
+                                                        </div>
+                                                        <p class="text-muted mb-2">{{ __('locale.Bulk Configuration Intro') }}</p>
+
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="form-group mb-2">
+                                                                    <label>{{ __('locale.Bulk Unit') }}</label>
+                                                                    <select class="form-control" name="bulk_unit">
+                                                                        <option value="">{{ __('locale.Select') }}</option>
+                                                                        <option value="Mg" {{ $product->bulk_unit === 'Mg' ? 'selected' : '' }}>Mg</option>
+                                                                        <option value="Gr" {{ $product->bulk_unit === 'Gr' ? 'selected' : '' }}>Gr</option>
+                                                                        <option value="Kg" {{ $product->bulk_unit === 'Kg' ? 'selected' : '' }}>Kg</option>
+                                                                        <option value="Oz" {{ $product->bulk_unit === 'Oz' ? 'selected' : '' }}>Oz</option>
+                                                                        <option value="Lb" {{ $product->bulk_unit === 'Lb' ? 'selected' : '' }}>Lb</option>
+                                                                        <option value="Ml" {{ $product->bulk_unit === 'Ml' ? 'selected' : '' }}>Ml</option>
+                                                                        <option value="L" {{ $product->bulk_unit === 'L' ? 'selected' : '' }}>L</option>
+                                                                        <option value="Mt" {{ $product->bulk_unit === 'Mt' ? 'selected' : '' }}>Mt</option>
+                                                                    </select>
+                                                                    <small class="text-muted">{{ __('locale.Bulk Unit Help') }}</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group mb-2">
+                                                                    <label>{{ __('locale.Bulk Min Sale') }}</label>
+                                                                    <input type="number" step="1" min="0" class="form-control" name="bulk_min_sale"
+                                                                        value="{{ isset($product->bulk_min_sale) ? (int) $product->bulk_min_sale : 1 }}">
+                                                                    <small class="text-muted">{{ __('locale.Bulk Min Sale Help') }}</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group mb-2">
+                                                                    <label>{{ __('locale.Bulk Step') }}</label>
+                                                                    <input type="number" step="1" min="1" class="form-control" name="bulk_step"
+                                                                        value="{{ isset($product->bulk_step) ? (int) $product->bulk_step : 1 }}">
+                                                                    <small class="text-muted">{{ __('locale.Bulk Step Help') }}</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="alert alert-light-warning mb-0 mt-1" role="alert">
+                                                            {{ __('locale.Bulk Example') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endif
                                         <div class="col-md-3">
                                             <div class="form-group">

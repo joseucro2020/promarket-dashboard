@@ -210,7 +210,25 @@ class OfferController extends Controller
         $length = (int)($request->input('length', 10));
         $search = $request->input('search.value', '');
 
-        $query = Product::where('status', Product::STATUS_ACTIVE);
+        $stockSubquery = DB::table('product_colors')
+            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+            ->whereColumn('product_colors.product_id', 'products.id')
+            ->whereNull('product_amount.deleted_at')
+            ->selectRaw('COALESCE(SUM(product_amount.amount), 0)');
+
+        $skuSubquery = DB::table('product_colors')
+            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+            ->whereColumn('product_colors.product_id', 'products.id')
+            ->whereNull('product_amount.deleted_at')
+            ->orderBy('product_amount.id')
+            ->limit(1)
+            ->select('product_amount.sku');
+
+        $query = Product::query()
+            ->select('products.id', 'products.name', 'products.price_2')
+            ->selectSub($stockSubquery, 'stock_total')
+            ->selectSub($skuSubquery, 'sku_value')
+            ->where('products.status', Product::STATUS_ACTIVE);
 
         if ($request->filled('category')) {
             $query->where('category_id', $request->input('category'));
@@ -226,30 +244,42 @@ class OfferController extends Controller
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
+                $q->where('products.name', 'like', "%{$search}%")
+                    ->orWhere('products.id', 'like', "%{$search}%")
+                    ->orWhereExists(function ($sub) use ($search) {
+                        $sub->select(DB::raw(1))
+                            ->from('product_colors')
+                            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+                            ->whereColumn('product_colors.product_id', 'products.id')
+                            ->whereNull('product_amount.deleted_at')
+                            ->where('product_amount.sku', 'like', "%{$search}%");
+                    });
             });
         }
 
         $recordsFiltered = $query->count();
 
         // ordering
-        $orderColIndex = $request->input('order.0.column', 1);
+        $orderColIndex = $request->input('order.0.column', 2);
         $orderDir = $request->input('order.0.dir', 'asc');
         // map DataTables column index to DB column
-        $columnsMap = [0 => 'id', 1 => 'name'];
+        $columnsMap = [1 => 'sku_value', 2 => 'name', 3 => 'price_2', 4 => 'stock_total'];
         $orderColumn = $columnsMap[$orderColIndex] ?? 'name';
 
         $rows = $query->orderBy($orderColumn, $orderDir)
             ->skip($start)
             ->take($length)
-            ->get(['id', 'name']);
+            ->get();
 
         $data = [];
         foreach ($rows as $row) {
-            $img = $row->image_url ? $row->image_url : url('images/placeholder.png');
-            $imgHtml = '<div class="text-center"><img src="'.$img.'" style="max-height:48px" class="img-fluid"/></div>';
-            $action = '<button type="button" class="btn btn-icon btn-flat-success add-to-offer" data-id="'.$row->id.'" data-name="'.htmlspecialchars($row->name, ENT_QUOTES).'" title="'.__('Add').'"><i data-feather="plus"></i></button>';
-            $data[] = [$imgHtml, $row->name, $action];
+            $sku = (string)($row->sku_value ?? '');
+            $name = (string)$row->name;
+            $checkbox = '<input type="checkbox" class="select-product-checkbox" data-id="'.$row->id.'" data-name="'.htmlspecialchars($name, ENT_QUOTES).'">';
+            $skuHtml = '<span class="badge badge-light-primary kromi-sku">'.htmlspecialchars($sku, ENT_QUOTES).'</span>';
+            $costHtml = '$ '.number_format((float)($row->price_2 ?? 0), 2);
+            $qtyHtml = '<span class="badge badge-light-info kromi-qty">'.(int)($row->stock_total ?? 0).'</span>';
+            $data[] = [$checkbox, $skuHtml, htmlspecialchars($name, ENT_QUOTES), $costHtml, $qtyHtml];
         }
 
         return response()->json([

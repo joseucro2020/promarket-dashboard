@@ -56,15 +56,24 @@
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="custom-control custom-radio mr-2">
                                                     <input type="radio" id="typeSimple" name="type"
-                                                        class="custom-control-input" value="simple" checked>
+                                                        class="custom-control-input" value="simple"
+                                                        {{ old('type', 'simple') === 'simple' ? 'checked' : '' }}>
                                                     <label class="custom-control-label"
                                                         for="typeSimple">{{ __('locale.Simple Product') }}</label>
                                                 </div>
                                                 <div class="custom-control custom-radio">
                                                     <input type="radio" id="typeVariable" name="type"
-                                                        class="custom-control-input" value="variable">
+                                                        class="custom-control-input" value="variable"
+                                                        {{ old('type') === 'variable' ? 'checked' : '' }}>
                                                     <label class="custom-control-label"
                                                         for="typeVariable">{{ __('locale.Variable Product') }}</label>
+                                                </div>
+                                                <div class="custom-control custom-radio ml-2">
+                                                    <input type="radio" id="typeBulk" name="type"
+                                                        class="custom-control-input" value="bulk"
+                                                        {{ old('type') === 'bulk' ? 'checked' : '' }}>
+                                                    <label class="custom-control-label"
+                                                        for="typeBulk">{{ __('locale.Bulk Product') }}</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -85,7 +94,7 @@
                                                 <label>{{ __('locale.Auto Update?') }}</label>
                                                 <div class="custom-control custom-switch custom-switch-success">
                                                     <input type="checkbox" class="custom-control-input" id="auto_update"
-                                                        name="auto_update">
+                                                        name="auto_update" {{ old('auto_update') ? 'checked' : '' }}>
                                                     <label class="custom-control-label"
                                                         for="auto_update">{{ __('locale.Yes') }}</label>
                                                 </div>
@@ -96,34 +105,34 @@
                                             <div class="form-group">
                                                 <label>{{ __('locale.Min Stock to Deactivate') }}</label>
                                                 <input type="number" class="form-control" name="min_stock_deactivate"
-                                                    value="5">
+                                                    value="{{ old('min_stock_deactivate', 5) }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Max Stock to Activate') }}</label>
                                                 <input type="number" class="form-control" name="max_stock_activate"
-                                                    value="10">
+                                                    value="{{ old('max_stock_activate', 10) }}">
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Name (Spanish)') }}</label>
-                                                <input type="text" class="form-control" name="name" required>
+                                                <input type="text" class="form-control" name="name" value="{{ old('name') }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Name (English)') }}</label>
-                                                <input type="text" class="form-control" name="name_english">
+                                                <input type="text" class="form-control" name="name_english" value="{{ old('name_english') }}">
                                             </div>
                                         </div>
 
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Slug') }}</label>
-                                                <input type="text" class="form-control" name="slug" required>
+                                                <input type="text" class="form-control" name="slug" value="{{ old('slug') }}" required>
                                             </div>
                                         </div>
 
@@ -163,7 +172,7 @@
                                                 <select class="form-control" id="category_id" name="category_id">
                                                     <option value="">{{ __('locale.Select') }}</option>
                                                     @foreach ($categories as $category)
-                                                        <option value="{{ $category->id }}">{{ $category->name }}
+                                                        <option value="{{ $category->id }}" {{ (string) old('category_id') === (string) $category->id ? 'selected' : '' }}>{{ $category->name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -248,13 +257,13 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Description (Spanish)') }}</label>
-                                                <textarea class="form-control" name="description" rows="3"></textarea>
+                                                <textarea class="form-control" name="description" rows="3">{{ old('description') }}</textarea>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Description (English)') }}</label>
-                                                <textarea class="form-control" name="description_english" rows="3"></textarea>
+                                                <textarea class="form-control" name="description_english" rows="3">{{ old('description_english') }}</textarea>
                                             </div>
                                         </div>
 
@@ -262,7 +271,7 @@
                                             <div class="form-group">
                                                 <label>{{ __('locale.Price') }} $</label>
                                                 <input type="number" step="0.01" class="form-control" name="price_1"
-                                                    required>
+                                                    value="{{ old('price_1') }}" required>
                                             </div>
                                         </div>
                                         <!-- Stock not in fillable
@@ -277,14 +286,14 @@
                                             <div class="form-group">
                                                 <label>{{ __('locale.Min Sale') }}</label>
                                                 <input type="number" class="form-control" name="retail"
-                                                    value="1">
+                                                    value="{{ old('retail', 1) }}">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Max Sale') }}</label>
                                                 <input type="number" class="form-control" name="wholesale"
-                                                    value="1">
+                                                    value="{{ old('wholesale', 1) }}">
                                             </div>
                                         </div>
 
@@ -292,7 +301,57 @@
                                             <div class="form-group">
                                                 <label>{{ __('locale.Cost') }}</label>
                                                 <input type="number" step="0.01" class="form-control" name="price_2"
-                                                    required>
+                                                    value="{{ old('price_2') }}" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 d-none" id="bulk-fields-create">
+                                            <div class="border rounded p-2 p-md-3 mb-1 bg-light">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <h5 class="mb-0">{{ __('locale.Bulk Configuration') }}</h5>
+                                                    <span class="badge badge-light-warning">{{ __('locale.Bulk Product') }}</span>
+                                                </div>
+                                                <p class="text-muted mb-2">{{ __('locale.Bulk Configuration Intro') }}</p>
+
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <div class="form-group mb-2">
+                                                            <label>{{ __('locale.Bulk Unit') }}</label>
+                                                            <select class="form-control" name="bulk_unit" id="bulk_unit_create">
+                                                                <option value="">{{ __('locale.Select') }}</option>
+                                                                <option value="Mg" {{ old('bulk_unit') === 'Mg' ? 'selected' : '' }}>Mg</option>
+                                                                <option value="Gr" {{ old('bulk_unit') === 'Gr' ? 'selected' : '' }}>Gr</option>
+                                                                <option value="Kg" {{ old('bulk_unit') === 'Kg' ? 'selected' : '' }}>Kg</option>
+                                                                <option value="Oz" {{ old('bulk_unit') === 'Oz' ? 'selected' : '' }}>Oz</option>
+                                                                <option value="Lb" {{ old('bulk_unit') === 'Lb' ? 'selected' : '' }}>Lb</option>
+                                                                <option value="Ml" {{ old('bulk_unit') === 'Ml' ? 'selected' : '' }}>Ml</option>
+                                                                <option value="L" {{ old('bulk_unit') === 'L' ? 'selected' : '' }}>L</option>
+                                                                <option value="Mt" {{ old('bulk_unit') === 'Mt' ? 'selected' : '' }}>Mt</option>
+                                                            </select>
+                                                            <small class="text-muted">{{ __('locale.Bulk Unit Help') }}</small>
+                                                        </div>
+                                                    </div>
+                                                        <div class="col-md-4">
+                                                        <div class="form-group mb-2">
+                                                            <label>{{ __('locale.Bulk Min Sale') }}</label>
+                                                            <input type="number" step="1" min="0" class="form-control" name="bulk_min_sale"
+                                                                id="bulk_min_sale_create" value="{{ (int) old('bulk_min_sale', 1) }}">
+                                                            <small class="text-muted">{{ __('locale.Bulk Min Sale Help') }}</small>
+                                                        </div>
+                                                    </div>
+                                                        <div class="col-md-4">
+                                                        <div class="form-group mb-2">
+                                                            <label>{{ __('locale.Bulk Step') }}</label>
+                                                            <input type="number" step="1" min="1" class="form-control" name="bulk_step"
+                                                                id="bulk_step_create" value="{{ (int) old('bulk_step', 1) }}">
+                                                            <small class="text-muted">{{ __('locale.Bulk Step Help') }}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="alert alert-light-warning mb-0 mt-1" role="alert">
+                                                    {{ __('locale.Bulk Example') }}
+                                                </div>
                                             </div>
                                         </div>
                                         <!-- Threshold not in fillable
@@ -309,7 +368,7 @@
                                                 <select class="form-control" name="taxe_id">
                                                     <option value="">{{ __('Select') }}</option>
                                                     @foreach ($taxes as $tax)
-                                                        <option value="{{ $tax->id }}">{{ $tax->name }}
+                                                        <option value="{{ $tax->id }}" {{ (string) old('taxe_id') === (string) $tax->id ? 'selected' : '' }}>{{ $tax->name }}
                                                             ({{ $tax->percentage }}%)</option>
                                                     @endforeach
                                                 </select>
@@ -619,6 +678,25 @@
     }
 
     $(function() {
+        const oldSubcategoryId = @json(old('subcategory_id'));
+        const oldSubsubcategoryId = @json(old('subsubcategory_id'));
+
+        function toggleBulkFields() {
+            const isBulk = $('#typeBulk').is(':checked');
+            const $bulkWrap = $('#bulk-fields-create');
+            const $bulkUnit = $('#bulk_unit_create');
+
+            if (isBulk) {
+                $bulkWrap.removeClass('d-none');
+                $bulkUnit.prop('required', true);
+            } else {
+                $bulkWrap.addClass('d-none');
+                $bulkUnit.prop('required', false);
+            }
+        }
+
+        loadSubcategories($('#category_id').val(), oldSubcategoryId, oldSubsubcategoryId);
+
         $('#category_id').on('change', function() {
             loadSubcategories($(this).val(), null, null);
         });
@@ -670,6 +748,9 @@
         wireRemove('secondary-category-list');
         wireRemove('secondary-subcategory-list');
         wireRemove('tag-list');
+
+        $('input[name="type"]').on('change', toggleBulkFields);
+        toggleBulkFields();
     });
 </script>
 @endsection

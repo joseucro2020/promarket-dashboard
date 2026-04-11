@@ -129,16 +129,17 @@
                                             
 
                                             <div class="d-flex align-items-center mb-2">
-                                                <label class="mb-0 me-3"><input type="checkbox" id="select-all-products"> {{ __('locale.Seleccionar Todos') }}</label>
                                                 <button type="button" id="add-selected-products" class="btn btn-sm btn-primary ml-auto">{{ __('locale.Add Selected') }}</button>
                                             </div>
                                             <div class="table-responsive">
                                                 <table class="table table-striped table-bordered products-table w-100">
                                                     <thead>
                                                         <tr>
-                                                            <th class="text-center">{{ __('locale.Logo') }}</th>
+                                                            <th style="width:30px;"><input id="select-all-products" type="checkbox"></th>
+                                                            <th>{{ __('locale.SKU') }}</th>
                                                             <th>{{ __('locale.Name') }}</th>
-                                                            <th class="text-end">{{ __('locale.Actions') }}</th>
+                                                            <th>{{ __('locale.Cost') }}</th>
+                                                            <th>{{ __('locale.Quantity') }}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -220,12 +221,35 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function() {
+            // Persist product selection across DataTables pagination/filter redraws.
+            const selectedProducts = new Map(); // key: product id, value: { id, name }
+
+            function normalizeId(value) {
+                return String(value === undefined || value === null ? '' : value);
+            }
+
+            function applySelectionToVisibleRows(table) {
+                const nodes = table.rows().nodes();
+                $(nodes).each(function() {
+                    const $row = $(this);
+                    const $cb = $row.find('.select-product-checkbox');
+                    if (!$cb.length) {
+                        return;
+                    }
+
+                    const id = normalizeId($cb.data('id'));
+                    const checked = id !== '' && selectedProducts.has(id);
+                    $cb.prop('checked', checked);
+                    $row.toggleClass('table-success', checked);
+                });
+            }
+
             const productsTable = $('.products-table').DataTable({
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 order: [
-                    [1, 'asc']
+                    [2, 'asc']
                 ],
                 ajax: {
                     url: '{{ route('offers.products.data') }}',
@@ -237,19 +261,25 @@
                 },
                 columns: [{
                         data: 0,
-                        name: 'image',
+                        name: 'select',
                         orderable: false,
                         searchable: false
                     },
                     {
                         data: 1,
-                        name: 'name'
+                        name: 'sku_value'
                     },
                     {
                         data: 2,
-                        name: 'actions',
-                        orderable: false,
-                        searchable: false
+                        name: 'name'
+                    },
+                    {
+                        data: 3,
+                        name: 'price_2'
+                    },
+                    {
+                        data: 4,
+                        name: 'stock_total'
                     }
                 ],
                 language: {
@@ -259,22 +289,8 @@
                     if (window.feather) {
                         feather.replace({ width: 14, height: 14 });
                     }
-                    // add checkboxes to the first column (logo) using the action button data-id
-                    $('.products-table tbody tr').each(function() {
-                        const $tr = $(this);
-                        // skip if checkbox already added
-                        if ($tr.find('.select-product-checkbox').length) return;
-                        const $actionBtn = $tr.find('.add-to-offer');
-                        if ($actionBtn.length) {
-                            const id = $actionBtn.data('id');
-                            const name = $actionBtn.data('name') || $tr.find('td').eq(1).text().trim();
-                            // insert checkbox into first cell
-                            const $firstCell = $tr.find('td').first();
-                            const $cb = $('<input type="checkbox" class="select-product-checkbox" />').attr('data-id', id).attr('data-name', name);
-                            // prepend checkbox into the first cell
-                            $firstCell.prepend($cb).css('position', 'relative');
-                        }
-                    });
+                    applySelectionToVisibleRows(productsTable);
+                    refreshProductsHeaderState();
                 }
             });
 
@@ -311,22 +327,82 @@
                 }
             });
 
-            // Select all checkbox handler
+            function refreshProductsHeaderState() {
+                const allNodes = productsTable.rows({ search: 'applied' }).nodes();
+                const totalAll = $(allNodes).find('.select-product-checkbox').length;
+                const checkedAll = $(allNodes).find('.select-product-checkbox:checked').length;
+                const header = $('#select-all-products')[0];
+
+                if (header) {
+                    header.checked = (totalAll > 0) && (checkedAll === totalAll);
+                    header.indeterminate = checkedAll > 0 && checkedAll < totalAll;
+                }
+            }
+
+            // Select all checkbox handler (applied rows)
             $(document).on('change', '#select-all-products', function() {
                 const checked = $(this).is(':checked');
-                $('.select-product-checkbox').prop('checked', checked);
+                const allNodes = productsTable.rows({ search: 'applied' }).nodes();
+
+                $(allNodes).each(function() {
+                    const $row = $(this);
+                    const $cb = $row.find('.select-product-checkbox');
+                    if (!$cb.length) {
+                        return;
+                    }
+
+                    const id = normalizeId($cb.data('id'));
+                    const name = String($cb.data('name') || $row.find('td').eq(2).text().trim());
+
+                    $cb.prop('checked', checked);
+                    if (id !== '') {
+                        if (checked) {
+                            selectedProducts.set(id, { id: id, name: name });
+                        } else {
+                            selectedProducts.delete(id);
+                        }
+                    }
+
+                    if (checked) {
+                        $row.addClass('table-success');
+                    } else {
+                        $row.removeClass('table-success');
+                    }
+                });
+
+                refreshProductsHeaderState();
+            });
+
+            // Individual checkbox handler
+            $(document).on('change', '.select-product-checkbox', function() {
+                const $row = $(this).closest('tr');
+                const id = normalizeId($(this).data('id'));
+                const name = String($(this).data('name') || $row.find('td').eq(2).text().trim());
+
+                if ($(this).is(':checked')) {
+                    $row.addClass('table-success');
+                    if (id !== '') {
+                        selectedProducts.set(id, { id: id, name: name });
+                    }
+                } else {
+                    $row.removeClass('table-success');
+                    if (id !== '') {
+                        selectedProducts.delete(id);
+                    }
+                }
+                refreshProductsHeaderState();
             });
 
             // Add selected products in batch
             $(document).on('click', '#add-selected-products', function() {
-                const selected = $('.select-product-checkbox:checked');
-                if (selected.length === 0) {
+                if (selectedProducts.size === 0) {
                     Swal.fire({toast:true, position:'top-end', icon:'info', title: '{{ __('No products selected') }}', showConfirmButton:false, timer:1500});
                     return;
                 }
-                selected.each(function() {
-                    const id = $(this).data('id');
-                    const name = $(this).data('name');
+
+                selectedProducts.forEach(function(product) {
+                    const id = product.id;
+                    const name = product.name;
                     if ($('input[name="products[]"][value="' + id + '"]').length) return; // already added
                     const input = $('<input>').attr('type', 'hidden').attr('name', 'products[]').val(id);
                     $('form').first().append(input);
@@ -336,8 +412,9 @@
                     $(rowNode).attr('data-id', id);
                 });
                 if (window.feather) { feather.replace({ width: 14, height: 14 }); }
-                // uncheck select all
-                $('#select-all-products').prop('checked', false);
+                // Keep persisted selection, only refresh current page/header state.
+                applySelectionToVisibleRows(productsTable);
+                refreshProductsHeaderState();
             });
 
             // server-side processing: no client cache needed

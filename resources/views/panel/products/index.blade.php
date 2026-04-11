@@ -40,6 +40,7 @@
                     <option value="">{{ __('locale.All') }}</option>
                     <option value="0">{{ __('locale.Simple') }}</option>
                     <option value="1">{{ __('locale.Variable') }}</option>
+                    <option value="2">{{ __('locale.Bulk') }}</option>
                   </select>
                 </div>
               </div>
