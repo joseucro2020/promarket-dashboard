@@ -21,4 +21,23 @@ class OfferRequest extends FormRequest
             'products.*' => 'integer|exists:products,id',
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'products.required' => 'Debe seleccionar al menos un producto.',
+            'products.array' => 'El formato de los productos seleccionados es invalido.',
+            'products.min' => 'Debe seleccionar al menos un producto.',
+            'products.*.integer' => 'Uno de los productos seleccionados no es valido.',
+            'products.*.exists' => 'Uno de los productos seleccionados no existe.',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'products' => 'productos',
+            'products.*' => 'producto',
+        ];
+    }
 }

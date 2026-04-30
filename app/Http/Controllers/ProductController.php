@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -51,8 +52,9 @@ class ProductController extends Controller
             $start = $request->input('start', 0);
             $length = $request->input('length', 10);
             $products = $query->skip($start)->take($length)->get();
-
+            
             $data = $this->transformProductsForDataTable($products);
+            // dd($data);
 
             return response()->json([
                 'draw' => intval($request->input('draw')),
@@ -228,6 +230,7 @@ class ProductController extends Controller
     {
         try {
             Log::info('Product store request data: ' . json_encode($request->all()));
+            $this->ensureValidImageUploads($request);
             DB::transaction(function () use ($request) {
                 $product = new Product;
                 $this->fillProductData($product, $request);
@@ -248,8 +251,14 @@ class ProductController extends Controller
                     'amount' => 0,
                     'product_color_id' => $color->id,
                     'category_size_id' => 1, // Default size ID
+                    'unit' => 1,
+                    'presentation' => 0,
                     'price' => $request->price_1,
                     'cost' => $request->price_2,
+                    'min' => $request->input('retail', 1),
+                    'max' => $request->input('wholesale', 1),
+                    'umbral' => $request->input('umbral', 0),
+                    'sku' => $request->input('sku', ''),
                 ]);
 
                 $this->handleImageUpload($request, $product);
@@ -275,6 +284,7 @@ class ProductController extends Controller
     {
         try {
             Log::info('Product update request id: ' . $id . ' data: ' . json_encode($request->all()));
+            $this->ensureValidImageUploads($request);
             DB::transaction(function () use ($request, $id) {
                 $product = Product::findOrFail($id);
                 Log::info('Product before update: ' . json_encode($product->toArray()));
@@ -305,10 +315,59 @@ class ProductController extends Controller
             ]);
         }
 
+        // Simple/Bulk products do not submit the `presentations` array from the form.
+        // Persist their editable stock fields on the default amount row instead.
+        if ((int) $product->variable !== Product::TYPE_VARIABLE) {
+            $amount = $color->amounts()->first();
+
+            if (!$amount) {
+                $amount = new ProductAmount();
+                $amount->product_color_id = $color->id;
+                $amount->category_size_id = 1;
+                $amount->unit = 1;
+                $amount->amount = 0;
+                $amount->presentation = 0;
+            }
+
+            $amount->price = $request->input('price_1', $amount->price ?? 0);
+            $amount->cost = $request->input('price_2', $amount->cost ?? 0);
+            $amount->min = $request->input('retail', $amount->min);
+            $amount->max = $request->input('wholesale', $amount->max);
+            $amount->umbral = $request->input('umbral', $amount->umbral);
+            $amount->sku = $request->input('sku', $amount->sku);
+            $amount->save();
+
+            return;
+        }
+
         $submittedIds = [];
 
-        if ($request->has('presentations')) {
-            foreach ($request->presentations as $data) {
+        $presentations = $request->input('presentations', []);
+
+        // Avoid deleting existing rows when the edit form does not submit presentations.
+        if (!is_array($presentations) || empty($presentations)) {
+            Log::warning('Skipping product presentations sync because request payload is empty.', [
+                'product_id' => $product->id,
+                'variable' => $product->variable,
+            ]);
+
+            return;
+        }
+
+        foreach ($presentations as $data) {
+            if (!is_array($data)) {
+                continue;
+            }
+
+            if (
+                !array_key_exists('presentation', $data)
+                || !array_key_exists('amount', $data)
+                || !array_key_exists('price', $data)
+                || !array_key_exists('cost', $data)
+            ) {
+                continue;
+            }
+
                 $amountData = [
                     'product_color_id' => $color->id,
                     'category_size_id' => $data['unit'] ?? 1,
@@ -324,7 +383,8 @@ class ProductController extends Controller
                 ];
 
                 if (isset($data['id'])) {
-                    $amount = ProductAmount::find($data['id']);
+                    $amount = ProductAmount::where('product_color_id', $color->id)
+                        ->find($data['id']);
                     if ($amount) {
                         $amount->update($amountData);
                         $submittedIds[] = $amount->id;
@@ -333,7 +393,15 @@ class ProductController extends Controller
                     $amount = ProductAmount::create($amountData);
                     $submittedIds[] = $amount->id;
                 }
-            }
+        }
+
+        if (empty($submittedIds)) {
+            Log::warning('Skipping product presentations delete because no valid presentation rows were submitted.', [
+                'product_id' => $product->id,
+                'variable' => $product->variable,
+            ]);
+
+            return;
         }
 
         // Delete removed presentations (soft delete if model uses SoftDeletes)
@@ -1010,9 +1078,25 @@ class ProductController extends Controller
         $product->category_id = $request->category_id;
         $product->subcategory_id = $request->subcategory_id;
         $product->subsubcategory_id = $request->subsubcategory_id;
+        $collectionId = $request->input('collection_id', $product->collection_id);
+        if (empty($collectionId)) {
+            $collectionId = Collection::query()->where('status', '1')->value('id')
+                ?? Collection::query()->value('id');
+        }
+
+        if (empty($collectionId)) {
+            throw ValidationException::withMessages([
+                'collection_id' => __('Please create at least one active collection before creating products.'),
+            ]);
+        }
+
+        $product->collection_id = $collectionId;
         $product->taxe_id = $request->taxe_id;
+        $product->autom = $request->boolean('auto_update') ? 1 : 0;
         $product->retail = $request->filled('retail') ? $request->retail : $product->retail;
-        $product->wholesale = $request->filled('wholesale') ? $request->wholesale : $product->wholesale;
+        $product->wholesale = $request->filled('wholesale')
+            ? $this->normalizeWholesaleFlag($request->input('wholesale'))
+            : $product->wholesale;
 
         $type = $request->input('type');
         if (is_string($type) && $type !== '') {
@@ -1069,6 +1153,96 @@ class ProductController extends Controller
         }
 
         return public_path('img/products');
+    }
+
+    private function normalizeWholesaleFlag($value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        return (float) $value > 0 ? 1 : 0;
+    }
+
+    private function ensureValidImageUploads(Request $request): void
+    {
+        $imageError = $this->getUploadErrorCode('image');
+        if ($imageError !== null && $imageError !== UPLOAD_ERR_OK && $imageError !== UPLOAD_ERR_NO_FILE) {
+            Log::warning('Invalid main image upload detected.', [
+                'product_id' => $request->route('id'),
+                'error_code' => $imageError,
+            ]);
+
+            throw ValidationException::withMessages([
+                'image' => [$this->getUploadErrorMessage($imageError)],
+            ]);
+        }
+
+        $secondaryErrors = $this->getUploadErrorCodes('secondary_images');
+        foreach ($secondaryErrors as $index => $errorCode) {
+            if ($errorCode !== UPLOAD_ERR_OK && $errorCode !== UPLOAD_ERR_NO_FILE) {
+                Log::warning('Invalid secondary image upload detected.', [
+                    'product_id' => $request->route('id'),
+                    'index' => $index,
+                    'error_code' => $errorCode,
+                ]);
+
+                throw ValidationException::withMessages([
+                    'secondary_images.' . $index => [$this->getUploadErrorMessage($errorCode)],
+                ]);
+            }
+        }
+    }
+
+    private function getUploadErrorCode(string $field): ?int
+    {
+        if (!isset($_FILES[$field])) {
+            return null;
+        }
+
+        $error = $_FILES[$field]['error'] ?? null;
+
+        if (is_array($error)) {
+            return null;
+        }
+
+        return is_numeric($error) ? (int) $error : null;
+    }
+
+    private function getUploadErrorCodes(string $field): array
+    {
+        if (!isset($_FILES[$field])) {
+            return [];
+        }
+
+        $error = $_FILES[$field]['error'] ?? [];
+
+        if (!is_array($error)) {
+            return is_numeric($error) ? [(int) $error] : [];
+        }
+
+        return array_map(function ($value) {
+            return is_numeric($value) ? (int) $value : UPLOAD_ERR_NO_FILE;
+        }, $error);
+    }
+
+    private function getUploadErrorMessage(int $errorCode): string
+    {
+        switch ($errorCode) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                return __('The selected image exceeds the maximum allowed upload size.');
+            case UPLOAD_ERR_PARTIAL:
+                return __('The image upload was interrupted. Please try again.');
+            case UPLOAD_ERR_NO_TMP_DIR:
+                return __('The server is missing a temporary folder for image uploads.');
+            case UPLOAD_ERR_CANT_WRITE:
+                return __('The server could not write the uploaded image to disk.');
+            case UPLOAD_ERR_EXTENSION:
+                return __('A server extension stopped the image upload.');
+            default:
+                return __('The selected image could not be uploaded.');
+        }
     }
 
     private function getProductTypeLabel(int $variable): string

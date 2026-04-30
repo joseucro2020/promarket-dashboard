@@ -8,7 +8,9 @@ class ProductColor extends Model {
     protected $table = "product_colors";
     
     protected $fillable = [
-        'name', 'name_english'
+        'name',
+        'name_english',
+        'product_id',
     ];
 
     public function product()

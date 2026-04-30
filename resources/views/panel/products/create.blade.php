@@ -305,6 +305,22 @@
                                             </div>
                                         </div>
 
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>{{ __('locale.Threshold') }}</label>
+                                                <input type="number" class="form-control" name="umbral"
+                                                    value="{{ old('umbral', 0) }}">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>{{ __('locale.SKU') }}</label>
+                                                <input type="text" class="form-control" name="sku"
+                                                    value="{{ old('sku') }}">
+                                            </div>
+                                        </div>
+
                                         <div class="col-12 d-none" id="bulk-fields-create">
                                             <div class="border rounded p-2 p-md-3 mb-1 bg-light">
                                                 <div class="d-flex align-items-center justify-content-between mb-1">
@@ -354,14 +370,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- Threshold not in fillable
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>{{ __('Threshold') }}</label>
-                                    <input type="number" class="form-control" name="threshold" value="1">
-                                </div>
-                            </div>
-                            -->
+
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label>{{ __('locale.Tax') }}</label>
@@ -413,14 +422,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- SKU not in fillable
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>{{ __('SKU') }}</label>
-                                    <input type="text" class="form-control" name="sku">
-                                </div>
-                            </div>
-                            -->
+
 
                                     </div>
                                 </div>

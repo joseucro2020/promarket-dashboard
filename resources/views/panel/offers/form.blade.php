@@ -221,6 +221,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function() {
+            const $offerForm = $('#offer-form');
+
             // Persist product selection across DataTables pagination/filter redraws.
             const selectedProducts = new Map(); // key: product id, value: { id, name }
 
@@ -405,7 +407,7 @@
                     const name = product.name;
                     if ($('input[name="products[]"][value="' + id + '"]').length) return; // already added
                     const input = $('<input>').attr('type', 'hidden').attr('name', 'products[]').val(id);
-                    $('form').first().append(input);
+                    $offerForm.append(input);
                     const rowNode = offerTable.row.add([id, name,
                         '<button type="button" class="btn btn-icon btn-flat-danger remove-from-offer" data-id="' + id + '" data-toggle="tooltip" data-placement="top" title="{{ __('Remove') }}"><i data-feather="trash"></i></button>'
                     ]).draw().node();
@@ -543,7 +545,7 @@
                 }
                 // append hidden input to form
                 const input = $('<input>').attr('type', 'hidden').attr('name', 'products[]').val(id);
-                $('form').first().append(input);
+                $offerForm.append(input);
                 // add row to offer table
                 const rowNode = offerTable.row.add([id, name,
                     '<button type="button" class="btn btn-icon btn-flat-danger remove-from-offer" data-id="' +

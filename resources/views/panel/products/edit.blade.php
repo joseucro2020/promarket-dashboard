@@ -339,27 +339,33 @@
 
                                         @php
                                             $simpleAmount = $amounts->first();
+                                            $simplePrice = old('price_1', $simpleAmount ? $simpleAmount->price : $product->price_1);
+                                            $simpleMinSale = old('retail', $simpleAmount ? $simpleAmount->min : $product->retail);
+                                            $simpleMaxSale = old('wholesale', $simpleAmount ? $simpleAmount->max : $product->wholesale);
+                                            $simpleCost = old('price_2', $simpleAmount ? $simpleAmount->cost : $product->price_2);
+                                            $simpleThreshold = old('umbral', $simpleAmount ? $simpleAmount->umbral : '');
+                                            $simpleSku = old('sku', $simpleAmount ? $simpleAmount->sku : '');
                                         @endphp
                                         @if (in_array((int) $product->variable, [\App\Models\Product::TYPE_SIMPLE, \App\Models\Product::TYPE_BULK], true))
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{ __('locale.Price') }} $</label>
                                                     <input type="number" step="0.01" class="form-control"
-                                                        name="price_1" value="{{ $product->price_1 }}" required>
+                                                        name="price_1" value="{{ $simplePrice }}" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{ __('locale.Min Sale') }}</label>
                                                     <input type="number" class="form-control" name="retail"
-                                                        value="{{ $product->retail }}">
+                                                        value="{{ $simpleMinSale }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{ __('locale.Max Sale') }}</label>
                                                     <input type="number" class="form-control" name="wholesale"
-                                                        value="{{ $product->wholesale }}">
+                                                        value="{{ $simpleMaxSale }}">
                                                 </div>
                                             </div>
 
@@ -367,21 +373,21 @@
                                                 <div class="form-group">
                                                     <label>{{ __('locale.Cost') }}</label>
                                                     <input type="number" step="0.01" class="form-control"
-                                                        name="price_2" value="{{ $product->price_2 }}" required>
+                                                        name="price_2" value="{{ $simpleCost }}" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{ __('locale.Threshold') }}</label>
                                                     <input type="number" class="form-control" name="umbral"
-                                                        value="{{ $simpleAmount ? $simpleAmount->umbral : '' }}">
+                                                        value="{{ $simpleThreshold }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>{{ __('locale.SKU') }}</label>
                                                     <input type="text" class="form-control" name="sku"
-                                                        value="{{ $simpleAmount ? $simpleAmount->sku : '' }}">
+                                                        value="{{ $simpleSku }}">
                                                 </div>
                                             </div>
 
