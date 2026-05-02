@@ -249,48 +249,94 @@ class PurchaseController extends Controller
 
     public function getDetails(Request $request)
     {
-        $purchase = Purchase::where('id', $request->id)
-            ->with([
-                'user',
-                'exchange',
-                'details.product_amount.product_color.product',
-                'details.product_amount.category_size',
-                'transfer.bankAccount.bank',
-                'deposits',
-                'delivery' => function ($query) {
-                    $query->with(['state', 'municipality', 'parish']);
-                }
-            ])
-            ->first();
-
-        if ($purchase) {
-            $purchase->setAttribute('pay_name', $this->resolvePayName($purchase));
-        }
-
-        return $purchase;
+        return response()->json($this->buildPurchaseDetailsPayload((int) $request->id));
     }
 
     public function getDetailsCompany(Request $request)
     {
-        $purchase = Purchase::where('id', $request->id)
+        return response()->json($this->buildPurchaseDetailsPayload((int) $request->id));
+    }
+
+    private function buildPurchaseDetailsPayload(int $purchaseId)
+    {
+        $purchase = Purchase::where('id', $purchaseId)
             ->with([
-                'user',
-                'exchange',
-                'details.product_amount.product_color.product',
-                'details.product_amount.category_size',
-                'transfer.bankAccount.bank',
-                'deposits',
-                'delivery' => function ($query) {
-                    $query->with(['state', 'municipality', 'parish']);
-                }
+                'user:id,name,phone',
+                'deposits:id,purchase_id,gateway',
+                'delivery:id,purchase_id,type,turn,phone,address,date',
+                'details',
+                'details.product_amount:id,product_color_id,unit,presentation',
+                'details.product_amount.product_color:id,product_id',
+                'details.product_amount.product_color.product:id,name',
             ])
             ->first();
 
-        if ($purchase) {
-            $purchase->setAttribute('pay_name', $this->resolvePayName($purchase));
+        if (!$purchase) {
+            return null;
         }
 
-        return $purchase;
+        $units = ['', 'Gr', 'Kg', 'Ml', 'L', 'Cm'];
+
+        $details = collect($purchase->details)->map(function ($detail) use ($units) {
+            $offerDescription = trim((string) data_get($detail, 'offer_description', ''));
+            $discountDescription = trim((string) data_get($detail, 'discount_description', ''));
+
+            $discountsText = '';
+            if ($offerDescription !== '' && $discountDescription !== '') {
+                $discountsText = ' / ' . $offerDescription . ' / ' . $discountDescription;
+            } elseif ($offerDescription !== '') {
+                $discountsText = ' / ' . $offerDescription;
+            } elseif ($discountDescription !== '') {
+                $discountsText = ' / ' . $discountDescription;
+            }
+
+            $presentationValue = data_get($detail, 'product_amount.presentation');
+            $presentation = (!is_null($presentationValue) && (string) $presentationValue !== '0')
+                ? '- ' . $presentationValue
+                : null;
+
+            $unitValue = (int) data_get($detail, 'product_amount.unit', 0);
+            $unit = ($unitValue !== 0 && isset($units[$unitValue])) ? $units[$unitValue] . '.' : null;
+
+            return [
+                'description' => data_get($detail, 'description') ?: data_get($detail, 'product_amount.product_color.product.name', ''),
+                'discounts_text' => $discountsText,
+                'presentation' => $presentation,
+                'unit' => $unit,
+                'tax' => data_get($detail, 'tax'),
+                'price' => data_get($detail, 'price', 0),
+                'quantity' => data_get($detail, 'quantity', 0),
+            ];
+        })->values();
+
+        return [
+            'id' => $purchase->id,
+            'created_at' => $purchase->created_at,
+            'total' => $purchase->total,
+            'subtotal' => data_get($purchase, 'subtotal'),
+            'sub_total' => data_get($purchase, 'sub_total'),
+            'amount_without_tip' => data_get($purchase, 'amount_without_tip'),
+            'tip' => data_get($purchase, 'tip'),
+            'propina' => data_get($purchase, 'propina'),
+            'shipping_cost' => data_get($purchase, 'shipping_cost'),
+            'shipping_fee' => data_get($purchase, 'shipping_fee'),
+            'shipping' => data_get($purchase, 'shipping'),
+            'delivery_fee' => data_get($purchase, 'delivery_fee'),
+            'text_payment_type' => $purchase->text_payment_type,
+            'pay_name' => $this->resolvePayName($purchase),
+            'user' => [
+                'name' => data_get($purchase, 'user.name'),
+                'phone' => data_get($purchase, 'user.phone'),
+            ],
+            'delivery' => [
+                'type' => data_get($purchase, 'delivery.type'),
+                'turn' => data_get($purchase, 'delivery.turn'),
+                'phone' => data_get($purchase, 'delivery.phone'),
+                'address' => data_get($purchase, 'delivery.address'),
+                'date' => data_get($purchase, 'delivery.date'),
+            ],
+            'details' => $details,
+        ];
     }
 
     public function getTotalAmount($details, $exchange, $currency)
