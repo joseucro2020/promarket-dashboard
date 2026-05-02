@@ -274,7 +274,7 @@
 
     function renderPurchaseDetailsModal(res, totalsMode) {
       var clientName = escapeHtml(res.user && res.user.name ? res.user.name : '—');
-      var paymentMethod = escapeHtml(res.text_payment_type || '—');
+      var paymentMethod = escapeHtml(res.pay_name || res.text_payment_type || '—');
       var paymentAmount = formatMoney(res.total || 0);
       var turn = resolveTurn(res.delivery ? res.delivery.turn : null);
       var dateTime = formatDateTime(res.created_at);

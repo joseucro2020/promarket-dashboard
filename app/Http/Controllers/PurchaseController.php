@@ -249,7 +249,7 @@ class PurchaseController extends Controller
 
     public function getDetails(Request $request)
     {
-        return Purchase::where('id', $request->id)
+        $purchase = Purchase::where('id', $request->id)
             ->with([
                 'user',
                 'exchange',
@@ -262,11 +262,17 @@ class PurchaseController extends Controller
                 }
             ])
             ->first();
+
+        if ($purchase) {
+            $purchase->setAttribute('pay_name', $this->resolvePayName($purchase));
+        }
+
+        return $purchase;
     }
 
     public function getDetailsCompany(Request $request)
     {
-        return Purchase::where('id', $request->id)
+        $purchase = Purchase::where('id', $request->id)
             ->with([
                 'user',
                 'exchange',
@@ -279,6 +285,12 @@ class PurchaseController extends Controller
                 }
             ])
             ->first();
+
+        if ($purchase) {
+            $purchase->setAttribute('pay_name', $this->resolvePayName($purchase));
+        }
+
+        return $purchase;
     }
 
     public function getTotalAmount($details, $exchange, $currency)
