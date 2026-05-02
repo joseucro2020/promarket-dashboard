@@ -261,7 +261,7 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::where('id', $purchaseId)
             ->with([
-                'user:id,name,phone',
+                'user:id,name,telefono',
                 'deposits:id,purchase_id,gateway',
                 'delivery:id,purchase_id,type,turn,phone,address,date',
                 'details',
@@ -326,7 +326,7 @@ class PurchaseController extends Controller
             'pay_name' => $this->resolvePayName($purchase),
             'user' => [
                 'name' => data_get($purchase, 'user.name'),
-                'phone' => data_get($purchase, 'user.phone'),
+                'phone' => data_get($purchase, 'user.telefono'),
             ],
             'delivery' => [
                 'type' => data_get($purchase, 'delivery.type'),

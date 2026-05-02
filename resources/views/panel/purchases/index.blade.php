@@ -279,7 +279,22 @@
       var turn = resolveTurn(res.delivery ? res.delivery.turn : null);
       var dateTime = formatDateTime(res.created_at);
       var deliveryType = escapeHtml(resolveDeliveryType(res.delivery ? res.delivery.type : null));
-      var phone = escapeHtml((res.user && res.user.phone) || (res.delivery && res.delivery.phone) || '—');
+      // Formatear el teléfono: agregar espacios y un icono
+      var rawPhone = (res.user && res.user.phone) || (res.delivery && res.delivery.phone) || '';
+      var phoneFormatted = '—';
+      if (rawPhone && /^\d{11,15}$/.test(rawPhone)) {
+        // Formato internacional: +58 424 444 70584
+        var match = rawPhone.match(/^(\d{2,3})(\d{3})(\d{3,5})(\d{3,5})$/);
+        if (match) {
+          phoneFormatted = '+' + match[1] + ' ' + match[2] + ' ' + match[3] + (match[4] ? ' ' + match[4] : '');
+        } else {
+          phoneFormatted = '+' + rawPhone;
+        }
+      } else if (rawPhone) {
+        phoneFormatted = rawPhone;
+      }
+      // Icono de teléfono (feather)
+      var phoneHtml = '<i data-feather="phone" class="mr-50"></i>' + escapeHtml(phoneFormatted);
       var address = escapeHtml(res.delivery && res.delivery.address ? res.delivery.address : '—');
       var deliveryDate = formatDate(res.delivery ? res.delivery.date : null);
 
@@ -295,7 +310,7 @@
       html += '    <div class="col-md-6 mb-1">';
       html += '      <p class="mb-50"><strong>{{ __('locale.Date - Time') }}:</strong> ' + dateTime + '</p>';
       html += '      <p class="mb-50"><strong>{{ __('locale.Delivery Type') }}:</strong> ' + deliveryType + '</p>';
-      html += '      <p class="mb-0"><strong>{{ __('locale.Phone') }}:</strong> ' + phone + '</p>';
+      html += '      <p class="mb-0"><strong>{{ __('locale.Phone') }}:</strong> ' + phoneHtml + '</p>';
       html += '    </div>';
       html += '  </div>';
       html += '  <p class="mb-50"><strong>{{ __('locale.Address') }}:</strong> ' + address + '</p>';
