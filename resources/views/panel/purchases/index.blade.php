@@ -425,9 +425,11 @@
     $(document).on('click', '.purchases-table .view', function(){
       var id = $(this).data('id');
       $.post("{{ route('purchases.getDetails') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
-        if(res){
+        // Si la respuesta viene como {data: ...} (por fallback), usar res.data; si no, usar res directo
+        var data = (res && typeof res === 'object' && 'data' in res) ? res.data : res;
+        if(data){
           $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
-          renderPurchaseDetailsModal(res, 'full');
+          renderPurchaseDetailsModal(data, 'full');
         }
       }, 'json');
     });
@@ -436,9 +438,10 @@
     $(document).on('click', '.purchases-table .view-company', function(){
       var id = $(this).data('id');
       $.post("{{ route('purchases.getDetailsCompany') }}", {_token:'{{ csrf_token() }}', id: id}, function(res){
-        if(res){
+        var data = (res && typeof res === 'object' && 'data' in res) ? res.data : res;
+        if(data){
           $('#purchaseDetailsModal .modal-body').html('{{ __('locale.Loading') }}...');
-          renderPurchaseDetailsModal(res, 'company');
+          renderPurchaseDetailsModal(data, 'company');
         }
       }, 'json');
     });
