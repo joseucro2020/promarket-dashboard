@@ -139,36 +139,20 @@ class ReportController extends Controller
 
     public function products($from, $to, $idProd = null)
     {
-        $products = Product::select(
-            'products.id',
-            'products.name',
-            'products.variable',
-            'products.price_1',
-            'products.price_2',
-            'products.created_at',
-            'products.updated_at',
-            'products.company_id',
-            'purchase_details.product_amount_id',
-            'product_amount.unit',
-            'product_amount.presentation',
-            'product_amount.amount as amount',
-            'product_amount.cost as cost',
-            'product_amount.umbral as umbral',
-            'product_amount.min as min',
-            'product_amount.max as max',
-            'product_amount.price as price',
-            'categories.id as idcategories',
-            'categories.name as namecategories',
-            'subcategories.id as idsubcategories',
-            'subcategories.name as namesubcategories',
-            'categories.id_father as padre',
-            DB::raw('SUM(purchase_details.quantity) as purchases_number'),
+        $products = Product::query()
+            ->select(
+                'products.id',
+                'products.name',
+                'product_amount.unit',
+                'product_amount.presentation',
+                DB::raw('MAX(product_amount.amount) as amount'),
+                DB::raw('SUM(purchase_details.quantity) as purchases_number'),
                 DB::raw("CASE products.status \
                     WHEN '0' THEN 'INACTIVO' \
                     WHEN '1' THEN 'ACTIVO' \
                     ELSE 'ELIMINADO' END \
                     AS status")
-        )
+            )
             ->whereBetween(DB::raw('date(purchases.created_at)'), [
                 $from,
                 $to
@@ -180,9 +164,8 @@ class ReportController extends Controller
             ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
             ->join('purchase_details', 'purchase_details.product_amount_id', '=', 'product_amount.id')
             ->join('purchases', 'purchases.id', '=', 'purchase_details.purchase_id')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->join('subcategories', 'products.subcategory_id',  '=', 'subcategories.id')
-            ->groupBy(['product_amount.presentation', 'products.id', 'products.status'])
+            ->whereNull('product_amount.deleted_at')
+            ->groupBy('products.id', 'products.name', 'products.status', 'product_amount.unit', 'product_amount.presentation')
             ->where('purchases.status', Purchase::STATUS_COMPLETED)
             ->orderBy(DB::raw('SUM(purchase_details.quantity)'), 'DESC')
             ->get();
