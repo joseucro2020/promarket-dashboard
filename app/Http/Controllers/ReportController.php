@@ -140,35 +140,44 @@ class ReportController extends Controller
     public function products($from, $to, $idProd = null)
     {
         try {
-            $products = DB::table('products')
-                ->select(
-                    'products.id',
-                    'products.name',
-                    'product_amount.unit',
-                    'product_amount.presentation',
-                    DB::raw('MAX(product_amount.amount) as amount'),
-                    DB::raw('SUM(purchase_details.quantity) as purchases_number'),
-                    DB::raw("CASE products.status \
-                        WHEN '0' THEN 'INACTIVO' \
-                        WHEN '1' THEN 'ACTIVO' \
-                        ELSE 'ELIMINADO' END \
-                        AS status")
-                )
-                ->whereBetween(DB::raw('date(purchases.created_at)'), [
-                    $from,
-                    $to
-                ])
-                ->when(!empty($idProd), function ($q) use ($idProd) {
-                    $q->where('products.id', $idProd);
-                })
-                ->join('product_colors', 'product_colors.product_id', '=', 'products.id')
-                ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
-                ->join('purchase_details', 'purchase_details.product_amount_id', '=', 'product_amount.id')
-                ->join('purchases', 'purchases.id', '=', 'purchase_details.purchase_id')
-                ->groupBy('products.id', 'products.name', 'products.status', 'product_amount.unit', 'product_amount.presentation')
-                ->where('purchases.status', Purchase::STATUS_COMPLETED)
-                ->orderByDesc('purchases_number')
-                ->get();
+            $buildQuery = function ($status = null) use ($from, $to, $idProd) {
+                return DB::table('products')
+                    ->select(
+                        'products.id',
+                        'products.name',
+                        'product_amount.unit',
+                        'product_amount.presentation',
+                        DB::raw('MAX(product_amount.amount) as amount'),
+                        DB::raw('SUM(purchase_details.quantity) as purchases_number'),
+                        DB::raw("CASE products.status \
+                            WHEN '0' THEN 'INACTIVO' \
+                            WHEN '1' THEN 'ACTIVO' \
+                            ELSE 'ELIMINADO' END \
+                            AS status")
+                    )
+                    ->whereBetween(DB::raw('date(purchases.created_at)'), [
+                        $from,
+                        $to
+                    ])
+                    ->when(!empty($idProd), function ($q) use ($idProd) {
+                        $q->where('products.id', $idProd);
+                    })
+                    ->when(!is_null($status), function ($q) use ($status) {
+                        $q->where('purchases.status', $status);
+                    })
+                    ->join('product_colors', 'product_colors.product_id', '=', 'products.id')
+                    ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+                    ->join('purchase_details', 'purchase_details.product_amount_id', '=', 'product_amount.id')
+                    ->join('purchases', 'purchases.id', '=', 'purchase_details.purchase_id')
+                    ->groupBy('products.id', 'products.name', 'products.status', 'product_amount.unit', 'product_amount.presentation')
+                    ->orderByDesc('purchases_number');
+            };
+
+            $products = $buildQuery(Purchase::STATUS_COMPLETED)->get();
+
+            if ($products->isEmpty()) {
+                $products = $buildQuery()->get();
+            }
 
             foreach ($products as $product) {
                 $unit = $this->getUnitType($product->unit);
