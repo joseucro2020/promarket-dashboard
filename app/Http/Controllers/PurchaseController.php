@@ -290,13 +290,23 @@ class PurchaseController extends Controller
                 $discountsText = ' / ' . $discountDescription;
             }
 
-            $presentationValue = data_get($detail, 'product_amount.presentation');
-            $presentation = (!is_null($presentationValue) && (string) $presentationValue !== '0')
-                ? '- ' . $presentationValue
-                : null;
+            // Preferir snapshot del detalle y evitar mostrar presentaciones en cero (ej: 0.00).
+            $presentation = data_get($detail, 'presentation');
+            if (empty($presentation)) {
+                $presentationValue = data_get($detail, 'product_amount.presentation');
+                $presentationNumeric = is_null($presentationValue)
+                    ? null
+                    : (float) str_replace(',', '.', (string) $presentationValue);
+                $presentation = (!is_null($presentationNumeric) && $presentationNumeric > 0)
+                    ? '- ' . $presentationValue
+                    : null;
+            }
 
-            $unitValue = (int) data_get($detail, 'product_amount.unit', 0);
-            $unit = ($unitValue !== 0 && isset($units[$unitValue])) ? $units[$unitValue] . '.' : null;
+            $unit = data_get($detail, 'unit');
+            if (empty($unit)) {
+                $unitValue = (int) data_get($detail, 'product_amount.unit', 0);
+                $unit = ($unitValue !== 0 && isset($units[$unitValue])) ? $units[$unitValue] . '.' : null;
+            }
 
             return [
                 'description' => data_get($detail, 'description') ?: data_get($detail, 'product_amount.product_color.product.name', ''),
@@ -306,6 +316,7 @@ class PurchaseController extends Controller
                 'tax' => data_get($detail, 'tax'),
                 'price' => data_get($detail, 'price', 0),
                 'quantity' => data_get($detail, 'quantity', 0),
+                'line_total' => data_get($detail, 'total', data_get($detail, 'subtotal', null)),
             ];
         })->values();
 

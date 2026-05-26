@@ -339,14 +339,21 @@
           var tax = escapeHtml(d.tax || 'Exento');
           var price = Number(d.price || 0);
           var quantity = Number(d.quantity || 0);
-          var subtotal = price * quantity;
+          var lineTotal = Number(d.line_total || 0);
+          if (quantity <= 0 && lineTotal > 0 && price > 0) {
+            quantity = lineTotal / price;
+          }
+          var subtotal = (lineTotal > 0) ? lineTotal : (price * quantity);
+          var quantityText = Number.isInteger(quantity)
+            ? String(quantity)
+            : String(Number(quantity.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
 
           html += '      <tr>';
           html += '        <td>' + description + '</td>';
           html += '        <td>' + (presentation || '—') + '</td>';
           html += '        <td>' + tax + '</td>';
           html += '        <td>' + formatMoney(price) + '</td>';
-          html += '        <td>' + quantity + '</td>';
+          html += '        <td>' + quantityText + '</td>';
           html += '        <td>' + formatMoney(subtotal) + '</td>';
           html += '      </tr>';
         });
