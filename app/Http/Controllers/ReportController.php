@@ -139,48 +139,62 @@ class ReportController extends Controller
 
     public function products($from, $to, $idProd = null)
     {
-        $products = Product::query()
-            ->select(
-                'products.id',
-                'products.name',
-                'product_amount.unit',
-                'product_amount.presentation',
-                DB::raw('MAX(product_amount.amount) as amount'),
-                DB::raw('SUM(purchase_details.quantity) as purchases_number'),
-                DB::raw("CASE products.status \
-                    WHEN '0' THEN 'INACTIVO' \
-                    WHEN '1' THEN 'ACTIVO' \
-                    ELSE 'ELIMINADO' END \
-                    AS status")
-            )
-            ->whereBetween(DB::raw('date(purchases.created_at)'), [
-                $from,
-                $to
-            ])
-            ->when(!empty($idProd), function ($q) use ($idProd) {
-                $q->where('products.id', $idProd);
-            })
-            ->join('product_colors', 'product_colors.product_id', '=', 'products.id')
-            ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
-            ->join('purchase_details', 'purchase_details.product_amount_id', '=', 'product_amount.id')
-            ->join('purchases', 'purchases.id', '=', 'purchase_details.purchase_id')
-            ->whereNull('product_amount.deleted_at')
-            ->groupBy('products.id', 'products.name', 'products.status', 'product_amount.unit', 'product_amount.presentation')
-            ->where('purchases.status', Purchase::STATUS_COMPLETED)
-            ->orderBy(DB::raw('SUM(purchase_details.quantity)'), 'DESC')
-            ->get();
-        foreach ($products as $key => $product) {
-            $unit = $this->getUnitType($product['unit']);
-            $pre = '';
-            if (is_null($unit)) {
-                $unit = '';
+        try {
+            $products = DB::table('products')
+                ->select(
+                    'products.id',
+                    'products.name',
+                    'product_amount.unit',
+                    'product_amount.presentation',
+                    DB::raw('MAX(product_amount.amount) as amount'),
+                    DB::raw('SUM(purchase_details.quantity) as purchases_number'),
+                    DB::raw("CASE products.status \
+                        WHEN '0' THEN 'INACTIVO' \
+                        WHEN '1' THEN 'ACTIVO' \
+                        ELSE 'ELIMINADO' END \
+                        AS status")
+                )
+                ->whereBetween(DB::raw('date(purchases.created_at)'), [
+                    $from,
+                    $to
+                ])
+                ->when(!empty($idProd), function ($q) use ($idProd) {
+                    $q->where('products.id', $idProd);
+                })
+                ->join('product_colors', 'product_colors.product_id', '=', 'products.id')
+                ->join('product_amount', 'product_amount.product_color_id', '=', 'product_colors.id')
+                ->join('purchase_details', 'purchase_details.product_amount_id', '=', 'product_amount.id')
+                ->join('purchases', 'purchases.id', '=', 'purchase_details.purchase_id')
+                ->groupBy('products.id', 'products.name', 'products.status', 'product_amount.unit', 'product_amount.presentation')
+                ->where('purchases.status', Purchase::STATUS_COMPLETED)
+                ->orderByDesc('purchases_number')
+                ->get();
+
+            foreach ($products as $product) {
+                $unit = $this->getUnitType($product->unit);
+                $pre = '';
+                if (is_null($unit)) {
+                    $unit = '';
+                }
+                if (isset($product->presentation) && $product->presentation > 0.00) {
+                    $pre = $product->presentation;
+                }
+                $product->presentation_formatted = $product->name . ' ' . $pre . ' ' . $unit;
             }
-            if (isset($product['presentation']) && $product['presentation'] > 0.00) {
-                $pre = $product['presentation'];
-            }
-            $product['presentation_formatted'] = $product['name'] . ' ' . $pre . ' ' . $unit;
+
+            return $products;
+        } catch (\Throwable $e) {
+            \Log::error('Top products report failed', [
+                'from' => $from,
+                'to' => $to,
+                'idProd' => $idProd,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([]);
         }
-        return $products;
     }
 
     public function products2021($from, $to, $idProd = null)
