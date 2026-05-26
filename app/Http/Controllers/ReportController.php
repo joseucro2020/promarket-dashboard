@@ -149,11 +149,7 @@ class ReportController extends Controller
                         'product_amount.presentation',
                         DB::raw('MAX(product_amount.amount) as amount'),
                         DB::raw('SUM(purchase_details.quantity) as purchases_number'),
-                        DB::raw("CASE products.status \
-                            WHEN '0' THEN 'INACTIVO' \
-                            WHEN '1' THEN 'ACTIVO' \
-                            ELSE 'ELIMINADO' END \
-                            AS status")
+                        DB::raw("CASE products.status WHEN '0' THEN 'INACTIVO' WHEN '1' THEN 'ACTIVO' ELSE 'ELIMINADO' END AS status")
                     )
                     ->whereBetween(DB::raw('date(purchases.created_at)'), [
                         $from,
