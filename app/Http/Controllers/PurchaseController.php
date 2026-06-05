@@ -316,6 +316,8 @@ class PurchaseController extends Controller
                 'tax' => data_get($detail, 'tax'),
                 'price' => data_get($detail, 'price', 0),
                 'quantity' => data_get($detail, 'quantity', 0),
+                'selected_quantity' => data_get($detail, 'selected_quantity'),
+                'selected_grams' => data_get($detail, 'selected_grams'),
                 'line_total' => data_get($detail, 'total', data_get($detail, 'subtotal', null)),
             ];
         })->values();

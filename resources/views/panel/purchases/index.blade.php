@@ -339,21 +339,31 @@
           var tax = escapeHtml(d.tax || 'Exento');
           var price = Number(d.price || 0);
           var quantity = Number(d.quantity || 0);
+          var selectedQuantity = Number(d.selected_quantity || 0);
+          var selectedGrams = Number(d.selected_grams || 0);
+          var hasSelectedGrams = selectedGrams > 0;
+          var effectiveQuantity = hasSelectedGrams && selectedQuantity > 0 ? selectedQuantity : quantity;
           var lineTotal = Number(d.line_total || 0);
-          if (quantity <= 0 && lineTotal > 0 && price > 0) {
-            quantity = lineTotal / price;
+          if (effectiveQuantity <= 0 && lineTotal > 0 && price > 0) {
+            effectiveQuantity = lineTotal / price;
           }
-          var subtotal = (lineTotal > 0) ? lineTotal : (price * quantity);
-          var quantityText = Number.isInteger(quantity)
-            ? String(quantity)
-            : String(Number(quantity.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+          var subtotal = (lineTotal > 0) ? lineTotal : (price * effectiveQuantity);
+          var quantityText = Number.isInteger(effectiveQuantity)
+            ? String(effectiveQuantity)
+            : String(Number(effectiveQuantity.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+          var gramsText = hasSelectedGrams
+            ? String(Number(selectedGrams.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') + ' g'
+            : '';
+          var quantityHtml = hasSelectedGrams
+            ? '<div>' + quantityText + '</div><small class="text-muted">' + gramsText + '</small>'
+            : quantityText;
 
           html += '      <tr>';
           html += '        <td>' + description + '</td>';
           html += '        <td>' + (presentation || '—') + '</td>';
           html += '        <td>' + tax + '</td>';
           html += '        <td>' + formatMoney(price) + '</td>';
-          html += '        <td>' + quantityText + '</td>';
+          html += '        <td>' + quantityHtml + '</td>';
           html += '        <td>' + formatMoney(subtotal) + '</td>';
           html += '      </tr>';
         });

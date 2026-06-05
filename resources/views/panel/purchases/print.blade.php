@@ -190,6 +190,16 @@
         <th>Total</th>
       </tr>
       @foreach (data_get($compra, 'details', []) as $item)
+        @php
+          $selectedQuantity = (float) data_get($item, 'selected_quantity', 0);
+          $selectedGrams = (float) data_get($item, 'selected_grams', 0);
+          $hasSelectedGrams = $selectedGrams > 0;
+          $baseQuantity = (float) data_get($item, 'quantity', 0);
+          $effectiveQuantity = $hasSelectedGrams && $selectedQuantity > 0 ? $selectedQuantity : $baseQuantity;
+          $priceByCurrency = CalcPrice::getByCurrency(data_get($item, 'price'), data_get($item, 'coin'), data_get($compra, 'exchange.change', 1), data_get($compra, 'currency'));
+          $lineTotal = $priceByCurrency * $effectiveQuantity;
+          $gramsFormatted = rtrim(rtrim(number_format($selectedGrams, 3, '.', ''), '0'), '.');
+        @endphp
         <tr>
           <td>
             @if (data_get($item, 'product') == null)
@@ -198,6 +208,9 @@
               {{ \App::getLocale() == 'es' ? data_get($item, 'product.name') : data_get($item, 'product.name_english') }}
               {{ data_get($item, 'presentation') }}
               {{ data_get($item, 'unit') }}
+              @if ($hasSelectedGrams)
+                ({{ $gramsFormatted }} g)
+              @endif
               {{ data_get($item, 'discounts_text') }}
             @endif
           </td>
@@ -206,12 +219,17 @@
               {{ data_get($item, 'product.taxe.name') ?: 'Exento' }}
             @endif
           </td>
-          <td class="text-center">{{ data_get($item, 'quantity') }}</td>
           <td class="text-center">
-            {{ Money::getByCurrency(CalcPrice::getByCurrency(data_get($item, 'price'), data_get($item, 'coin'), data_get($compra, 'exchange.change', 1), data_get($compra, 'currency')), data_get($compra, 'currency')) }}
+            {{ $effectiveQuantity == (int) $effectiveQuantity ? (int) $effectiveQuantity : rtrim(rtrim(number_format($effectiveQuantity, 3, '.', ''), '0'), '.') }}
+            @if ($hasSelectedGrams)
+              <br>{{ $gramsFormatted }} g
+            @endif
+          </td>
+          <td class="text-center">
+            {{ Money::getByCurrency($priceByCurrency, data_get($compra, 'currency')) }}
           </td>
           <td class="text-right">
-            {{ Money::getByCurrency(CalcPrice::getByCurrency(data_get($item, 'price'), data_get($item, 'coin'), data_get($compra, 'exchange.change', 1), data_get($compra, 'currency')) * data_get($item, 'quantity', 0), data_get($compra, 'currency')) }}
+            {{ Money::getByCurrency($lineTotal, data_get($compra, 'currency')) }}
           </td>
         </tr>
       @endforeach
