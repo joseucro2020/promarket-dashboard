@@ -88,6 +88,7 @@ class WebServicesController extends Controller
                 'son' => isset($data[3]) ? mb_convert_encoding($data[3], 'UTF-8', 'UTF-8') : "",
                 'grandson' => isset($data[4]) ? mb_convert_encoding($data[4], 'UTF-8', 'UTF-8') : "",
                 'price' => isset($data[5]) ? $data[5] : 0,
+                'variable' => $this->normalizeKromiImportVariable($data[6] ?? ''),
                 'amount' => isset($data[8]) ? $data[8] : 0,
             );
             array_push($products, $product);
@@ -98,7 +99,7 @@ class WebServicesController extends Controller
 
     /**
      * Devuelve un listado simple de productos para la tabla Kromi (JSON).
-     * Campos devueltos: sku, name, father, son, grandson, price, amount
+     * Campos devueltos: sku, name, father, son, grandson, price, variable, amount
      */
     public function products(Request $request)
     {
@@ -262,6 +263,10 @@ class WebServicesController extends Controller
             }
             $amount = isset($product['amount']) ? intval($product['amount']) : 0;
             $name = $product['name'] ?? $sku;
+            $variable = isset($product['variable']) ? intval($product['variable']) : Product::TYPE_SIMPLE;
+            if (! in_array($variable, [Product::TYPE_SIMPLE, Product::TYPE_VARIABLE, Product::TYPE_BULK], true)) {
+                $variable = Product::TYPE_SIMPLE;
+            }
 
             $productAmount = ProductAmount::with(['product_color', 'product'])->where('sku', $sku)->get();
             if (count($productAmount) > 0) {
@@ -281,6 +286,7 @@ class WebServicesController extends Controller
                     if ($Product) {
                         $Product->price_1 = number_format($finalPrice, 2, '.', ',');
                         $Product->price_2 = number_format($finalPrice, 2, '.', ',');
+                        $Product->variable = $variable;
                         $Product->company_id = $companyId;
                         $Product->save();
                     }
@@ -293,6 +299,7 @@ class WebServicesController extends Controller
                 $productbio->description = $name;
                 $productbio->description_english = $name;
                 $productbio->coin = 2;
+                $productbio->variable = $variable;
                 $productbio->price_1 = number_format($price, 2, '.', ',');
                 $productbio->price_2 = number_format($price, 2, '.', ',');
                 $productbio->status = 1;
@@ -331,5 +338,35 @@ class WebServicesController extends Controller
         }
 
         return redirect()->back()->with('success', __('Items registrados correctamente'));
+    }
+
+    private function normalizeKromiImportVariable($value): int
+    {
+        $raw = trim(mb_convert_encoding((string) $value, 'UTF-8', 'UTF-8'));
+        if ($raw === '') {
+            return Product::TYPE_SIMPLE;
+        }
+
+        if (is_numeric($raw)) {
+            $numeric = (int) $raw;
+            if (in_array($numeric, [Product::TYPE_SIMPLE, Product::TYPE_VARIABLE, Product::TYPE_BULK], true)) {
+                return $numeric;
+            }
+
+            return Product::TYPE_SIMPLE;
+        }
+
+        $normalized = strtolower($raw);
+        if (in_array($normalized, ['simple', 's'], true)) {
+            return Product::TYPE_SIMPLE;
+        }
+        if (in_array($normalized, ['variable', 'var'], true)) {
+            return Product::TYPE_VARIABLE;
+        }
+        if (in_array($normalized, ['gramaje', 'bulk', 'granel', 'a granel'], true)) {
+            return Product::TYPE_BULK;
+        }
+
+        return Product::TYPE_SIMPLE;
     }
 }

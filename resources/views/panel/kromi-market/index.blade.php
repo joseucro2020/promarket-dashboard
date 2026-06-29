@@ -44,6 +44,12 @@
     @media (max-width: 575.98px) {
       .kromi-qty.badge { font-size: 0.74rem; padding: .2rem .4rem; }
     }
+    .kromi-variable-select {
+      min-width: 7.5rem;
+      font-size: 0.82rem;
+      padding: .2rem .45rem;
+      height: auto;
+    }
     /* Table overlay for loading during filters */
     .kromi-table-wrapper { position: relative; }
     .kromi-table-loading {
@@ -121,6 +127,31 @@
         try {
           return String(str).toLowerCase().replace(/\b\S/g, function(t){ return t.toUpperCase(); });
         } catch(e) { return str; }
+      }
+      var productTypeOptions = [
+        { value: '0', label: '{{ __('locale.Simple') }}' },
+        { value: '1', label: '{{ __('locale.Variable') }}' },
+        { value: '2', label: 'Gramaje' }
+      ];
+      function normalizeProductVariableValue(val) {
+        if (val === undefined || val === null || val === '') return '0';
+        var raw = String(val).trim();
+        var key = raw.toLowerCase();
+        if (key === '0' || key === 'simple') return '0';
+        if (key === '1' || key === 'variable') return '1';
+        if (key === '2' || key === 'gramaje' || key === 'bulk' || key === 'granel') return '2';
+        var numeric = parseInt(raw, 10);
+        if (!isNaN(numeric) && numeric >= 0 && numeric <= 2) return String(numeric);
+        return '0';
+      }
+      function buildProductVariableSelect(val) {
+        var selected = normalizeProductVariableValue(val);
+        var html = '<select class="form-control form-control-sm kromi-variable-select">';
+        productTypeOptions.forEach(function(opt) {
+          html += '<option value="' + opt.value + '"' + (opt.value === selected ? ' selected' : '') + '>' + opt.label + '</option>';
+        });
+        html += '</select>';
+        return html;
       }
       // Helper: normalize SKU/text for reliable comparisons
       function normalizeSku(s) {
@@ -203,13 +234,15 @@
         }
       }
       var kromiTable = $('#kromi-products-table').DataTable({
-        responsive: true,
+        responsive: false,
+        autoWidth: false,
         columns: [
+          { orderable: false, width: '30px' },
+          null,
+          null,
+          null,
+          null,
           { orderable: false },
-          null,
-          null,
-          null,
-          null,
           { visible: false }, // hidden column to store `father` for filtering
           { visible: false }, // hidden column to store `son` (subcategoria)
           { visible: false }  // hidden column to store `grandson` (sub-subcategoria)
@@ -341,6 +374,22 @@
         if (kromiShowActiveOnly) kromiTable.draw(false);
       });
 
+      // Deselect all button: uncheck all checkboxes across all rows
+      $(document).on('click', '#kromi-deselect-all', function() {
+        var allNodes = kromiTable.rows().nodes() || [];
+        $(allNodes).each(function(i, node) {
+          try {
+            var $r = $(node);
+            var $cb = $r.find('input[type="checkbox"]');
+            if (!$cb.length) return;
+            $cb.prop('checked', false);
+            $r.removeClass('table-success');
+          } catch(e) { }
+        });
+        refreshKromiHeaderState();
+        if (kromiShowActiveOnly) kromiTable.draw(false);
+      });
+
       // Table overlay controls
       function showTableLoading() { $('#kromi-table-loading').show(); }
       function hideTableLoading() { $('#kromi-table-loading').hide(); }
@@ -441,7 +490,7 @@
                         var priceStr = '';
                         try { priceStr = '$ ' + returnedPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
                         catch(e) { priceStr = '$ ' + parseFloat(returnedPrice).toFixed(2); }
-                        if (typeof toastr !== 'undefined') toastr.success('Utilidad actualizada â€” Precio: ' + priceStr);
+                        if (typeof toastr !== 'undefined') toastr.success('Utilidad actualizada — Precio: ' + priceStr);
 
                         // visually mark the row: add highlight and a temporary check icon next to SKU
                         try {
@@ -570,10 +619,11 @@
                 }
                 var qty = p.amount !== undefined ? p.amount : '';
                 var qtyHtml = qty !== '' ? '<span class="badge badge-light-info kromi-qty">' + $('<div>').text(qty).html() + '</span>' : '';
+                var variableHtml = buildProductVariableSelect(p.variable);
                 var father = p.father ? String(p.father).trim() : '';
                 var son = p.son ? String(p.son).trim() : '';
                 var grandson = p.grandson ? String(p.grandson).trim() : '';
-                return [checkbox, skuHtml, nameHtml, costFormatted, qtyHtml, father, son, grandson];
+                return [checkbox, skuHtml, nameHtml, costFormatted, qtyHtml, variableHtml, father, son, grandson];
               });
               kromiTable.rows.add(rows).draw();
               // If Promarket products already loaded, mark matches immediately using the in-memory set.
@@ -600,7 +650,7 @@
                 markExistingSkus();
               }
               // clear any previous category/sub/sub-sub filters
-              kromiTable.column(5).search('').column(6).search('').column(7).search('').draw();
+              kromiTable.column(6).search('').column(7).search('').column(8).search('').draw();
             } else if (response.error) {
               alert(response.error);
             } else {
@@ -666,8 +716,8 @@
             $('#kromi-subcategories-loading').hide();
             // apply filter to DataTable by father (exact match)
             showTableLoading();
-            kromiTable.column(5).search('^' + catId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false)
-                      .column(6).search('').column(7).search('').draw();
+            kromiTable.column(6).search('^' + catId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false)
+                      .column(7).search('').column(8).search('').draw();
             hideTableLoading();
             return;
           }
@@ -687,7 +737,7 @@
           $('#kromi-subcategories-loading').hide();
           // clear filters for father/son/grandson if server-driven categories used
           showTableLoading();
-          kromiTable.column(5).search('').column(6).search('').column(7).search('').draw();
+          kromiTable.column(6).search('').column(7).search('').column(8).search('').draw();
           hideTableLoading();
         }, 150);
       });
@@ -788,7 +838,7 @@
           $countSub.text($countSub.text() || '0');
           $('#kromi-sub-subcategories-count').text('0');
           // clear son/grandson filters
-          kromiTable.column(6).search('').column(7).search('').draw();
+          kromiTable.column(7).search('').column(8).search('').draw();
           return;
         }
 
@@ -804,7 +854,7 @@
             $('#kromi-subcategories-loading').hide();
             // apply filter to DataTable by son (exact match) and clear grandson filter
             showTableLoading();
-            kromiTable.column(6).search('^' + subId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false).column(7).search('').draw();
+            kromiTable.column(7).search('^' + subId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false).column(8).search('').draw();
             hideTableLoading();
             return;
           }
@@ -819,7 +869,7 @@
             $('#kromi-subcategories-loading').hide();
             // clear son/grandson filters
             showTableLoading();
-            kromiTable.column(6).search('').column(7).search('').draw();
+            kromiTable.column(7).search('').column(8).search('').draw();
             hideTableLoading();
             return;
           }
@@ -831,7 +881,7 @@
           $('#kromi-subcategories-loading').hide();
           // clear son/grandson filters for server-driven flow
           showTableLoading();
-          kromiTable.column(6).search('').column(7).search('').draw();
+          kromiTable.column(7).search('').column(8).search('').draw();
           hideTableLoading();
         }, 150);
       });
@@ -846,7 +896,7 @@
           if (!subSubId) {
             // clear only grandson filter
             showTableLoading();
-            kromiTable.column(7).search('').draw();
+            kromiTable.column(8).search('').draw();
             hideTableLoading();
             $('#kromi-sub-subcategories-loading').hide();
             return;
@@ -855,7 +905,7 @@
           // If CSV-derived grandsons exist, filter by exact grandson match
           if (csvMapSubSubs) {
             showTableLoading();
-            kromiTable.column(7).search('^' + subSubId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false).draw();
+            kromiTable.column(8).search('^' + subSubId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false).draw();
             hideTableLoading();
             $('#kromi-sub-subcategories-loading').hide();
             return;
@@ -863,7 +913,7 @@
 
           // server-driven flow: no table filtering available (grandson ids differ from CSV names)
           showTableLoading();
-          kromiTable.column(7).search('').draw();
+          kromiTable.column(8).search('').draw();
           hideTableLoading();
           $('#kromi-sub-subcategories-loading').hide();
         }, 150);
@@ -891,13 +941,15 @@
           } catch(e) { price = 0; }
           var amount = 0;
           try { amount = parseInt(amountText.replace(/[^0-9]/g, '')) || 0; } catch(e) { amount = 0; }
+          var variableVal = parseInt($row.find('.kromi-variable-select').val(), 10);
+          if (isNaN(variableVal) || variableVal < 0 || variableVal > 2) variableVal = 0;
           if (sku) {
-            selectedItems.push({ sku: sku, price: price, amount: amount, name: name });
+            selectedItems.push({ sku: sku, price: price, amount: amount, name: name, variable: variableVal });
           }
         });
 
         if (!selectedItems.length) {
-          var msgNoItems = {!! json_encode(__('locale.Seleccione al menos un producto (checkbox) de la lista importada para registrar.')) !!};
+          var msgNoItems = {!! json_encode(__('Seleccione al menos un producto (checkbox) de la lista importada para registrar.')) !!};
           if (typeof toastr !== 'undefined') {
             toastr.options = toastr.options || {};
             toastr.options.closeButton = true;
@@ -918,7 +970,7 @@
         // 2) validar que exista categorÃ­a destino seleccionada
         var cat = $('#promarket-categories').val();
         if (!cat || String(cat) === '0') {
-          var msgCat = {!! json_encode(__('locale.Por favor seleccione una categorÃ­a antes de registrar.')) !!};
+          var msgCat = {!! json_encode(__('locale.Por favor seleccione una categoría antes de registrar.')) !!};
           if (typeof toastr !== 'undefined') {
             toastr.options = toastr.options || {};
             toastr.options.closeButton = true;
@@ -935,23 +987,27 @@
         // 3) Mostrar modal de confirmaciÃ³n con recuento y resumen antes de enviar
         var total = selectedItems.length;
         var previewList = '<div style="max-height:240px;overflow:auto;text-align:left;">';
+        var typeLabels = ['{{ __("Simple") }}', '{{ __("Variable") }}', '{{ __("Bulk") }}'];
+        var typeBadges = ['badge-light-success', 'badge-light-warning', 'badge-light-info'];
         selectedItems.slice(0, 20).forEach(function(it){
           var skuEsc = $('<div>').text(it.sku).html();
           var nameEsc = $('<div>').text(it.name).html();
-          previewList += '<div style="margin-bottom:6px;"><strong>' + skuEsc + '</strong> â€” ' + nameEsc + ' <span class="text-muted">(' + (it.amount||0) + ')</span></div>';
+          var typeIdx = (it.variable !== undefined && it.variable >= 0 && it.variable <= 2) ? it.variable : 0;
+          previewList += '<div style="margin-bottom:6px;"><strong>' + skuEsc + '</strong> — ' + nameEsc + ' <span class="text-muted">(' + (it.amount||0) + ')</span> <span class="badge ' + typeBadges[typeIdx] + '">' + typeLabels[typeIdx] + '</span></div>';
         });
         if (selectedItems.length > 20) previewList += '<div class="text-muted">... + ' + (selectedItems.length - 20) + ' mÃ¡s</div>';
         previewList += '</div>';
 
         if (typeof Swal !== 'undefined' && Swal.fire) {
           Swal.fire({
-            title: {!! json_encode(__('locale.Confirma registro')) !!} + ' â€” ' + total + ' {{ __('locale.items') }}',
+            title: {!! json_encode(__('locale.Confirma registro')) !!} + ' — ' + total + ' {{ __('locale.items') }}',
             html: previewList,
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: {!! json_encode(__('locale.Confirmar')) !!},
             cancelButtonText: {!! json_encode(__('locale.Cancelar')) !!},
             width: 700,
+             
             allowOutsideClick: false
           }).then(function(result){
             if (result.isConfirmed) {
@@ -1061,6 +1117,7 @@
                       <label class="form-check-label small mb-0" for="kromi-filter-active">{{ __('locale.Show only active') }}</label>
                     </div>
                     <button id="kromi-invert-selection" type="button" class="btn btn-sm btn-outline-secondary">{{ __('locale.Invert selection') }}</button>
+                    <button id="kromi-deselect-all" type="button" class="btn btn-sm btn-outline-secondary ml-1">{{ __('locale.Deselect all') }}</button>
                   </div>
                 </div>
               </div>
@@ -1077,6 +1134,10 @@
                       <th>{{ __('locale.Name') }}</th>
                       <th>{{ __('locale.Cost') }}</th>
                       <th>{{ __('locale.Quantity') }}</th>
+                      <th>{{ __('locale.Variable') }}</th>
+                      <th style="display:none;"></th>
+                      <th style="display:none;"></th>
+                      <th style="display:none;"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1153,6 +1214,9 @@
                       <th>{{ __('locale.Profit') }}</th>
                       <th>{{ __('locale.Price') }}</th>
                       <th>{{ __('locale.Quantity') }}</th>
+                      <th style="display:none;"></th>
+                      <th style="display:none;"></th>
+                      <th style="display:none;"></th>
                     </tr>
                   </thead>
                   <tbody>
