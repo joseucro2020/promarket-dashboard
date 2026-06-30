@@ -233,14 +233,26 @@ class WebServicesController extends Controller
     public function registerKromi(Request $request)
     {
         $raw = $request->input('checkActive');
+        \Log::info('registerKromi called', [
+            'checkActive_raw' => $raw,
+            'checkActive_len' => is_string($raw) ? strlen($raw) : (is_array($raw) ? count($raw) : 'not_string_or_array'),
+            'checkActive_type' => gettype($raw),
+            'all_input_keys' => array_keys($request->all()),
+            'post_size' => strlen(http_build_query($request->all())),
+            'method' => $request->method(),
+            'content_type' => $request->header('Content-Type'),
+        ]);
+
         $items = [];
         if (is_string($raw)) {
             $items = json_decode($raw, true) ?: [];
+            \Log::info('registerKromi parsed items', ['items_count' => count($items), 'items' => $items]);
         } elseif (is_array($raw)) {
             $items = $raw;
         }
 
         if (!is_array($items) || count($items) === 0) {
+            \Log::warning('registerKromi no items', ['raw' => $raw]);
             return redirect()->back()->with('error', __('No items selected to register'));
         }
 
