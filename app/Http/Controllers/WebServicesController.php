@@ -310,6 +310,17 @@ class WebServicesController extends Controller
                             $Product->price_2 = number_format($finalPrice, 2, '.', ',');
                             $Product->variable = $variable;
                             $Product->company_id = $companyId;
+                            // reactivar si estaba eliminado (status=2)
+                            if ($Product->status == Product::STATUS_DELETED) {
+                                $Product->status = Product::STATUS_ACTIVE;
+                                $Product->name = $name;
+                                $Product->name_english = $name;
+                                $Product->slug = Str::slug(substr($name, 0, 64));
+                                if ($categoryId) $Product->category_id = $categoryId;
+                                if ($subcategoryId) $Product->subcategory_id = $subcategoryId;
+                                if ($subsubcategoryId) $Product->subsubcategory_id = $subsubcategoryId;
+                                \Log::info('registerKromi reactivating deleted product', ['sku' => $sku, 'product_id' => $Product->id]);
+                            }
                             $Product->save();
                             \Log::info('registerKromi updated product', ['sku' => $sku, 'product_id' => $Product->id]);
                         }
