@@ -261,94 +261,118 @@ class WebServicesController extends Controller
         $subsubcategoryId = $request->input('promarket-sub-subcategories') ?: null;
         $companyId = $request->input('company') ?: 1;
 
-        foreach ($items as $product) {
-            $sku = $product['sku'] ?? null;
-            if (! $sku) continue;
+        \Log::info('registerKromi loop starting', ['items_count' => count($items), 'categoryId' => $categoryId, 'subcategoryId' => $subcategoryId, 'subsubcategoryId' => $subsubcategoryId, 'companyId' => $companyId]);
 
-            $priceRaw = $product['price'] ?? $product['cost'] ?? 0;
-            // normalize price to numeric
-            $price = 0;
-            if (is_string($priceRaw)) {
-                $price = floatval(str_replace([',', '$', ' '], ['.', '', ''], $priceRaw));
-            } else {
-                $price = floatval($priceRaw);
-            }
-            $amount = isset($product['amount']) ? intval($product['amount']) : 0;
-            $name = $product['name'] ?? $sku;
-            $variable = isset($product['variable']) ? intval($product['variable']) : Product::TYPE_SIMPLE;
-            if (! in_array($variable, [Product::TYPE_SIMPLE, Product::TYPE_VARIABLE, Product::TYPE_BULK], true)) {
-                $variable = Product::TYPE_SIMPLE;
-            }
-
-            $productAmount = ProductAmount::with(['product_color', 'product'])->where('sku', $sku)->get();
-            if (count($productAmount) > 0) {
-                $pa = $productAmount[0];
-                $pa->amount = $amount;
-                $pa->cost = number_format($price, 2, '.', ',');
-
-                $utilidadPct = floatval($pa->utilidad ?? 0);
-                $utilidad = $price * ($utilidadPct / 100);
-                $finalPrice = $price + $utilidad;
-
-                $pa->price = number_format($finalPrice, 2, '.', ',');
-                $pa->save();
-
-                if ($pa->product) {
-                    $Product = Product::find($pa->product->id);
-                    if ($Product) {
-                        $Product->price_1 = number_format($finalPrice, 2, '.', ',');
-                        $Product->price_2 = number_format($finalPrice, 2, '.', ',');
-                        $Product->variable = $variable;
-                        $Product->company_id = $companyId;
-                        $Product->save();
-                    }
+        try {
+            foreach ($items as $i => $product) {
+                $sku = $product['sku'] ?? null;
+                if (! $sku) {
+                    \Log::warning('registerKromi skipping item without sku', ['index' => $i]);
+                    continue;
                 }
-            } else {
-                // crear nuevo producto y sus relaciones mínimas
-                $productbio = new Product;
-                $productbio->name = $name;
-                $productbio->name_english = $name;
-                $productbio->description = $name;
-                $productbio->description_english = $name;
-                $productbio->coin = 2;
-                $productbio->variable = $variable;
-                $productbio->price_1 = number_format($price, 2, '.', ',');
-                $productbio->price_2 = number_format($price, 2, '.', ',');
-                $productbio->status = 1;
-                $productbio->company_id = $companyId;
-                $productbio->slug = Str::slug(substr($name, 0, 64));
-                if ($categoryId) $productbio->category_id = $categoryId;
-                if ($subcategoryId) $productbio->subcategory_id = $subcategoryId;
-                if ($subsubcategoryId) $productbio->subsubcategory_id = $subsubcategoryId;
-                $productbio->collection_id = 1;
-                $productbio->minexi = 5;
-                $productbio->maxexi = 10;
-                $productbio->autom = 0;
-                $productbio->save();
 
-                // crear color por defecto
-                $color = new ProductColor;
-                $color->name = 'por defecto';
-                $color->name_english = 'default';
-                $color->product_id = $productbio->id;
-                $color->save();
+                $priceRaw = $product['price'] ?? $product['cost'] ?? 0;
+                $price = 0;
+                if (is_string($priceRaw)) {
+                    $price = floatval(str_replace([',', '$', ' '], ['.', '', ''], $priceRaw));
+                } else {
+                    $price = floatval($priceRaw);
+                }
+                $amount = isset($product['amount']) ? intval($product['amount']) : 0;
+                $name = $product['name'] ?? $sku;
+                $variable = isset($product['variable']) ? intval($product['variable']) : Product::TYPE_SIMPLE;
+                if (! in_array($variable, [Product::TYPE_SIMPLE, Product::TYPE_VARIABLE, Product::TYPE_BULK], true)) {
+                    $variable = Product::TYPE_SIMPLE;
+                }
 
-                $size = new ProductAmount;
-                $size->amount = $amount;
-                $size->product_color_id = $color->id;
-                $size->category_size_id = 1;
-                $size->unit = 0;
-                $size->min = 1;
-                $size->max = 6;
-                $size->cost = $price;
-                $size->umbral = 1;
-                $size->price = $price;
-                $size->sku = $sku;
-                $size->utilidad = 1;
-                $size->save();
+                \Log::info('registerKromi processing item', ['sku' => $sku, 'price' => $price, 'amount' => $amount, 'name' => $name, 'variable' => $variable]);
+
+                $productAmount = ProductAmount::with(['product_color', 'product'])->where('sku', $sku)->get();
+                \Log::info('registerKromi existing lookup', ['sku' => $sku, 'found' => count($productAmount)]);
+
+                if (count($productAmount) > 0) {
+                    $pa = $productAmount[0];
+                    $pa->amount = $amount;
+                    $pa->cost = number_format($price, 2, '.', ',');
+
+                    $utilidadPct = floatval($pa->utilidad ?? 0);
+                    $utilidad = $price * ($utilidadPct / 100);
+                    $finalPrice = $price + $utilidad;
+
+                    $pa->price = number_format($finalPrice, 2, '.', ',');
+                    $pa->save();
+                    \Log::info('registerKromi updated product_amount', ['sku' => $sku, 'product_amount_id' => $pa->id]);
+
+                    if ($pa->product) {
+                        $Product = Product::find($pa->product->id);
+                        if ($Product) {
+                            $Product->price_1 = number_format($finalPrice, 2, '.', ',');
+                            $Product->price_2 = number_format($finalPrice, 2, '.', ',');
+                            $Product->variable = $variable;
+                            $Product->company_id = $companyId;
+                            $Product->save();
+                            \Log::info('registerKromi updated product', ['sku' => $sku, 'product_id' => $Product->id]);
+                        }
+                    }
+                } else {
+                    // crear nuevo producto y sus relaciones mínimas
+                    $productbio = new Product;
+                    $productbio->name = $name;
+                    $productbio->name_english = $name;
+                    $productbio->description = $name;
+                    $productbio->description_english = $name;
+                    $productbio->coin = 2;
+                    $productbio->variable = $variable;
+                    $productbio->price_1 = number_format($price, 2, '.', ',');
+                    $productbio->price_2 = number_format($price, 2, '.', ',');
+                    $productbio->status = 1;
+                    $productbio->company_id = $companyId;
+                    $productbio->slug = Str::slug(substr($name, 0, 64));
+                    if ($categoryId) $productbio->category_id = $categoryId;
+                    if ($subcategoryId) $productbio->subcategory_id = $subcategoryId;
+                    if ($subsubcategoryId) $productbio->subsubcategory_id = $subsubcategoryId;
+                    $productbio->collection_id = 1;
+                    $productbio->minexi = 5;
+                    $productbio->maxexi = 10;
+                    $productbio->autom = 0;
+                    $productbio->save();
+                    \Log::info('registerKromi created product', ['sku' => $sku, 'product_id' => $productbio->id]);
+
+                    // crear color por defecto
+                    $color = new ProductColor;
+                    $color->name = 'por defecto';
+                    $color->name_english = 'default';
+                    $color->product_id = $productbio->id;
+                    $color->save();
+                    \Log::info('registerKromi created color', ['sku' => $sku, 'color_id' => $color->id]);
+
+                    $size = new ProductAmount;
+                    $size->amount = $amount;
+                    $size->product_color_id = $color->id;
+                    $size->category_size_id = 1;
+                    $size->unit = 0;
+                    $size->min = 1;
+                    $size->max = 6;
+                    $size->cost = $price;
+                    $size->umbral = 1;
+                    $size->price = $price;
+                    $size->sku = $sku;
+                    $size->utilidad = 1;
+                    $size->save();
+                    \Log::info('registerKromi created product_amount', ['sku' => $sku, 'product_amount_id' => $size->id]);
+                }
             }
+        } catch (\Throwable $e) {
+            \Log::error('registerKromi exception', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
 
+        \Log::info('registerKromi completed successfully');
         return redirect()->back()->with('success', __('Items registrados correctamente'));
     }
 
