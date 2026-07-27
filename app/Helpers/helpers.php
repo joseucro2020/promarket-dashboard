@@ -9,17 +9,18 @@ class Helper
 {
     public static function applClasses()
     {
-        // Demo
+        // 1. Inicializar $data por defecto con la configuración base
+        $data = config('custom.custom') ?? [];
+
+        // 2. Si es entorno de producción y es un demo de la plantilla, sobreescribir
         $fullURL = request()->fullurl();
         if (App()->environment() === 'production') {
             for ($i = 1; $i < 7; $i++) {
                 $contains = Str::contains($fullURL, 'demo-' . $i);
                 if ($contains === true) {
-                    $data = config('custom.' . 'demo-' . $i);
+                    $data = config('custom.' . 'demo-' . $i) ?? [];
                 }
             }
-        } else {
-            $data = config('custom.custom');
         }
 
         // default data array
@@ -44,7 +45,7 @@ class Helper
         ];
 
         // if any key missing of array from custom.php file it will be merge and set a default value from dataDefault array and store in data variable
-        $data = array_merge($DefaultData, $data);
+        $data = array_merge($DefaultData, is_array($data) ? $data : []);
 
         // All options available in the template
         $allOptions = [
