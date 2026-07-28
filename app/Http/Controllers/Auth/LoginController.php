@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
@@ -36,6 +37,35 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Only allow users with type=2 (admin/staff) to log in.
+     */
+    protected function credentials(Request $request)
+    {
+        return array_merge(
+            $request->only($this->username(), 'password'),
+            ['type' => 2]
+        );
+    }
+
+    /**
+     * Custom error message when credentials don't match or user is not authorized.
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        $user = \App\Models\User::where($this->username(), $request->{$this->username()})->first();
+
+        if ($user && $user->type != 2) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                $this->username() => [__('No tienes permiso para acceder al panel de administración.')],
+            ]);
+        }
+
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
+        ]);
     }
 
     // Login
