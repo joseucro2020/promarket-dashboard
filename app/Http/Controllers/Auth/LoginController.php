@@ -40,13 +40,13 @@ class LoginController extends Controller
     }
 
     /**
-     * Only allow users with type=2 (admin/staff) to log in.
+     * Only allow users with nivel=2 (admin/staff) to log in.
      */
     protected function credentials(Request $request)
     {
         return array_merge(
             $request->only($this->username(), 'password'),
-            ['type' => 2]
+            ['nivel' => 2]
         );
     }
 
@@ -57,7 +57,7 @@ class LoginController extends Controller
     {
         $user = \App\Models\User::where($this->username(), $request->{$this->username()})->first();
 
-        if ($user && $user->type != 2) {
+        if ($user && $user->nivel != 2) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 $this->username() => [__('No tienes permiso para acceder al panel de administración.')],
             ]);

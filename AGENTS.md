@@ -63,5 +63,5 @@ Laravel Mix (`webpack.mix.js`). SCSS source in `resources/sass/`, compiled to `p
 - Route names use kebab-case (e.g., `exchange-rates.fetch-now`).
 - Views are under `resources/views/panel/` for admin, `resources/views/admin/` for super-admin.
 - All user-facing text is in Spanish.
-- `users` table has a `type` column: `1` = customer, `2` = admin/staff. Only `type=2` users can log into the panel.
+- `users` table has a `nivel` column: `1` = customer, `2` = admin/staff. Only `nivel=2` users can log into the panel (`LoginController` filters by `nivel`).
 - Do NOT modify vendor files or compiled assets in `public/css/`, `public/js/`, `public/vendors/`, `public/fonts/` — they are gitignored and overwritten by `npm run`.
