@@ -329,9 +329,9 @@ Route::group(['prefix' => 'panel'], function () {
   Route::put('payment-gateway/{id}', [PaymentGatewayController::class, 'update'])->name('payment-gateway.update');
   Route::delete('payment-gateway/{id}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateway.destroy');
   Route::post('payment-gateway/{id}/status', [PaymentGatewayController::class, 'status'])->name('payment-gateway.status');
-});
 
-Auth::routes(['verify' => true]);
+  Auth::routes(['verify' => true]);
+});
 
 /* Route Dashboards */
 Route::group(['prefix' => 'dashboard'], function () {
