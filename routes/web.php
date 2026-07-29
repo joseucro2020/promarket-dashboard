@@ -331,6 +331,7 @@ Route::group(['prefix' => 'panel'], function () {
   Route::post('payment-gateway/{id}/status', [PaymentGatewayController::class, 'status'])->name('payment-gateway.status');
 
   Auth::routes(['verify' => true]);
+  Route::any('logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 });
 
 /* Route Dashboards */

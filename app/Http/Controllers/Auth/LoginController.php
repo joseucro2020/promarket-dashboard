@@ -79,4 +79,20 @@ class LoginController extends Controller
           'pageConfigs' => $pageConfigs
       ]);
     }
+
+    /**
+     * Log the user out of the application and redirect to /panel/login.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function logout(Request $request)
+    {
+        $this->guard()->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/panel/login');
+    }
 }
