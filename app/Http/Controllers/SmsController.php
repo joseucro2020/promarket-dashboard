@@ -67,7 +67,8 @@ class SmsController extends Controller
         if ($provider === 'wasender') {
             try {
                 // use the Wasender facade which returns array response
-                $to = $numerocell ?: json_decode($destinatarios, true)[0]['cel'] ?? null;
+                $to = $this->normalizeWasenderPhone($numerocell)
+                    ?: $this->normalizeWasenderPhone(json_decode($destinatarios, true)[0]['cel'] ?? null);
 
                 Log::channel('whatsapp')->info('wasender_panel_send_requested', [
                     'source' => 'panel_sms',
@@ -125,5 +126,30 @@ class SmsController extends Controller
             'destinatarios' => $destinatarios,
             'sms' => $this->sms($message, $destinatarios)
         ]);
+    }
+
+    private function normalizeWasenderPhone(?string $phone): ?string
+    {
+        if ($phone === null) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if ($phone === '') {
+            return null;
+        }
+
+        // Venezuelan mobile with leading zero (0424..., 0412...): 0 + 3 digits + 7 digits
+        if (strlen($phone) === 11 && $phone[0] === '0') {
+            $phone = '58' . substr($phone, 1);
+        }
+
+        // Venezuelan mobile without leading zero (424..., 412...): 3 digits + 7 digits
+        if (strlen($phone) === 10 && in_array(substr($phone, 0, 3), ['412', '414', '416', '424', '426'], true)) {
+            $phone = '58' . $phone;
+        }
+
+        return $phone;
     }
 }
