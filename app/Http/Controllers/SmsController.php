@@ -95,6 +95,14 @@ class SmsController extends Controller
                     'result' => $wasenderResult
                 ]);
             } catch (\Exception $e) {
+                $status = null;
+                $responseBody = null;
+
+                if ($e instanceof \App\Services\WasenderApi\Exceptions\WasenderApiException) {
+                    $status = $e->getCode() ?: null;
+                    $responseBody = $e->getResponse() ? $e->getResponse()->body() : null;
+                }
+
                 Log::channel('whatsapp')->error('wasender_panel_send_error', [
                     'source' => 'panel_sms',
                     'user_id' => optional($request->user())->id,
@@ -102,6 +110,8 @@ class SmsController extends Controller
                     'to' => $to ?? null,
                     'message_length' => mb_strlen((string) $message),
                     'error' => $e->getMessage(),
+                    'status' => $status,
+                    'response_body' => $responseBody,
                 ]);
 
                 return response()->json([
