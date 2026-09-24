@@ -87,14 +87,18 @@
     $compra = $purchase;
     $user = data_get($purchase, 'user');
     $bankAccount = data_get($purchase, 'transfer.bankAccount');
+    
+    $localLogo = public_path('img/logo-black.png');
+    $logoSrc = $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png';
+    if (file_exists($localLogo)) {
+        $logoSrc = 'data:image/png;base64,' . base64_encode(file_get_contents($localLogo));
+    } elseif (isset($logoPath) && file_exists($logoPath)) {
+        $logoSrc = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+    }
   @endphp
   <div class="header">
     <div class="img">
-      @if (file_exists($logoPath ?? ''))
-        <img class="logo" src="{{ $logoPath }}">
-      @else
-        <img class="logo" src="{{ $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png' }}">
-      @endif
+        <img class="logo" src="{{ $logoSrc }}">
     </div>
   </div>
   <div class="invoice-box">

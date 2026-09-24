@@ -46,7 +46,7 @@ class PurchaseController extends Controller
             'bankAccount' => data_get($purchase, 'transfer.bankAccount'),
             'user' => $purchase->user,
             'logoUrl' => 'https://www.promarketlatino.com/img/logo-black.png',
-            'logoPath' => public_path('images/logo/logo-black.png'),
+            'logoPath' => public_path('img/logo-black.png'),
         ];
 
         $wantsPdf = !request()->boolean('html');

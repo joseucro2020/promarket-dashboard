@@ -334,8 +334,6 @@
       if(res.details && res.details.length){
         res.details.forEach(function(d){
           var description = d.description || (d.producto && d.producto.name ? d.producto.name : '');
-          description = escapeHtml(description + (d.discounts_text || ''));
-          var presentation = escapeHtml((d.presentation || '') + (d.unit || ''));
           var tax = escapeHtml(d.tax || 'Exento');
           var price = Number(d.price || 0);
           var quantity = Number(d.quantity || 0);
@@ -344,6 +342,7 @@
           var hasSelectedGrams = selectedGrams > 0;
           var effectiveQuantity = hasSelectedGrams && selectedQuantity > 0 ? selectedQuantity : quantity;
           var lineTotal = Number(d.line_total || 0);
+          
           if (effectiveQuantity <= 0 && lineTotal > 0 && price > 0) {
             effectiveQuantity = lineTotal / price;
           }
@@ -354,6 +353,13 @@
           var gramsText = hasSelectedGrams
             ? String(Number(selectedGrams.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') + ' g'
             : '';
+            
+          if (hasSelectedGrams) {
+            description += ' (' + gramsText + ')';
+          }
+          description = escapeHtml(description + (d.discounts_text || ''));
+          var presentation = escapeHtml((d.presentation || '') + (d.unit || ''));
+
           var quantityHtml = hasSelectedGrams
             ? '<div>' + quantityText + '</div><small class="text-muted">' + gramsText + '</small>'
             : quantityText;
