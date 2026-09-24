@@ -88,13 +88,28 @@
     $user = data_get($purchase, 'user');
     $bankAccount = data_get($purchase, 'transfer.bankAccount');
     
-    $localLogo = public_path('img/logo-black.png');
-    $logoSrc = $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png';
-    if (file_exists($localLogo)) {
-        $logoSrc = 'data:image/png;base64,' . base64_encode(file_get_contents($localLogo));
-    } elseif (isset($logoPath) && file_exists($logoPath)) {
-        $logoSrc = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
-    }
+    $logoSrc = Cache::remember('pdf_logo_base64', 86400, function () use ($logoUrl) {
+        $localLogo = public_path('img/logo-black.png');
+        if (file_exists($localLogo)) {
+            return 'data:image/png;base64,' . base64_encode(file_get_contents($localLogo));
+        }
+        
+        try {
+            $remoteUrl = $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png';
+            $context = stream_context_create([
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ]
+            ]);
+            $imageContent = file_get_contents($remoteUrl, false, $context);
+            if ($imageContent) {
+                return 'data:image/png;base64,' . base64_encode($imageContent);
+            }
+        } catch (\Exception $e) {}
+
+        return $logoUrl ?? 'https://www.promarketlatino.com/img/logo-black.png';
+    });
   @endphp
   <div class="header">
     <div class="img">
