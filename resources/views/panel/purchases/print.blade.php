@@ -209,7 +209,7 @@
               @if ($hasSelectedGrams)
                 @php
                    $unitGrams = $selectedGrams;
-                   $qty = (float) data_get($item, 'quantity', 1);
+                   $qty = $effectiveQuantity > 0 ? $effectiveQuantity : (float) data_get($item, 'quantity', 1);
                    if ($qty > 0) {
                        $unitGrams = $selectedGrams / $qty;
                    }

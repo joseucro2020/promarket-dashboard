@@ -350,8 +350,12 @@
           var quantityText = Number.isInteger(effectiveQuantity)
             ? String(effectiveQuantity)
             : String(Number(effectiveQuantity.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+          var unitGrams = selectedGrams;
+          if (effectiveQuantity > 0) {
+            unitGrams = selectedGrams / effectiveQuantity;
+          }
           var gramsText = hasSelectedGrams
-            ? String(Number(selectedGrams.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') + ' g'
+            ? String(Number(unitGrams.toFixed(3))).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1') + ' g'
             : '';
             
           if (hasSelectedGrams) {
