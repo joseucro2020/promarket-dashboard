@@ -207,7 +207,15 @@
               {{ data_get($item, 'presentation') }}
               {{ data_get($item, 'unit') }}
               @if ($hasSelectedGrams)
-                ({{ $gramsFormatted }} g)
+                @php
+                   $unitGrams = $selectedGrams;
+                   $qty = (float) data_get($item, 'quantity', 1);
+                   if ($qty > 0) {
+                       $unitGrams = $selectedGrams / $qty;
+                   }
+                   $unitGramsFormatted = rtrim(rtrim(number_format($unitGrams, 3, '.', ''), '0'), '.');
+                @endphp
+                ({{ $unitGramsFormatted }} g)
               @endif
               {{ data_get($item, 'discounts_text') }}
             @endif
@@ -220,7 +228,7 @@
           <td class="text-center">
             {{ $effectiveQuantity == (int) $effectiveQuantity ? (int) $effectiveQuantity : rtrim(rtrim(number_format($effectiveQuantity, 3, '.', ''), '0'), '.') }}
             @if ($hasSelectedGrams)
-              <br>{{ $gramsFormatted }} g
+              <br>{{ $unitGramsFormatted }} g
             @endif
           </td>
           <td class="text-center">
