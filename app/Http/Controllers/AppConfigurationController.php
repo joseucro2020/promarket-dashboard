@@ -59,15 +59,21 @@ class AppConfigurationController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
+            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.\-]/', '', $file->getClientOriginalName());
             
-            // Subir usando Storage::disk('public') para garantizar persistencia y visibilidad en Docker
-            $path = $file->store('banners', 'public');
+            $targetDir = public_path('img/categories/banners');
+            if (!\Illuminate\Support\Facades\File::isDirectory($targetDir)) {
+                \Illuminate\Support\Facades\File::makeDirectory($targetDir, 0755, true);
+            }
             
-            // Retornar la URL pública usando el symlink de storage
-            $url = Storage::url($path);
+            $file->move($targetDir, $filename);
             
-            // Si tu app no usa el symlink estándar o necesitas la URL absoluta:
+            // Devolver la ruta relativa y que el frontend construya la URL absoluta si es necesario
+            $url = '/img/categories/banners/' . $filename;
+            
+            // Nos aseguramos que tenga el dominio si Vue lo requiere explícitamente para startWith('http')
             $url = url($url);
+            
             return response()->json(['success' => true, 'url' => $url]);
         }
 
