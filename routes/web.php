@@ -40,6 +40,7 @@ use App\Http\Controllers\AboutUsController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\TermsConditionsController;
 use App\Http\Controllers\PaymentGatewayController;
+use App\Http\Controllers\AppConfigurationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -329,6 +330,10 @@ Route::group(['prefix' => 'panel'], function () {
   Route::put('payment-gateway/{id}', [PaymentGatewayController::class, 'update'])->name('payment-gateway.update');
   Route::delete('payment-gateway/{id}', [PaymentGatewayController::class, 'destroy'])->name('payment-gateway.destroy');
   Route::post('payment-gateway/{id}/status', [PaymentGatewayController::class, 'status'])->name('payment-gateway.status');
+
+  // App Configuration
+  Route::get('app-config', [AppConfigurationController::class, 'index'])->name('app-config.index');
+  Route::post('app-config', [AppConfigurationController::class, 'store'])->name('app-config.store');
 
   Auth::routes(['verify' => true]);
   Route::any('logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');

@@ -20,3 +20,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('/wasender/send-text', [WasenderApiController::class, 'sendText'])->name('api.wasender.send-text');
+
+Route::get('/app-config', [\App\Http\Controllers\AppConfigurationController::class, 'apiConfig']);

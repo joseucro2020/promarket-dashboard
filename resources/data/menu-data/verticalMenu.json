@@ -228,6 +228,12 @@
       "slug": "panel-terms-conditions"
     },
     {
+      "url": "panel/app-config",
+      "name": "App Configuration",
+      "icon": "settings",
+      "slug": "panel-app-config"
+    },
+    {
       "url": "panel/payment-gateway",
       "name": "Payment Gateway",
       "icon": "credit-card",
