@@ -60,17 +60,19 @@ class AppConfigurationController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             
-            // Usar la misma lógica exacta de CategoryController para el nombre
-            $filename = time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
+            // Usar la misma lógica que ProductController para asegurar que funciona en producción
+            $filename = 'banner_' . time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
             
-            $targetDir = public_path('img/categories');
+            $diskPath = env('ECOMMERCE_IMAGE_PATH') ? rtrim(env('ECOMMERCE_IMAGE_PATH'), '\\/') : public_path('img/products');
+            $publicPath = rtrim(env('ECOMMERCE_IMAGE_PUBLIC_PATH', 'img/products'), '/\\') . '/';
             
-            $file->move($targetDir, $filename);
+            if (!\Illuminate\Support\Facades\File::isDirectory($diskPath)) {
+                \Illuminate\Support\Facades\File::makeDirectory($diskPath, 0755, true);
+            }
             
-            // Devolver solo la ruta relativa
-            $url = 'img/categories/' . $filename;
+            $file->move($diskPath, $filename);
             
-            // URL absoluta
+            $url = $publicPath . $filename;
             $absoluteUrl = url('/' . $url);
             
             return response()->json(['success' => true, 'url' => $absoluteUrl]);
