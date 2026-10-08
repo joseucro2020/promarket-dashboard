@@ -60,20 +60,47 @@ class AppConfigurationController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             
-            // Usar la misma lógica que ProductController para asegurar que funciona en producción
             $filename = 'banner_' . time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
             
-            $diskPath = env('ECOMMERCE_IMAGE_PATH') ? rtrim(env('ECOMMERCE_IMAGE_PATH'), '\\/') : public_path('img/products');
-            $publicPath = rtrim(env('ECOMMERCE_IMAGE_PUBLIC_PATH', 'img/products'), '/\\') . '/';
+            // 1. Determinar el path de disco (donde se guarda físicamente)
+            $preferredPath = env('ECOMMERCE_IMAGE_PATH') ? rtrim(env('ECOMMERCE_IMAGE_PATH'), '\\/') : null;
+            $pathsToTry = array_filter([$preferredPath, public_path('img/products')]);
             
-            if (!\Illuminate\Support\Facades\File::isDirectory($diskPath)) {
-                \Illuminate\Support\Facades\File::makeDirectory($diskPath, 0755, true);
+            $diskPath = null;
+            foreach ($pathsToTry as $path) {
+                try {
+                    if (!\Illuminate\Support\Facades\File::exists($path)) {
+                        \Illuminate\Support\Facades\File::makeDirectory($path, 0755, true);
+                    }
+                    if (is_dir($path) && is_writable($path)) {
+                        $diskPath = $path;
+                        break;
+                    }
+                } catch (\Throwable $e) {}
             }
             
+            if (!$diskPath) {
+                return response()->json(['success' => false, 'message' => 'No writable image directory found.'], 500);
+            }
+            
+            // 2. Mover el archivo
             $file->move($diskPath, $filename);
             
-            $url = $publicPath . $filename;
-            $absoluteUrl = url('/' . $url);
+            // 3. Determinar el path público (URL)
+            $publicPathTrim = trim(env('ECOMMERCE_IMAGE_PUBLIC_PATH', 'img/products'), '/');
+            
+            // Replicar la misma lógica de URL de ProductController
+            $requestBase = rtrim($request->getSchemeAndHttpHost() . $request->getBasePath(), '/');
+            $envBase = config('app.asset_url') ?: config('app.url') ?: env('APP_URL') ?: env('ASSET_URL');
+            $baseUrlTrim = rtrim(($envBase ?: $requestBase), '/');
+            
+            $endsWithPublic = $publicPathTrim !== '' && substr($baseUrlTrim, -strlen($publicPathTrim)) === $publicPathTrim;
+            
+            if ($endsWithPublic) {
+                $absoluteUrl = $baseUrlTrim . '/' . ltrim($filename, '/');
+            } else {
+                $absoluteUrl = $baseUrlTrim . '/' . $publicPathTrim . '/' . ltrim($filename, '/');
+            }
             
             return response()->json(['success' => true, 'url' => $absoluteUrl]);
         }
