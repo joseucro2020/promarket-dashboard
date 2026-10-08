@@ -59,16 +59,18 @@ class AppConfigurationController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = 'banner_' . time() . '_' . preg_replace('/[^A-Za-z0-9.\-]/', '', $file->getClientOriginalName());
+            
+            // Usar la misma lógica exacta de CategoryController para el nombre
+            $filename = time() . '_' . \Illuminate\Support\Str::random(8) . '.' . $file->getClientOriginalExtension();
             
             $targetDir = public_path('img/categories');
             
             $file->move($targetDir, $filename);
             
-            // Devolver solo la ruta relativa igual que hace CategoryController
+            // Devolver solo la ruta relativa
             $url = 'img/categories/' . $filename;
             
-            // Si quieres la URL absoluta para el panel:
+            // URL absoluta
             $absoluteUrl = url('/' . $url);
             
             return response()->json(['success' => true, 'url' => $absoluteUrl]);
