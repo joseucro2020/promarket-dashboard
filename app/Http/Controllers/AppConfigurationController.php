@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AppConfiguration;
+use Illuminate\Support\Facades\Storage;
 
 class AppConfigurationController extends Controller
 {
@@ -58,13 +59,15 @@ class AppConfigurationController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.\-]/', '', $file->getClientOriginalName());
             
-            // Subir a la carpeta public/img/banners para asegurar compatibilidad con Nginx
-            $file->move(public_path('img/banners'), $filename);
+            // Subir usando Storage::disk('public') para garantizar persistencia y visibilidad en Docker
+            $path = $file->store('banners', 'public');
             
-            // Retornar la URL pública
-            $url = url('/img/banners/' . $filename);
+            // Retornar la URL pública usando el symlink de storage
+            $url = Storage::url($path);
+            
+            // Si tu app no usa el symlink estándar o necesitas la URL absoluta:
+            $url = url($url);
             return response()->json(['success' => true, 'url' => $url]);
         }
 
