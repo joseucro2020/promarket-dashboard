@@ -60,11 +60,11 @@ class AppConfigurationController extends Controller
             $file = $request->file('image');
             $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.\-]/', '', $file->getClientOriginalName());
             
-            // Subir a la carpeta public/uploads/banners
-            $file->move(public_path('uploads/banners'), $filename);
+            // Subir a la carpeta public/img/banners para asegurar compatibilidad con Nginx
+            $file->move(public_path('img/banners'), $filename);
             
             // Retornar la URL pública
-            $url = url('/uploads/banners/' . $filename);
+            $url = url('/img/banners/' . $filename);
             return response()->json(['success' => true, 'url' => $url]);
         }
 
