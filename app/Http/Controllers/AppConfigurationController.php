@@ -59,22 +59,19 @@ class AppConfigurationController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . preg_replace('/[^A-Za-z0-9.\-]/', '', $file->getClientOriginalName());
+            $filename = 'banner_' . time() . '_' . preg_replace('/[^A-Za-z0-9.\-]/', '', $file->getClientOriginalName());
             
-            $targetDir = public_path('img/categories/banners');
-            if (!\Illuminate\Support\Facades\File::isDirectory($targetDir)) {
-                \Illuminate\Support\Facades\File::makeDirectory($targetDir, 0755, true);
-            }
+            $targetDir = public_path('img/categories');
             
             $file->move($targetDir, $filename);
             
-            // Devolver la ruta relativa y que el frontend construya la URL absoluta si es necesario
-            $url = '/img/categories/banners/' . $filename;
+            // Devolver solo la ruta relativa igual que hace CategoryController
+            $url = 'img/categories/' . $filename;
             
-            // Nos aseguramos que tenga el dominio si Vue lo requiere explícitamente para startWith('http')
-            $url = url($url);
+            // Si quieres la URL absoluta para el panel:
+            $absoluteUrl = url('/' . $url);
             
-            return response()->json(['success' => true, 'url' => $url]);
+            return response()->json(['success' => true, 'url' => $absoluteUrl]);
         }
 
         return response()->json(['success' => false], 400);
