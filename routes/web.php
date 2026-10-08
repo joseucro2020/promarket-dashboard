@@ -334,6 +334,7 @@ Route::group(['prefix' => 'panel'], function () {
   // App Configuration
   Route::get('app-config', [AppConfigurationController::class, 'index'])->name('app-config.index');
   Route::post('app-config', [AppConfigurationController::class, 'store'])->name('app-config.store');
+  Route::post('app-config/upload-image', [AppConfigurationController::class, 'uploadImage'])->name('app-config.upload-image');
 
   Auth::routes(['verify' => true]);
   Route::any('logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
