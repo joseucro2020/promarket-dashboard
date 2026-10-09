@@ -7,7 +7,9 @@ use App\Models\Category;
 use App\Models\SpecialCategory;
 use App\Models\SpecialCategoryDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class SpecialCategoryController extends Controller
 {
@@ -54,6 +56,10 @@ class SpecialCategoryController extends Controller
         $payload['tipo_special'] = $this->normalizeSpecialTypeValue($request->input('tipo_special'));
         $payload['tipo_order'] = $this->normalizeOrderTypeValue($request->input('tipo_order'));
 
+        $payload['banner_image'] = $this->storeImage($request, 'banner_image', 'img/special_categories');
+        $payload['background_image'] = $this->storeImage($request, 'background_image', 'img/special_categories');
+        $payload['carousel_image'] = $this->storeImage($request, 'carousel_image', 'img/special_categories');
+
         $category = SpecialCategory::create($payload);
         $category->slug = Str::slug($request->name);
         $category->save();
@@ -72,6 +78,10 @@ class SpecialCategoryController extends Controller
         $payload = $request->all();
         $payload['tipo_special'] = $this->normalizeSpecialTypeValue($request->input('tipo_special'));
         $payload['tipo_order'] = $this->normalizeOrderTypeValue($request->input('tipo_order'));
+
+        $payload['banner_image'] = $this->storeImage($request, 'banner_image', 'img/special_categories', $category->banner_image ?? null);
+        $payload['background_image'] = $this->storeImage($request, 'background_image', 'img/special_categories', $category->background_image ?? null);
+        $payload['carousel_image'] = $this->storeImage($request, 'carousel_image', 'img/special_categories', $category->carousel_image ?? null);
 
         $category->fill($payload);
         $category->slug = Str::slug($request->name);
@@ -124,6 +134,32 @@ class SpecialCategoryController extends Controller
         return response()->json([
             'categories' => $categories,
         ]);
+    }
+
+    private function storeImage(Request $request, string $field, string $dir, ?string $currentPath = null): ?string
+    {
+        if (!$request->hasFile($field)) {
+            return $currentPath;
+        }
+
+        $file = $request->file($field);
+        $filename = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+        $targetDir = public_path($dir);
+
+        if (!File::isDirectory($targetDir)) {
+            File::makeDirectory($targetDir, 0755, true);
+        }
+
+        $file->move($targetDir, $filename);
+
+        if ($currentPath) {
+            $currentFullPath = public_path($currentPath);
+            if (File::exists($currentFullPath)) {
+                File::delete($currentFullPath);
+            }
+        }
+
+        return $dir . '/' . $filename;
     }
 
     private function syncProducts(int $specialCategoryId, ?string $productsJson): void

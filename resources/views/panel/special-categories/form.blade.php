@@ -152,7 +152,7 @@
             </div>
           @endif
 
-          <form method="POST" action="{{ isset($specialCategory) ? route('special-categories.update', $specialCategory->id) : route('special-categories.store') }}" id="specialCategoryForm">
+          <form method="POST" action="{{ isset($specialCategory) ? route('special-categories.update', $specialCategory->id) : route('special-categories.store') }}" id="specialCategoryForm" enctype="multipart/form-data">
             @csrf
             @if(isset($specialCategory))
               @method('PUT')
@@ -219,6 +219,53 @@
               </div>
             </div>
 
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="banner_image">{{ __('locale.Banner Image') }}</label>
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="banner_image" name="banner_image" accept="image/*">
+                    <label class="custom-file-label" for="banner_image">{{ __('locale.Choose file') }}</label>
+                  </div>
+                  @if(isset($specialCategory) && $specialCategory->banner_image)
+                    <div class="mt-1">
+                      <img src="{{ asset($specialCategory->banner_image) }}" alt="Banner" class="img-thumbnail" style="max-height: 80px">
+                    </div>
+                  @endif
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="background_image">{{ __('locale.Background Image') }}</label>
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="background_image" name="background_image" accept="image/*">
+                    <label class="custom-file-label" for="background_image">{{ __('locale.Choose file') }}</label>
+                  </div>
+                  @if(isset($specialCategory) && $specialCategory->background_image)
+                    <div class="mt-1">
+                      <img src="{{ asset($specialCategory->background_image) }}" alt="Background" class="img-thumbnail" style="max-height: 80px">
+                    </div>
+                  @endif
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="carousel_image">{{ __('locale.Carousel Image') }} <small>(Rectángulo)</small></label>
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="carousel_image" name="carousel_image" accept="image/*">
+                    <label class="custom-file-label" for="carousel_image">{{ __('locale.Choose file') }}</label>
+                  </div>
+                  @if(isset($specialCategory) && $specialCategory->carousel_image)
+                    <div class="mt-1">
+                      <img src="{{ asset($specialCategory->carousel_image) }}" alt="Carousel" class="img-thumbnail" style="max-height: 80px">
+                    </div>
+                  @endif
+                </div>
+              </div>
+            </div>
+
             <div class="row mb-2">
               <div class="col-md-3">
                 <div class="form-group mb-0">
@@ -274,7 +321,7 @@
             </div>
 
             <div class="row">
-              <div class="col-lg-7">
+              <div class="col-lg-6">
                 <div class="card mb-0">
                   <div class="card-header border-bottom pb-1">
                     <h5 class="mb-0">{{ __('locale.Products') }}</h5>
@@ -301,11 +348,14 @@
                 </div>
               </div>
 
-              <div class="col-lg-5 mt-2 mt-lg-0">
+              <div class="col-lg-6 mt-2 mt-lg-0">
                 <div class="card mb-0">
                   <div class="card-header border-bottom pb-1 d-flex align-items-center justify-content-between">
                     <h5 class="mb-0">{{ __('locale.Selected Products') }}</h5>
-                    <span class="badge badge-light-primary" id="selectedProductsCount">0</span>
+                    <div class="d-flex align-items-center">
+                      <button type="button" id="clear-selected-products" class="btn btn-sm btn-outline-danger mr-1" title="Vaciar todos los seleccionados"><i data-feather="trash-2" class="mr-50"></i>Vaciar Lista</button>
+                      <span class="badge badge-light-primary" id="selectedProductsCount" style="font-size: 1rem; padding: 0.4rem 0.6rem;">0</span>
+                    </div>
                   </div>
                   <div class="card-body pt-1">
                     <div class="table-responsive">
@@ -361,6 +411,7 @@
       const subsubcategorySelect = document.getElementById('filter_subsubcategory');
       const selectAllProductsCheckbox = document.getElementById('select-all-products');
       const addSelectedProductsButton = document.getElementById('add-selected-products');
+      const clearSelectedProductsButton = document.getElementById('clear-selected-products');
       const selectedCount = document.getElementById('selectedProductsCount');
       const productsInput = document.getElementById('products');
       const nameInput = document.getElementById('name');
@@ -461,9 +512,10 @@
         if (!selectedProductsTable) {
           selectedProductsTable = selectedTableElement.DataTable({
             responsive: true,
-            paging: false,
-            searching: false,
-            info: false,
+            paging: true,
+            searching: true,
+            info: true,
+            pageLength: 10,
             order: [[0, 'asc']],
             language: { url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
             columnDefs: [{ orderable: false, targets: -1 }],
@@ -572,6 +624,15 @@
         });
 
         refreshTables();
+      });
+
+      clearSelectedProductsButton.addEventListener('click', function () {
+        if (selectedIds.size === 0) return;
+        
+        if (confirm("¿Estás seguro de que deseas quitar todos los productos seleccionados?")) {
+          selectedIds.clear();
+          refreshTables();
+        }
       });
 
       nameInput.addEventListener('input', syncSlug);
