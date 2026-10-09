@@ -19,6 +19,9 @@ class SpecialCategory extends Model
         'tipo_order',
         'tipo_special',
         'slug',
+        'banner_image',
+        'background_image',
+        'carousel_image',
     ];
 
     public function details()

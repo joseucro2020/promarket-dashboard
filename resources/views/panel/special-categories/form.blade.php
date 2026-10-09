@@ -222,46 +222,34 @@
             <div class="row">
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="banner_image">{{ __('locale.Banner Image') }}</label>
-                  <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="banner_image" name="banner_image" accept="image/*">
-                    <label class="custom-file-label" for="banner_image">{{ __('locale.Choose file') }}</label>
+                  <label for="banner_image">Imagen de Banner</label>
+                  <input type="file" class="form-control image-file-input" id="banner_image" name="banner_image" accept="image/*" data-preview="preview-banner">
+                  <div class="mt-1 text-center" style="background:#eee; padding:5px; border-radius:8px; min-height: 80px; display:flex; align-items:center; justify-content:center;">
+                    <img id="preview-banner" src="{{ isset($specialCategory) && $specialCategory->banner_image ? asset($specialCategory->banner_image) : '' }}" class="img-preview img-thumbnail" style="max-height:80px; {{ isset($specialCategory) && $specialCategory->banner_image ? '' : 'display:none;' }}" />
+                    <span class="text-muted no-img-text" style="font-size:12px; {{ isset($specialCategory) && $specialCategory->banner_image ? 'display:none;' : '' }}">Sin imagen</span>
                   </div>
-                  @if(isset($specialCategory) && $specialCategory->banner_image)
-                    <div class="mt-1">
-                      <img src="{{ asset($specialCategory->banner_image) }}" alt="Banner" class="img-thumbnail" style="max-height: 80px">
-                    </div>
-                  @endif
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="background_image">{{ __('locale.Background Image') }}</label>
-                  <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="background_image" name="background_image" accept="image/*">
-                    <label class="custom-file-label" for="background_image">{{ __('locale.Choose file') }}</label>
+                  <label for="background_image">Imagen de Fondo</label>
+                  <input type="file" class="form-control image-file-input" id="background_image" name="background_image" accept="image/*" data-preview="preview-background">
+                  <div class="mt-1 text-center" style="background:#eee; padding:5px; border-radius:8px; min-height: 80px; display:flex; align-items:center; justify-content:center;">
+                    <img id="preview-background" src="{{ isset($specialCategory) && $specialCategory->background_image ? asset($specialCategory->background_image) : '' }}" class="img-preview img-thumbnail" style="max-height:80px; {{ isset($specialCategory) && $specialCategory->background_image ? '' : 'display:none;' }}" />
+                    <span class="text-muted no-img-text" style="font-size:12px; {{ isset($specialCategory) && $specialCategory->background_image ? 'display:none;' : '' }}">Sin imagen</span>
                   </div>
-                  @if(isset($specialCategory) && $specialCategory->background_image)
-                    <div class="mt-1">
-                      <img src="{{ asset($specialCategory->background_image) }}" alt="Background" class="img-thumbnail" style="max-height: 80px">
-                    </div>
-                  @endif
                 </div>
               </div>
 
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="carousel_image">{{ __('locale.Carousel Image') }} <small>(Rectángulo)</small></label>
-                  <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="carousel_image" name="carousel_image" accept="image/*">
-                    <label class="custom-file-label" for="carousel_image">{{ __('locale.Choose file') }}</label>
+                  <label for="carousel_image">Imagen de Carrusel <small>(Rectángulo)</small></label>
+                  <input type="file" class="form-control image-file-input" id="carousel_image" name="carousel_image" accept="image/*" data-preview="preview-carousel">
+                  <div class="mt-1 text-center" style="background:#eee; padding:5px; border-radius:8px; min-height: 80px; display:flex; align-items:center; justify-content:center;">
+                    <img id="preview-carousel" src="{{ isset($specialCategory) && $specialCategory->carousel_image ? asset($specialCategory->carousel_image) : '' }}" class="img-preview img-thumbnail" style="max-height:80px; {{ isset($specialCategory) && $specialCategory->carousel_image ? '' : 'display:none;' }}" />
+                    <span class="text-muted no-img-text" style="font-size:12px; {{ isset($specialCategory) && $specialCategory->carousel_image ? 'display:none;' : '' }}">Sin imagen</span>
                   </div>
-                  @if(isset($specialCategory) && $specialCategory->carousel_image)
-                    <div class="mt-1">
-                      <img src="{{ asset($specialCategory->carousel_image) }}" alt="Carousel" class="img-thumbnail" style="max-height: 80px">
-                    </div>
-                  @endif
                 </div>
               </div>
             </div>
@@ -632,6 +620,21 @@
         if (confirm("¿Estás seguro de que deseas quitar todos los productos seleccionados?")) {
           selectedIds.clear();
           refreshTables();
+        }
+      });
+
+      // Preview de imágenes seleccionadas
+      $('.image-file-input').on('change', function(e) {
+        if(e.target.files && e.target.files[0]) {
+            let reader = new FileReader();
+            let targetId = $(this).data('preview');
+            let preview = $('#' + targetId);
+            let noImg = preview.siblings('.no-img-text');
+            reader.onload = function(ev) {
+                preview.attr('src', ev.target.result).show();
+                noImg.hide();
+            }
+            reader.readAsDataURL(e.target.files[0]);
         }
       });
 
