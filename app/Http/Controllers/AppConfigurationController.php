@@ -83,8 +83,22 @@ class AppConfigurationController extends Controller
                 return response()->json(['success' => false, 'message' => 'No writable image directory found.'], 500);
             }
             
-            // 2. Mover el archivo
-            $file->move($diskPath, $filename);
+            // 2. Comprimir y guardar la imagen para optimizar la carga (Mejora de UX)
+            try {
+                $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                $image = $manager->read($file->getRealPath());
+                
+                // Si la imagen es más ancha de 1000px, la escalamos proporcionalmente para web/móvil
+                if ($image->width() > 1000) {
+                    $image->scaleDown(width: 1000);
+                }
+                
+                // Guardar con 80% de calidad para máxima rapidez sin perder detalle
+                $image->save($diskPath . '/' . $filename, quality: 80);
+            } catch (\Throwable $e) {
+                // Fallback de seguridad en caso de que Intervention falle
+                $file->move($diskPath, $filename);
+            }
             
             // 3. Determinar el path público (URL)
             $publicPathTrim = trim(env('ECOMMERCE_IMAGE_PUBLIC_PATH', 'img/products'), '/');
