@@ -67,6 +67,8 @@ class SpecialCategoryController extends Controller
         $this->syncProducts($category->id, $request->products);
         $this->reorderExcept($category->id, (int) $request->order);
 
+        \Illuminate\Support\Facades\Cache::forget('special_categories_full');
+
         return redirect()
             ->route('special-categories.index')
             ->with('success', __('locale.Special category saved successfully.'));
@@ -91,6 +93,8 @@ class SpecialCategoryController extends Controller
         $this->syncProducts($category->id, $request->products);
         $this->reorderExcept($category->id, (int) $request->order);
 
+        \Illuminate\Support\Facades\Cache::forget('special_categories_full');
+
         return redirect()
             ->route('special-categories.index')
             ->with('success', __('locale.Special category updated successfully.'));
@@ -108,6 +112,8 @@ class SpecialCategoryController extends Controller
             $category->save();
         }
 
+        \Illuminate\Support\Facades\Cache::forget('special_categories_full');
+
         return redirect()->back();
     }
 
@@ -116,6 +122,8 @@ class SpecialCategoryController extends Controller
         $category = SpecialCategory::findOrFail($id);
         $category->status = $category->status == 1 ? 0 : 1;
         $category->save();
+
+        \Illuminate\Support\Facades\Cache::forget('special_categories_full');
 
         return response()->json([
             'status' => $category->status,
@@ -144,7 +152,16 @@ class SpecialCategoryController extends Controller
 
         $file = $request->file($field);
         $filename = time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
-        $targetDir = public_path($dir);
+        
+        $subfolder = trim(str_replace('img/', '', $dir), '/');
+        $preferredPath = env('ECOMMERCE_IMAGE_PATH') 
+            ? rtrim(env('ECOMMERCE_IMAGE_PATH'), '\\/') . '/' . $subfolder
+            : null;
+        $localPath = public_path($dir);
+
+        $targetDir = $preferredPath && (is_dir(dirname($preferredPath)) || is_dir($preferredPath))
+            ? $preferredPath
+            : $localPath;
 
         if (!File::isDirectory($targetDir)) {
             File::makeDirectory($targetDir, 0755, true);
@@ -152,10 +169,26 @@ class SpecialCategoryController extends Controller
 
         $file->move($targetDir, $filename);
 
+        // Si se guardó en la ruta del ecommerce, mantener copia en local y viceversa si ambas existen
+        if ($preferredPath && $targetDir === $preferredPath && File::isDirectory($localPath)) {
+            @copy($targetDir . '/' . $filename, $localPath . '/' . $filename);
+        } elseif ($preferredPath && File::isDirectory(dirname($preferredPath))) {
+            if (!File::isDirectory($preferredPath)) {
+                @File::makeDirectory($preferredPath, 0755, true);
+            }
+            @copy($targetDir . '/' . $filename, $preferredPath . '/' . $filename);
+        }
+
         if ($currentPath) {
             $currentFullPath = public_path($currentPath);
             if (File::exists($currentFullPath)) {
                 File::delete($currentFullPath);
+            }
+            if (env('ECOMMERCE_IMAGE_PATH')) {
+                $currentEcommerceFullPath = rtrim(env('ECOMMERCE_IMAGE_PATH'), '\\/') . '/' . trim(str_replace('img/', '', $currentPath), '/');
+                if (File::exists($currentEcommerceFullPath)) {
+                    @File::delete($currentEcommerceFullPath);
+                }
             }
         }
 
