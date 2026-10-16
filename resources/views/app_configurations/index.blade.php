@@ -114,6 +114,7 @@
                         <option value="ExclusiveOffersWidget">Ofertas Exclusivas</option>
                         <option value="ImageBannerWidget">Banner de Imagen con Enlace</option>
                         <option value="InfoCarousel">Carrusel de Imágenes (Múltiples)</option>
+                        <option value="VerticalCarousel">Carrusel Vertical Animado (Estilo Farmatodo)</option>
                     </select>
                     <button type="button" class="btn btn-outline-primary" id="btn-add-block">
                         <i data-feather="plus"></i> Añadir Bloque
@@ -323,6 +324,88 @@
     </div>
 </template>
 
+<template id="tpl-VerticalCarousel">
+    <div class="block-item" data-type="VerticalCarousel">
+        <div class="block-header">
+            <span><i data-feather="film" class="drag-handle text-primary"></i> Carrusel Vertical Animado (Estilo Farmatodo)</span>
+            <span class="remove-block"><i data-feather="trash-2"></i></span>
+        </div>
+        <div class="row">
+            <div class="col-md-6 form-group">
+                <label>Título de la Sección (Opcional):</label>
+                <input type="text" class="form-control section-title-val" value="" placeholder="Ej: LO MÁS DESTACADO">
+            </div>
+            <div class="col-md-6 form-group">
+                <label>Texto de Acción (Opcional):</label>
+                <input type="text" class="form-control section-action-val" value="" placeholder="Ej: Ver todo">
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="mb-0 font-weight-bold" style="font-size:13px;">Tarjetas del Carrusel (Videos MP4, GIFs o Imágenes):</label>
+            <button type="button" class="btn btn-sm btn-outline-primary btn-add-vertical-card">
+                <i data-feather="plus" style="width:14px; height:14px;"></i> Añadir Tarjeta
+            </button>
+        </div>
+        <small class="text-muted d-block mb-2">
+            Cada tarjeta se muestra verticalmente con animación constante o video autoplay en bucle. Sube archivos (.mp4, .webm, .gif, .webp, .jpg) o pega una URL directa.
+        </small>
+        <div class="vertical-cards-container">
+            <!-- Items injected here -->
+        </div>
+    </div>
+</template>
+
+<template id="tpl-vertical-card-item">
+    <div class="vertical-card-item card border p-2 mb-2" style="background:#ffffff; border-radius:8px; border-left: 4px solid #7367f0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong style="color: #7367f0; font-size:12px;"><i data-feather="film" class="mr-1" style="width:13px; height:13px;"></i> Tarjeta Vertical</strong>
+            <button type="button" class="btn btn-danger btn-sm btn-remove-vertical-card" style="padding: 2px 6px;">
+                <i data-feather="trash-2" style="width:13px; height:13px;"></i>
+            </button>
+        </div>
+        <div class="row">
+            <div class="col-md-4 form-group mb-1">
+                <label style="font-size:11px; font-weight:600;">Opción 1: Subir Archivo (Video MP4 / GIF / Imagen)</label>
+                <input type="file" class="form-control image-file" accept="image/*,video/mp4,video/webm" style="font-size:12px; padding:3px 6px;">
+                
+                <label class="mt-1" style="font-size:11px; font-weight:600;">Opción 2: O Pegar URL</label>
+                <input type="text" class="form-control image-url-hidden card-media-url" placeholder="https://... (.mp4, .gif, .jpg)" style="font-size:12px;">
+            </div>
+            
+            <div class="col-md-5 form-group mb-1">
+                <div class="row">
+                    <div class="col-6 mb-1">
+                        <label style="font-size:11px; font-weight:600;">Etiqueta (Badge):</label>
+                        <input type="text" class="form-control card-tag-val" placeholder="Ej: LO ESENCIAL" style="font-size:12px;">
+                    </div>
+                    <div class="col-6 mb-1">
+                        <label style="font-size:11px; font-weight:600;">Texto Botón:</label>
+                        <input type="text" class="form-control card-button-val" placeholder="Ej: Ver productos" style="font-size:12px;">
+                    </div>
+                    <div class="col-12 mb-1">
+                        <label style="font-size:11px; font-weight:600;">Título Principal:</label>
+                        <input type="text" class="form-control card-title-val" placeholder="Ej: Para tu día a día" style="font-size:12px;">
+                    </div>
+                    <div class="col-12 mb-1">
+                        <label style="font-size:11px; font-weight:600;">Subtítulo / Bajada:</label>
+                        <input type="text" class="form-control card-subtitle-val" placeholder="Ej: Cuidado personal y belleza" style="font-size:12px;">
+                    </div>
+                    <div class="col-12">
+                        <label style="font-size:11px; font-weight:600;">Ruta al Tocar:</label>
+                        <input type="text" class="form-control card-route-val" placeholder="Ej: /category/1" style="font-size:12px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 form-group mb-1 text-center d-flex flex-column justify-content-center align-items-center" style="background:#f4f5f7; border-radius:6px; min-height:120px; overflow:hidden;">
+                <img src="" class="img-preview" style="max-height:110px; max-width:100%; object-fit:cover; display:none; border-radius:4px;" />
+                <video src="" class="video-preview" autoplay loop muted playsinline style="max-height:110px; max-width:100%; object-fit:cover; display:none; border-radius:4px;"></video>
+                <span class="text-muted no-media-text" style="font-size:11px;">Vista previa<br>de tarjeta</span>
+            </div>
+        </div>
+    </div>
+</template>
+
 <template id="tpl-BestSellersCarousel">
     <div class="block-item" data-type="BestSellersCarousel">
         <div class="block-header">
@@ -440,6 +523,38 @@ $(document).ready(function() {
                     $block.find('.carousel-items-container').append($item);
                 });
             }
+        } else if (type === 'VerticalCarousel') {
+            $block = $($('#tpl-VerticalCarousel').html());
+            let title = data.title || (data.data && !Array.isArray(data.data) ? data.data.title : '') || '';
+            let actionText = data.actionText || (data.data && !Array.isArray(data.data) ? data.data.actionText : '') || '';
+            $block.find('.section-title-val').val(title);
+            $block.find('.section-action-val').val(actionText);
+
+            let cards = Array.isArray(data.data) ? data.data : (data.data && data.data.items ? data.data.items : (data.banners || []));
+            if (cards && cards.length > 0) {
+                cards.forEach(card => {
+                    let $card = $($('#tpl-vertical-card-item').html());
+                    let mediaUrl = card.media || card.image || card.video || '';
+                    $card.find('.card-media-url').val(mediaUrl);
+                    $card.find('.card-tag-val').val(card.tag || '');
+                    $card.find('.card-title-val').val(card.title || '');
+                    $card.find('.card-subtitle-val').val(card.subtitle || '');
+                    $card.find('.card-button-val').val(card.buttonText || '');
+                    $card.find('.card-route-val').val(card.route || card.link || '');
+
+                    if (mediaUrl) {
+                        let isVid = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm') || (card.video && card.video === mediaUrl);
+                        if (isVid) {
+                            $card.find('.video-preview').attr('src', mediaUrl).show();
+                            $card.find('.no-media-text').hide();
+                        } else {
+                            $card.find('.img-preview').attr('src', mediaUrl).show();
+                            $card.find('.no-media-text').hide();
+                        }
+                    }
+                    $block.find('.vertical-cards-container').append($card);
+                });
+            }
         } else {
             let tpl = $('#tpl-generic').html();
             let desc = '';
@@ -490,19 +605,85 @@ $(document).ready(function() {
         $(this).closest('.carousel-image-item').remove();
     });
 
+    // Add Vertical Card Button
+    $(document).on('click', '.btn-add-vertical-card', function() {
+        let container = $(this).closest('.block-item').find('.vertical-cards-container');
+        let card = $($('#tpl-vertical-card-item').html());
+        container.append(card);
+        feather.replace();
+    });
+
+    // Remove Vertical Card Button
+    $(document).on('click', '.btn-remove-vertical-card', function() {
+        $(this).closest('.vertical-card-item').remove();
+    });
+
+    // Preview for Vertical Card Media on File Change
+    $(document).on('change', '.vertical-card-item .image-file', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            let file = e.target.files[0];
+            let card = $(this).closest('.vertical-card-item');
+            let isVid = file.type.includes('video') || file.name.endsWith('.mp4') || file.name.endsWith('.webm');
+            let previewImg = card.find('.img-preview');
+            let previewVid = card.find('.video-preview');
+            let noMedia = card.find('.no-media-text');
+            
+            let url = URL.createObjectURL(file);
+            if (isVid) {
+                previewVid.attr('src', url).show();
+                previewImg.hide();
+            } else {
+                previewImg.attr('src', url).show();
+                previewVid.hide();
+            }
+            noMedia.hide();
+        }
+    });
+
+    // Preview for Vertical Card Media on URL Input
+    $(document).on('input change', '.vertical-card-item .card-media-url', function() {
+        let url = $(this).val().trim();
+        let card = $(this).closest('.vertical-card-item');
+        let previewImg = card.find('.img-preview');
+        let previewVid = card.find('.video-preview');
+        let noMedia = card.find('.no-media-text');
+        
+        if (!url) {
+            previewImg.hide();
+            previewVid.hide();
+            noMedia.show();
+            return;
+        }
+        let isVid = url.endsWith('.mp4') || url.endsWith('.webm');
+        if (isVid) {
+            previewVid.attr('src', url).show();
+            previewImg.hide();
+        } else {
+            previewImg.attr('src', url).show();
+            previewVid.hide();
+        }
+        noMedia.hide();
+    });
+
     // Evento de Guardar (Construye el JSON y hace Submit)
     $('#btn-save-config').on('click', async function(e) {
         e.preventDefault();
         
         let btn = $(this);
         let originalText = btn.text();
-        btn.prop('disabled', true).text('Guardando y subiendo imágenes...');
+        btn.prop('disabled', true).text('Guardando y subiendo medios...');
 
         let uploadPromises = [];
 
         $('.image-file').each(function() {
             let fileInput = this;
-            let container = $(this).closest('.form-group').parent(); // Finds the row containing both inputs
+            let container = $(this).closest('.vertical-card-item');
+            if (!container.length) {
+                container = $(this).closest('.carousel-image-item');
+            }
+            if (!container.length) {
+                container = $(this).closest('.form-group').parent();
+            }
             
             if (fileInput && fileInput.files && fileInput.files[0]) {
                 let formData = new FormData();
@@ -520,7 +701,7 @@ $(document).ready(function() {
                         container.find('.image-url-hidden').val(res.url); // Actualizamos la URL con la recién subida
                     }
                 }).catch(err => {
-                    console.error("Error al subir imagen", err);
+                    console.error("Error al subir archivo", err);
                 });
                 
                 uploadPromises.push(p);
@@ -574,6 +755,33 @@ $(document).ready(function() {
                     }
                 });
                 blockData.data = images;
+            } else if (type === 'VerticalCarousel') {
+                let cards = [];
+                el.find('.vertical-card-item').each(function() {
+                    let card = $(this);
+                    let mediaUrl = card.find('.card-media-url').val();
+                    let tag = card.find('.card-tag-val').val();
+                    let title = card.find('.card-title-val').val();
+                    let subtitle = card.find('.card-subtitle-val').val();
+                    let buttonText = card.find('.card-button-val').val();
+                    let route = card.find('.card-route-val').val();
+
+                    if (mediaUrl || title || tag) {
+                        cards.push({
+                            media: mediaUrl,
+                            image: mediaUrl,
+                            video: (mediaUrl && (mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm'))) ? mediaUrl : '',
+                            tag: tag,
+                            title: title,
+                            subtitle: subtitle,
+                            buttonText: buttonText,
+                            route: route
+                        });
+                    }
+                });
+                blockData.title = el.find('.section-title-val').val() || '';
+                blockData.actionText = el.find('.section-action-val').val() || '';
+                blockData.data = cards;
             }
             
             finalLayout.push(blockData);
