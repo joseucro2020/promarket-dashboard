@@ -22,6 +22,7 @@ use Illuminate\Support\Str;
 use Excel;
 use App\Traits\FCMTrait;
 use App\Exports\PurchaseExport;
+use App\Libraries\CalcPrice;
 
 class PurchaseController extends Controller
 {
@@ -239,7 +240,7 @@ class PurchaseController extends Controller
             }
 
             // Tip / propina fallback
-            $item['tip'] = data_get($item, 'tip', data_get($item, 'propina', 0));
+            $item['tip'] = $this->resolveTipAmount($item) ?? 0;
 
             return $item;
         });
@@ -262,6 +263,7 @@ class PurchaseController extends Controller
         $purchase = Purchase::where('id', $purchaseId)
             ->with([
                 'user:id,name,telefono',
+                'exchange',
                 'deposits:id,purchase_id,gateway',
                 'delivery:id,purchase_id,type,turn,phone,address,date',
                 'details',
@@ -322,6 +324,8 @@ class PurchaseController extends Controller
             ];
         })->values();
 
+        $tipMoney = data_get($purchase, 'tip_money');
+
         return [
             'id' => $purchase->id,
             'created_at' => $purchase->created_at,
@@ -329,7 +333,8 @@ class PurchaseController extends Controller
             'subtotal' => data_get($purchase, 'subtotal'),
             'sub_total' => data_get($purchase, 'sub_total'),
             'amount_without_tip' => data_get($purchase, 'amount_without_tip'),
-            'tip' => data_get($purchase, 'tip'),
+            'tip' => $this->resolveTipAmount($purchase),
+            'tip_money' => $tipMoney,
             'propina' => data_get($purchase, 'propina'),
             'shipping_cost' => data_get($purchase, 'shipping_cost'),
             'shipping_fee' => data_get($purchase, 'shipping_fee'),
@@ -414,6 +419,21 @@ class PurchaseController extends Controller
         }
 
         return $method;
+    }
+
+    private function resolveTipAmount($purchase)
+    {
+        $tipMoney = data_get($purchase, 'tip_money');
+        if ($tipMoney !== null) {
+            return CalcPrice::getByCurrency(
+                $tipMoney,
+                data_get($purchase, 'details.0.coin', '1'),
+                data_get($purchase, 'exchange.change', 1),
+                data_get($purchase, 'currency')
+            );
+        }
+
+        return data_get($purchase, 'tip', data_get($purchase, 'propina'));
     }
 
     private function resolvePayName($item)
