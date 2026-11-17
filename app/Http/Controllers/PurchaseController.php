@@ -190,7 +190,9 @@ class PurchaseController extends Controller
 
         // Map collection items to include helper fields for the frontend
         $purchases->getCollection()->transform(function ($item) {
-            $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']);
+            $tip = (float) ($this->resolveTipAmount($item) ?? 0);
+            $item['tip'] = $tip;
+            $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']) + $tip;
             $item['createdAt'] = Carbon::parse($item['created_at'])->format('d-m-Y h:i A');
             $item['clientName'] = data_get($item, 'user.name', '—');
             $item['paymentType'] = collect(data_get($item, 'deposits', []))->count() > 1
@@ -238,9 +240,6 @@ class PurchaseController extends Controller
                     $item['statusType'] = 'Completado';
                     break;
             }
-
-            // Tip / propina fallback
-            $item['tip'] = $this->resolveTipAmount($item) ?? 0;
 
             return $item;
         });
@@ -500,7 +499,9 @@ class PurchaseController extends Controller
         $today = now()->format('d-m-Y h:i A');
 
         $data = $data->map(function ($item) {
-            $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']);
+            $tip = (float) ($this->resolveTipAmount($item) ?? 0);
+            $item['tip'] = $tip;
+            $item['amount'] = $this->getTotalAmount($item['details'], $item['exchange'], $item['currency']) + $tip;
             $item['createdAt'] = Carbon::parse($item['created_at'])->format('d-m-Y h:i A');
             $item['clientName'] = data_get($item, 'user.name', '—');
             $item['paymentType'] = collect(data_get($item, 'deposits', []))->count() > 1
